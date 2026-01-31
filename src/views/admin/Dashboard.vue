@@ -1,185 +1,293 @@
 <script setup>
+import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import api from '../../services/api'
+import AdminLayout from '../../components/AdminLayout.vue'
+
+const cartas = ref([])
+const loading = ref(true)
+
+// Cores para o Gráfico de Rosca (têm que bater com o CSS)
+const colors = {
+  green: '#10b981',  // Disponível
+  orange: '#f59e0b', // Reservado
+  red: '#ef4444',    // Vendido
+  gray: '#e2e8f0'    // Vazio
+}
+
+const carregarDados = async () => {
+  try {
+    const response = await api.get('cartas/')
+    cartas.value = response.data
+  } catch (error) {
+    console.error("Erro ao carregar dashboard", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// --- KPIs ---
+const totalCredito = computed(() => cartas.value.reduce((acc, c) => acc + parseFloat(c.valor_credito), 0))
+const totalDisponiveis = computed(() => cartas.value.filter(c => c.status === 'DISPONIVEL').length)
+const totalVendidas = computed(() => cartas.value.filter(c => c.status === 'VENDIDO').length)
+
+// --- Lógica do Gráfico de Rosca (Donut) ---
+const chartStatus = computed(() => {
+  const total = cartas.value.length
+  if (total === 0) return { gradient: `${colors.gray} 0deg 360deg`, stats: {} }
+
+  const disponivel = cartas.value.filter(c => c.status === 'DISPONIVEL').length
+  const reservado = cartas.value.filter(c => c.status === 'RESERVADO').length
+  const vendido = cartas.value.filter(c => c.status === 'VENDIDO').length
+
+  // Calcula os graus de cada fatia (Total = 360 graus)
+  const degDisp = (disponivel / total) * 360
+  const degRes = (reservado / total) * 360
+  const degVend = (vendido / total) * 360
+
+  let current = 0
+  
+  // Monta a string do CSS conic-gradient
+  const g1 = `${colors.green} 0deg ${degDisp}deg`
+  current += degDisp
+  
+  const g2 = `${colors.orange} ${current}deg ${current + degRes}deg`
+  current += degRes
+  
+  const g3 = `${colors.red} ${current}deg 360deg`
+
+  return {
+    gradient: `${g1}, ${g2}, ${g3}`,
+    stats: { disponivel, reservado, vendido }
+  }
+})
+
+// --- Lógica do Gráfico de Barras ---
+const chartTipo = computed(() => {
+  const imovel = cartas.value.filter(c => c.tipo === 'IMOVEL').length
+  const auto = cartas.value.filter(c => c.tipo === 'AUTOMOVEL').length
+  
+  // Pega o maior valor para definir a escala de 100%
+  const max = Math.max(imovel, auto, 1)
+
+  return {
+    imovelPct: (imovel / max) * 100,
+    autoPct: (auto / max) * 100,
+    imovel,
+    auto
+  }
+})
+
+const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
+
+onMounted(() => {
+  carregarDados()
+})
 </script>
 
 <template>
-  <div class="admin-wrapper">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2 class="brand">Capital<span class="highlight">X</span></h2>
-        <span class="badge-admin">Admin</span>
-      </div>
-
-      <nav class="sidebar-menu">
-        <p class="menu-label">Principal</p>
-        <RouterLink to="/painel" class="menu-item" active-class="active">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          Dashboard
-        </RouterLink>
-        <a href="#" class="menu-item">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Cartas
-        </a>
-        <a href="#" class="menu-item">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          Clientes
-        </a>
-
-        <p class="menu-label">Sistema</p>
-        <RouterLink to="/" class="menu-item back-link">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          Voltar ao Site
-        </RouterLink>
-      </nav>
-    </aside>
-
-    <div class="main-area">
-      <header class="topbar">
-        <h3 class="page-title">Visão Geral</h3>
-        <div class="user-profile">
-          <div class="avatar">A</div>
-          <span>Admin</span>
+  <AdminLayout>
+    <div class="dashboard-wrapper">
+      
+      <div class="grid-kpis">
+        <div class="card-clean kpi-box">
+          <div class="kpi-icon bg-blue-soft">💰</div>
+          <div>
+            <span class="kpi-label">Volume Total</span>
+            <h3 class="kpi-value">{{ formatCurrency(totalCredito) }}</h3>
+          </div>
         </div>
-      </header>
 
-      <div class="content-scroll">
-        <slot></slot>
+        <div class="card-clean kpi-box">
+          <div class="kpi-icon bg-green-soft">✅</div>
+          <div>
+            <span class="kpi-label">Disponíveis</span>
+            <h3 class="kpi-value">{{ totalDisponiveis }} cartas</h3>
+          </div>
+        </div>
+
+        <div class="card-clean kpi-box">
+          <div class="kpi-icon bg-orange-soft">🚀</div>
+          <div>
+            <span class="kpi-label">Vendidas</span>
+            <h3 class="kpi-value">{{ totalVendidas }} cartas</h3>
+          </div>
+        </div>
       </div>
+
+      <div class="grid-charts">
+        
+        <div class="card-clean chart-box">
+          <h4 class="chart-title">Status do Estoque</h4>
+          <div class="chart-content">
+            <div class="donut" :style="{ background: `conic-gradient(${chartStatus.gradient})` }">
+              <div class="hole">
+                <span>{{ cartas.length }}</span>
+                <small>Total</small>
+              </div>
+            </div>
+            <div class="legend">
+              <div class="legend-item"><span class="dot green"></span> Disp. ({{ chartStatus.stats.disponivel || 0 }})</div>
+              <div class="legend-item"><span class="dot orange"></span> Res. ({{ chartStatus.stats.reservado || 0 }})</div>
+              <div class="legend-item"><span class="dot red"></span> Vend. ({{ chartStatus.stats.vendido || 0 }})</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-clean chart-box">
+          <h4 class="chart-title">Por Categoria</h4>
+          <div class="bars-container">
+            <div class="bar-group">
+              <div class="bar-header">
+                <span>Imóveis</span>
+                <span class="font-bold">{{ chartTipo.imovel }}</span>
+              </div>
+              <div class="track">
+                <div class="fill blue" :style="{ width: chartTipo.imovelPct + '%' }"></div>
+              </div>
+            </div>
+            
+            <div class="bar-group">
+              <div class="bar-header">
+                <span>Automóveis</span>
+                <span class="font-bold">{{ chartTipo.auto }}</span>
+              </div>
+              <div class="track">
+                <div class="fill yellow" :style="{ width: chartTipo.autoPct + '%' }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-clean table-section">
+        <div class="section-header">
+          <h3 class="section-title">Adições Recentes</h3>
+          <RouterLink to="/admin/cartas" class="link-soft">Ver todas &rarr;</RouterLink>
+        </div>
+        
+        <table class="soft-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Tipo</th>
+              <th>Crédito</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="carta in cartas.slice(0, 5)" :key="carta.id">
+              <td class="font-mono text-muted">#{{ carta.codigo }}</td>
+              <td>
+                 <span class="badge-mini">{{ carta.tipo }}</span>
+              </td>
+              <td class="font-bold">{{ formatCurrency(carta.valor_credito) }}</td>
+              <td>
+                <span class="status-badge" :class="carta.status.toLowerCase()">
+                  {{ carta.status }}
+                </span>
+              </td>
+            </tr>
+             <tr v-if="cartas.length === 0">
+              <td colspan="4" style="text-align: center; padding: 20px; color: #999;">Nenhum dado disponível.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <style scoped>
-.admin-wrapper {
-  display: flex;
-  height: 100vh;
-  background-color: #f3f4f6;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  overflow: hidden;
+.dashboard-wrapper { display: flex; flex-direction: column; gap: 32px; }
+
+/* Grid de KPIs */
+.grid-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
 }
 
-/* Sidebar */
-.sidebar {
-  width: 260px;
-  background-color: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
+.kpi-box {
   padding: 24px;
-}
-
-.sidebar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 40px;
+  gap: 20px;
 }
 
-.brand {
-  font-size: 1.5rem;
-  color: #111827;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+.kpi-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+.bg-blue-soft { background: #eff6ff; }
+.bg-green-soft { background: #f0fdf4; }
+.bg-orange-soft { background: #fff7ed; }
+
+.kpi-label { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; }
+.kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 4px 0 0 0; }
+
+/* Grid de Gráficos */
+.grid-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
-.highlight { color: #10b981; }
+.chart-box { padding: 24px; }
+.chart-title { font-size: 1rem; color: var(--primary); margin-bottom: 24px; font-weight: 700; }
 
-.badge-admin {
-  background: #eff6ff;
-  color: #1e3a8a;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
+/* Donut */
+.chart-content { display: flex; align-items: center; justify-content: space-around; gap: 20px; }
+.donut { width: 140px; height: 140px; border-radius: 50%; position: relative; }
+.hole {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 100px; height: 100px; background: white; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: bold; color: var(--primary); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
+.hole small { font-size: 0.7rem; color: var(--text-muted); font-weight: normal; }
 
-.menu-label {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-bottom: 12px;
-  margin-top: 20px;
-}
+.legend { display: flex; flex-direction: column; gap: 10px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); font-weight: 500; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.green { background: #10b981; }
+.dot.orange { background: #f59e0b; }
+.dot.red { background: #ef4444; }
 
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  color: #4b5563;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s;
-  margin-bottom: 4px;
-}
+/* Barras */
+.bars-container { display: flex; flex-direction: column; gap: 24px; padding: 10px 0; }
+.bar-group { width: 100%; }
+.bar-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-main); }
+.track { width: 100%; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
+.fill { height: 100%; border-radius: 5px; transition: width 0.5s ease-out; }
+.fill.blue { background: #3b82f6; }
+.fill.yellow { background: #f59e0b; }
 
-.menu-item:hover {
-  background-color: #f3f4f6;
-  color: #111827;
-}
+/* Tabela */
+.table-section { padding: 32px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+.link-soft { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
 
-.menu-item.active {
-  background-color: #ecfdf5; /* Verde bem claro */
-  color: #059669;
-}
+.soft-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+.soft-table th { text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 16px; }
+.soft-table td { background: #f8fafc; padding: 16px; transition: var(--transition); }
+.soft-table tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.soft-table tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+.soft-table tr:hover td { background: #f1f5f9; }
 
-.back-link {
-  margin-top: auto;
-  color: #ef4444;
-}
+.font-mono { font-family: monospace; font-weight: 600; }
+.font-bold { font-weight: 700; }
+.text-muted { color: var(--text-muted); }
+.badge-mini { background: white; border: 1px solid var(--border-light); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
 
-.back-link:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
+.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.status-badge.disponivel { background: var(--status-success); color: var(--status-success-text); }
+.status-badge.reservado { background: var(--status-warning); color: var(--status-warning-text); }
+.status-badge.vendido { background: var(--status-danger); color: var(--status-danger-text); }
 
-/* Main Area */
-.main-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.topbar {
-  height: 70px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-}
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  background: #1e3a8a;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-}
-
-.content-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px;
+@media (max-width: 900px) {
+  .grid-charts { grid-template-columns: 1fr; }
 }
 </style>

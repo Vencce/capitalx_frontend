@@ -158,7 +158,7 @@ onMounted(() => {
         <button @click="limparFiltros" class="btn-link">Limpar filtros</button>
       </div>
 
-      <div v-else class="cards-grid">
+      <div v-else class="cards-gcards-grid">
         <CartaCard 
           v-for="carta in cartasFiltradas" 
           :key="carta.id" 
@@ -359,9 +359,12 @@ onMounted(() => {
 }
 
 .cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  display: flex;
+  flex-direction: column; /* Um embaixo do outro */
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px; /* Limita a largura para não ficar gigante em monitores ultra-wide */
+  margin: 0 auto;    /* Centraliza a lista na tela */
 }
 
 .loading, .empty-state {

@@ -1,0 +1,77 @@
+/* src/assets/admin-theme.css */
+:root {
+  /* --- Cores da Marca --- */
+  --primary: #0f172a;       /* Azul Marinho Profundo (quase preto, muito elegante) */
+  --primary-light: #1e293b; /* Variação mais clara para hover */
+  --secondary: #10b981;     /* Verde Esmeralda (Ações positivas) */
+  --accent: #3b82f6;        /* Azul Vibrante (Destaques/Links) */
+  
+  /* --- Cores de Interface --- */
+  --bg-body: #f8fafc;       /* Cinza muito suave para o fundo */
+  --bg-card: #ffffff;       /* Branco puro para cartões */
+  --text-main: #334155;     /* Cinza escuro para texto principal */
+  --text-muted: #64748b;    /* Cinza médio para legendas */
+  --border-light: #e2e8f0;  /* Bordas sutis */
+
+  /* --- Status --- */
+  --status-success: #d1fae5;
+  --status-success-text: #065f46;
+  --status-warning: #fef3c7;
+  --status-warning-text: #92400e;
+  --status-danger: #fee2e2;
+  --status-danger-text: #b91c1c;
+
+  /* --- Efeitos --- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --radius: 12px;
+  --transition: all 0.2s ease-in-out;
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  font-family: 'Inter', 'Segoe UI', sans-serif; /* Fonte moderna */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utilitários Globais */
+.card-clean {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.card-clean:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.025em;
+}
