@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   carta: Object
@@ -9,15 +9,16 @@ const formatCurrency = (value) => {
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-// Garante que não quebre se o detalhes vier vazio
 const adminDetalhes = computed(() => props.carta.administradora_detalhes || {})
+const showModal = ref(false)
 
-// Ícones SVG
-const tipoIcon = computed(() => {
+// --- LÓGICA DOS ÍCONES (FontAwesome) ---
+// Retorna a classe do ícone baseada no tipo
+const iconeClasse = computed(() => {
   if (props.carta.tipo === 'AUTOMOVEL') {
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>'
+    return 'fa-solid fa-car' // Ícone de Carro
   }
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/><path d="M18 10h2v10h-2z"/><path d="M18 14h2"/><path d="M18 18h2"/></svg>'
+  return 'fa-solid fa-house-chimney' // Ícone de Casa
 })
 
 const abrirWhatsapp = () => {
@@ -27,16 +28,15 @@ const abrirWhatsapp = () => {
 }
 
 const compartilhar = async () => {
-  const nomeBanco = adminDetalhes.value.nome || 'Consórcio'
   const dados = {
-    title: `Carta Contemplada - ${nomeBanco}`,
-    text: `Olha essa carta de crédito de ${formatCurrency(props.carta.valor_credito)}!`,
+    title: 'Carta Contemplada',
+    text: `Confira esta carta: ${formatCurrency(props.carta.valor_credito)}`,
     url: window.location.href
   }
   try {
     if (navigator.share) await navigator.share(dados)
     else {
-      await navigator.clipboard.writeText(`${dados.text} ${dados.url}`)
+      await navigator.clipboard.writeText(`${dados.text} - ${dados.url}`)
       alert('Link copiado!')
     }
   } catch (err) { console.error(err) }
@@ -45,10 +45,13 @@ const compartilhar = async () => {
 
 <template>
   <div class="card-horizontal">
+    
     <div class="card-main">
-      
       <div class="primary-section">
-        <div class="icon-box" v-html="tipoIcon"></div>
+        <div class="icon-box">
+          <i :class="iconeClasse"></i>
+        </div>
+        
         <div>
           <span class="bank-name">{{ adminDetalhes.nome || 'Administradora' }}</span>
           <h3 class="credit-value">{{ formatCurrency(carta.valor_credito) }}</h3>
@@ -81,49 +84,103 @@ const compartilhar = async () => {
       </label>
 
       <div class="actions">
-        <button class="btn-icon" @click="compartilhar" title="Compartilhar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        <button class="btn-icon" @click.stop="compartilhar" title="Compartilhar">
+          <i class="fa-solid fa-share-nodes"></i>
         </button>
         
-        <button class="btn-gray">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="8"></line><line x1="11" y1="11" x2="11" y2="14"></line></svg>
-          Detalhes
+        <button class="btn-gray" @click.stop="showModal = true">
+          <i class="fa-solid fa-magnifying-glass"></i> Detalhes
         </button>
 
-        <button class="btn-green" @click="abrirWhatsapp">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
-          Negociar
+        <button class="btn-green" @click.stop="abrirWhatsapp">
+          <i class="fa-brands fa-whatsapp"></i> Negociar
         </button>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+        <div class="modal-content">
+          <button class="close-btn" @click="showModal = false">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          
+          <div class="modal-header">
+            <div class="icon-box-large">
+              <i :class="iconeClasse"></i>
+            </div>
+            <div>
+              <span class="modal-subtitle">Carta Contemplada</span>
+              <h2 class="modal-title">{{ adminDetalhes.nome }}</h2>
+            </div>
+          </div>
+
+          <div class="modal-grid">
+            <div class="modal-item highlight">
+              <span>Valor do Crédito</span>
+              <strong>{{ formatCurrency(carta.valor_credito) }}</strong>
+            </div>
+            <div class="modal-item">
+              <span>Entrada</span>
+              <strong>{{ formatCurrency(carta.valor_entrada) }}</strong>
+            </div>
+            <div class="modal-item">
+              <span>Parcelas Restantes</span>
+              <strong>{{ carta.numero_parcelas }}x</strong>
+            </div>
+            <div class="modal-item">
+              <span>Valor da Parcela</span>
+              <strong>{{ formatCurrency(carta.valor_parcela) }}</strong>
+            </div>
+            <div class="modal-item">
+              <span>Código de Venda</span>
+              <strong>{{ carta.codigo }}</strong>
+            </div>
+            <div class="modal-item">
+              <span>Status</span>
+              <strong :class="carta.status.toLowerCase()">{{ carta.status }}</strong>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-green block" @click="abrirWhatsapp">
+              <i class="fa-brands fa-whatsapp"></i> Chamar no WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
 <style scoped>
+/* --- CARD PRINCIPAL --- */
 .card-horizontal {
   background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03); overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03); width: 100%; overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
-  width: 100%; /* Ocupa 100% do pai (Home) */
 }
 .card-horizontal:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #cbd5e1; }
 
 .card-main {
-  padding: 20px 24px;
-  display: grid;
-  grid-template-columns: 1.5fr 2fr 1fr; /* Colunas bem distribuídas */
-  gap: 20px;
-  align-items: center;
+  padding: 20px 24px; display: grid; grid-template-columns: 1.5fr 2fr 1fr; gap: 20px; align-items: center;
 }
 
 .primary-section { display: flex; align-items: center; gap: 16px; }
+
+/* ESTILO DO ÍCONE FONTAWESOME */
+.icon-box i {
+  font-size: 2.2rem; /* Tamanho do ícone */
+  color: #f59e0b;    /* Cor Laranja */
+}
+
 .bank-name { font-size: 0.85rem; color: #1e3a8a; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 2px; }
 .credit-value { margin: 0; font-size: 1.8rem; font-weight: 800; color: #10b981; line-height: 1; }
 
 .details-section { 
   display: flex; justify-content: space-around; 
-  border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; 
-  padding: 0 16px; 
+  border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; padding: 0 16px; 
 }
 .detail-group { display: flex; flex-direction: column; gap: 2px; }
 .label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
@@ -140,22 +197,66 @@ const compartilhar = async () => {
 .selection { font-size: 0.9rem; color: #64748b; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .actions { display: flex; gap: 10px; }
 
+/* BOTÕES */
 button { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.2s; }
-.btn-icon { background: white; border: 1px solid #e2e8f0; color: #64748b; padding: 8px; }
+.btn-icon { background: white; border: 1px solid #e2e8f0; color: #64748b; padding: 8px 12px; }
 .btn-icon:hover { border-color: #10b981; color: #10b981; }
 .btn-gray { background: #e2e8f0; color: #475569; }
 .btn-gray:hover { background: #cbd5e1; color: #1e293b; }
-.btn-green { background: #10b981; color: white; }
-.btn-green:hover { background: #059669; }
+.btn-green { background: #25D366; color: white; } /* Cor Whats Oficial */
+.btn-green:hover { background: #20b85a; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2); }
 
-/* Responsividade */
+/* Ícones dentro dos botões */
+button i { font-size: 1rem; }
+
+/* --- MODAL --- */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px);
+  z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+
+.modal-content {
+  background: white; width: 100%; max-width: 500px;
+  border-radius: 16px; padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.close-btn {
+  position: absolute; top: 16px; right: 16px;
+  background: #f1f5f9; color: #64748b; width: 32px; height: 32px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; padding: 0; cursor: pointer;
+}
+.close-btn:hover { background: #fee2e2; color: #ef4444; }
+
+.modal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
+.icon-box-large i { font-size: 2.5rem; color: #f59e0b; }
+.modal-subtitle { font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: 600; }
+.modal-title { margin: 0; color: #1e3a8a; font-size: 1.5rem; }
+
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+.modal-item { display: flex; flex-direction: column; gap: 4px; }
+.modal-item span { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+.modal-item strong { font-size: 1.1rem; color: #334155; }
+.modal-item.highlight strong { color: #10b981; font-size: 1.3rem; }
+.disponivel { color: #10b981; } .reservado { color: #f59e0b; } .vendido { color: #ef4444; }
+
+.block { width: 100%; justify-content: center; padding: 14px; font-size: 1rem; }
+
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* RESPONSIVIDADE */
 @media (max-width: 900px) {
   .card-main { grid-template-columns: 1fr 1fr; grid-template-areas: "prim logo" "det det"; }
   .primary-section { grid-area: prim; }
   .logo-section { grid-area: logo; }
   .details-section { grid-area: det; border: none; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: 5px; justify-content: space-between; }
 }
-
 @media (max-width: 600px) {
   .card-main { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
   .details-section { width: 100%; padding: 16px 0 0 0; justify-content: space-between; }
@@ -163,5 +264,6 @@ button { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border
   .card-footer { flex-direction: column; gap: 12px; align-items: stretch; }
   .actions { justify-content: space-between; }
   .btn-gray, .btn-green { flex: 1; justify-content: center; }
+  .modal-grid { grid-template-columns: 1fr; gap: 15px; }
 }
 </style>
