@@ -3,16 +3,22 @@ import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '../../services/api'
 import AdminLayout from '../../components/AdminLayout.vue'
+import { 
+  Wallet, 
+  CheckCircle2, 
+  ShoppingBag, 
+  TrendingUp, 
+  ArrowRight
+} from 'lucide-vue-next'
 
 const cartas = ref([])
 const loading = ref(true)
 
-// Cores para o Gráfico de Rosca (têm que bater com o CSS)
 const colors = {
-  green: '#10b981',  // Disponível
-  orange: '#f59e0b', // Reservado
-  red: '#ef4444',    // Vendido
-  gray: '#e2e8f0'    // Vazio
+  green: '#10b981',  
+  orange: '#f59e0b', 
+  red: '#ef4444',    
+  gray: '#e2e8f0'    
 }
 
 const carregarDados = async () => {
@@ -26,12 +32,10 @@ const carregarDados = async () => {
   }
 }
 
-// --- KPIs ---
 const totalCredito = computed(() => cartas.value.reduce((acc, c) => acc + parseFloat(c.valor_credito), 0))
 const totalDisponiveis = computed(() => cartas.value.filter(c => c.status === 'DISPONIVEL').length)
 const totalVendidas = computed(() => cartas.value.filter(c => c.status === 'VENDIDO').length)
 
-// --- Lógica do Gráfico de Rosca (Donut) ---
 const chartStatus = computed(() => {
   const total = cartas.value.length
   if (total === 0) return { gradient: `${colors.gray} 0deg 360deg`, stats: {} }
@@ -40,20 +44,14 @@ const chartStatus = computed(() => {
   const reservado = cartas.value.filter(c => c.status === 'RESERVADO').length
   const vendido = cartas.value.filter(c => c.status === 'VENDIDO').length
 
-  // Calcula os graus de cada fatia (Total = 360 graus)
   const degDisp = (disponivel / total) * 360
   const degRes = (reservado / total) * 360
-  const degVend = (vendido / total) * 360
 
   let current = 0
-  
-  // Monta a string do CSS conic-gradient
   const g1 = `${colors.green} 0deg ${degDisp}deg`
   current += degDisp
-  
   const g2 = `${colors.orange} ${current}deg ${current + degRes}deg`
   current += degRes
-  
   const g3 = `${colors.red} ${current}deg 360deg`
 
   return {
@@ -62,12 +60,9 @@ const chartStatus = computed(() => {
   }
 })
 
-// --- Lógica do Gráfico de Barras ---
 const chartTipo = computed(() => {
   const imovel = cartas.value.filter(c => c.tipo === 'IMOVEL').length
   const auto = cartas.value.filter(c => c.tipo === 'AUTOMOVEL').length
-  
-  // Pega o maior valor para definir a escala de 100%
   const max = Math.max(imovel, auto, 1)
 
   return {
@@ -80,9 +75,7 @@ const chartTipo = computed(() => {
 
 const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
-onMounted(() => {
-  carregarDados()
-})
+onMounted(carregarDados)
 </script>
 
 <template>
@@ -91,34 +84,42 @@ onMounted(() => {
       
       <div class="grid-kpis">
         <div class="card-clean kpi-box">
-          <div class="kpi-icon bg-blue-soft">💰</div>
+          <div class="kpi-icon bg-blue-soft">
+            <Wallet :size="24" class="text-blue" />
+          </div>
           <div>
-            <span class="kpi-label">Volume Total</span>
+            <span class="kpi-label">Volume de Crédito</span>
             <h3 class="kpi-value">{{ formatCurrency(totalCredito) }}</h3>
           </div>
         </div>
 
         <div class="card-clean kpi-box">
-          <div class="kpi-icon bg-green-soft">✅</div>
+          <div class="kpi-icon bg-green-soft">
+            <CheckCircle2 :size="24" class="text-green" />
+          </div>
           <div>
             <span class="kpi-label">Disponíveis</span>
-            <h3 class="kpi-value">{{ totalDisponiveis }} cartas</h3>
+            <h3 class="kpi-value">{{ totalDisponiveis }} <small>unidades</small></h3>
           </div>
         </div>
 
         <div class="card-clean kpi-box">
-          <div class="kpi-icon bg-orange-soft">🚀</div>
+          <div class="kpi-icon bg-orange-soft">
+            <ShoppingBag :size="24" class="text-orange" />
+          </div>
           <div>
             <span class="kpi-label">Vendidas</span>
-            <h3 class="kpi-value">{{ totalVendidas }} cartas</h3>
+            <h3 class="kpi-value">{{ totalVendidas }} <small>unidades</small></h3>
           </div>
         </div>
       </div>
 
       <div class="grid-charts">
-        
         <div class="card-clean chart-box">
-          <h4 class="chart-title">Status do Estoque</h4>
+          <div class="chart-header">
+            <h4 class="chart-title">Status do Estoque</h4>
+            <TrendingUp :size="18" color="#94a3b8" />
+          </div>
           <div class="chart-content">
             <div class="donut" :style="{ background: `conic-gradient(${chartStatus.gradient})` }">
               <div class="hole">
@@ -127,19 +128,33 @@ onMounted(() => {
               </div>
             </div>
             <div class="legend">
-              <div class="legend-item"><span class="dot green"></span> Disp. ({{ chartStatus.stats.disponivel || 0 }})</div>
-              <div class="legend-item"><span class="dot orange"></span> Res. ({{ chartStatus.stats.reservado || 0 }})</div>
-              <div class="legend-item"><span class="dot red"></span> Vend. ({{ chartStatus.stats.vendido || 0 }})</div>
+              <div class="legend-item">
+                <span class="dot green"></span> 
+                <span class="legend-text">Disponível</span>
+                <span class="legend-val">{{ chartStatus.stats.disponivel || 0 }}</span>
+              </div>
+              <div class="legend-item">
+                <span class="dot orange"></span> 
+                <span class="legend-text">Reservado</span>
+                <span class="legend-val">{{ chartStatus.stats.reservado || 0 }}</span>
+              </div>
+              <div class="legend-item">
+                <span class="dot red"></span> 
+                <span class="legend-text">Vendido</span>
+                <span class="legend-val">{{ chartStatus.stats.vendido || 0 }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="card-clean chart-box">
-          <h4 class="chart-title">Por Categoria</h4>
+          <div class="chart-header">
+            <h4 class="chart-title">Distribuição por Categoria</h4>
+          </div>
           <div class="bars-container">
             <div class="bar-group">
               <div class="bar-header">
-                <span>Imóveis</span>
+                <span class="bar-label">Imóveis</span>
                 <span class="font-bold">{{ chartTipo.imovel }}</span>
               </div>
               <div class="track">
@@ -149,7 +164,7 @@ onMounted(() => {
             
             <div class="bar-group">
               <div class="bar-header">
-                <span>Automóveis</span>
+                <span class="bar-label">Automóveis</span>
                 <span class="font-bold">{{ chartTipo.auto }}</span>
               </div>
               <div class="track">
@@ -162,8 +177,11 @@ onMounted(() => {
 
       <div class="card-clean table-section">
         <div class="section-header">
-          <h3 class="section-title">Adições Recentes</h3>
-          <RouterLink to="/admin/cartas" class="link-soft">Ver todas &rarr;</RouterLink>
+          <h3 class="section-title">Últimas Atualizações</h3>
+          <RouterLink to="/admin/cartas" class="link-action">
+            Gerenciar todas
+            <ArrowRight :size="16" />
+          </RouterLink>
         </div>
         
         <table class="soft-table">
@@ -189,7 +207,7 @@ onMounted(() => {
               </td>
             </tr>
              <tr v-if="cartas.length === 0">
-              <td colspan="4" style="text-align: center; padding: 20px; color: #999;">Nenhum dado disponível.</td>
+              <td colspan="4" class="empty-msg">Nenhuma movimentação recente.</td>
             </tr>
           </tbody>
         </table>
@@ -202,92 +220,69 @@ onMounted(() => {
 <style scoped>
 .dashboard-wrapper { display: flex; flex-direction: column; gap: 32px; }
 
-/* Grid de KPIs */
-.grid-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
+.grid-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.card-clean { background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+.kpi-box { padding: 32px; display: flex; align-items: center; gap: 24px; }
 
-.kpi-box {
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.kpi-icon {
-  width: 56px; height: 56px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-}
+.kpi-icon { width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
 .bg-blue-soft { background: #eff6ff; }
-.bg-green-soft { background: #f0fdf4; }
+.text-blue { color: #2563eb; }
+.bg-green-soft { background: #ecfdf5; }
+.text-green { color: #059669; }
 .bg-orange-soft { background: #fff7ed; }
+.text-orange { color: #d97706; }
 
-.kpi-label { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; }
-.kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 4px 0 0 0; }
+.kpi-label { font-size: 0.85rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
+.kpi-value { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 4px 0 0 0; }
+.kpi-value small { font-size: 0.9rem; color: #94a3b8; font-weight: 500; }
 
-/* Grid de Gráficos */
-.grid-charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
+.grid-charts { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+.chart-box { padding: 32px; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+.chart-title { font-size: 1.1rem; color: #1e293b; font-weight: 700; margin: 0; }
 
-.chart-box { padding: 24px; }
-.chart-title { font-size: 1rem; color: var(--primary); margin-bottom: 24px; font-weight: 700; }
+.chart-content { display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+.donut { width: 160px; height: 160px; border-radius: 50%; position: relative; transition: transform 0.3s; }
+.donut:hover { transform: scale(1.02); }
+.hole { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 115px; height: 115px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 4px 10px rgba(0,0,0,0.03); }
+.hole span { font-size: 2rem; font-weight: 800; color: #1e293b; }
+.hole small { font-size: 0.8rem; color: #64748b; font-weight: 600; }
 
-/* Donut */
-.chart-content { display: flex; align-items: center; justify-content: space-around; gap: 20px; }
-.donut { width: 140px; height: 140px; border-radius: 50%; position: relative; }
-.hole {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 100px; height: 100px; background: white; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  font-weight: bold; color: var(--primary); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-}
-.hole small { font-size: 0.7rem; color: var(--text-muted); font-weight: normal; }
-
-.legend { display: flex; flex-direction: column; gap: 10px; }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); font-weight: 500; }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
+.legend { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+.legend-item { display: flex; align-items: center; gap: 12px; }
+.legend-text { flex: 1; font-size: 0.9rem; color: #475569; font-weight: 500; }
+.legend-val { font-weight: 700; color: #1e293b; }
+.dot { width: 10px; height: 10px; border-radius: 3px; }
 .dot.green { background: #10b981; }
 .dot.orange { background: #f59e0b; }
 .dot.red { background: #ef4444; }
 
-/* Barras */
-.bars-container { display: flex; flex-direction: column; gap: 24px; padding: 10px 0; }
-.bar-group { width: 100%; }
-.bar-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-main); }
-.track { width: 100%; height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
-.fill { height: 100%; border-radius: 5px; transition: width 0.5s ease-out; }
-.fill.blue { background: #3b82f6; }
-.fill.yellow { background: #f59e0b; }
+.bars-container { display: flex; flex-direction: column; gap: 28px; }
+.bar-label { font-size: 0.95rem; font-weight: 500; color: #475569; }
+.track { width: 100%; height: 12px; background: #f1f5f9; border-radius: 20px; overflow: hidden; margin-top: 8px; }
+.fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+.fill.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.fill.yellow { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 
-/* Tabela */
 .table-section { padding: 32px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.section-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
-.link-soft { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+.section-title { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+.link-action { display: flex; align-items: center; gap: 6px; color: #2563eb; text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 8px 16px; background: #eff6ff; border-radius: 8px; transition: all 0.2s; }
+.link-action:hover { background: #dbeafe; gap: 10px; }
 
-.soft-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
-.soft-table th { text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 16px; }
-.soft-table td { background: #f8fafc; padding: 16px; transition: var(--transition); }
-.soft-table tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-.soft-table tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-.soft-table tr:hover td { background: #f1f5f9; }
+.soft-table { width: 100%; border-collapse: collapse; }
+.soft-table th { text-align: left; color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
+.soft-table td { padding: 20px 16px; border-bottom: 1px solid #f8fafc; color: #334155; }
+.soft-table tr:last-child td { border-bottom: none; }
 
-.font-mono { font-family: monospace; font-weight: 600; }
-.font-bold { font-weight: 700; }
-.text-muted { color: var(--text-muted); }
-.badge-mini { background: white; border: 1px solid var(--border-light); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+.status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.status-badge.disponivel { background: #ecfdf5; color: #065f46; }
+.status-badge.reservado { background: #fffbeb; color: #92400e; }
+.status-badge.vendido { background: #fef2f2; color: #991b1b; }
 
-.status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-.status-badge.disponivel { background: var(--status-success); color: var(--status-success-text); }
-.status-badge.reservado { background: var(--status-warning); color: var(--status-warning-text); }
-.status-badge.vendido { background: var(--status-danger); color: var(--status-danger-text); }
+.empty-msg { text-align: center; padding: 40px !important; color: #94a3b8; }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .grid-charts { grid-template-columns: 1fr; }
 }
 </style>
