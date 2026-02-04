@@ -8,8 +8,8 @@ import { FileText, Table } from 'lucide-vue-next'
 
 const cartas = ref([])
 const carregando = ref(true)
+const selectedCartas = ref([])
 
-// Filtros
 const filtroTipo = ref('')
 const filtroAdmin = ref('')
 const creditoMin = ref('')
@@ -28,6 +28,42 @@ const buscarCartas = async () => {
   }
 }
 
+const toggleSelection = (carta) => {
+  const index = selectedCartas.value.findIndex(c => c.id === carta.id)
+  
+  if (index > -1) {
+    selectedCartas.value.splice(index, 1)
+  } else {
+    if (selectedCartas.value.length > 0) {
+      const firstAdm = selectedCartas.value[0].administradora
+      if (carta.administradora !== firstAdm) {
+        alert("Atenção: Você só pode somar cartas da mesma administradora!")
+        return
+      }
+    }
+    selectedCartas.value.push(carta)
+  }
+}
+
+const totals = computed(() => {
+  return selectedCartas.value.reduce((acc, curr) => {
+    acc.credito += parseFloat(curr.valor_credito)
+    acc.entrada += parseFloat(curr.valor_entrada)
+    acc.parcelas += parseFloat(curr.valor_parcela)
+    return acc
+  }, { credito: 0, entrada: 0, parcelas: 0 })
+})
+
+const isSelectionDisabled = (carta) => {
+  if (carta.status !== 'DISPONIVEL') return true
+  if (selectedCartas.value.length === 0) return false
+  return selectedCartas.value[0].administradora !== carta.administradora
+}
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+}
+
 const cartasFiltradas = computed(() => {
   return cartas.value.filter(c => {
     if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
@@ -40,8 +76,6 @@ const cartasFiltradas = computed(() => {
     const valorEntrada = parseFloat(c.valor_entrada)
     if (entradaMin.value && valorEntrada < parseFloat(entradaMin.value)) return false
     if (entradaMax.value && valorEntrada > parseFloat(entradaMax.value)) return false
-
-    if (c.status !== 'DISPONIVEL') return false
 
     return true
   })
@@ -89,7 +123,6 @@ onMounted(buscarCartas)
 
     <div class="filter-section-wrapper">
       <div class="filter-bar">
-        
         <div class="filter-group">
           <label>Tipo de Bem</label>
           <div class="input-wrapper">
@@ -100,7 +133,6 @@ onMounted(buscarCartas)
             </select>
           </div>
         </div>
-
         <div class="filter-group">
           <label>Crédito (R$)</label>
           <div class="range-inputs">
@@ -109,7 +141,6 @@ onMounted(buscarCartas)
             <input type="number" v-model="creditoMax" placeholder="Máx" />
           </div>
         </div>
-
         <div class="filter-group">
           <label>Entrada (R$)</label>
           <div class="range-inputs">
@@ -118,12 +149,10 @@ onMounted(buscarCartas)
             <input type="number" v-model="entradaMax" placeholder="Máx" />
           </div>
         </div>
-
         <div class="filter-group">
           <label>Administradora</label>
           <input type="text" v-model="filtroAdmin" placeholder="Ex: Caixa, Bradesco..." />
         </div>
-
         <div class="filter-actions">
             <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">
                 Limpar
@@ -143,7 +172,6 @@ onMounted(buscarCartas)
           </div>
           <span>Imóveis</span>
         </div>
-
         <div class="cat-card" @click="selecionarCategoriaRapida('AUTOMOVEL')" :class="{ active: filtroTipo === 'AUTOMOVEL' }">
           <div class="icon-box">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -171,120 +199,150 @@ onMounted(buscarCartas)
       <div v-else class="results-container">
         <div class="results-header">
           <h2>Resultados disponíveis</h2>
-          <span class="badge">{{ cartasFiltradas.length }} cartas</span>
+          <div class="results-meta">
+            <span class="badge">{{ cartasFiltradas.length }} cartas</span>
+            <div class="download-btns">
+              <button class="btn-download" @click="downloadPDF"><FileText size="18"/> PDF</button>
+              <button class="btn-download excel" @click="downloadExcel"><Table size="18"/> Excel</button>
+            </div>
+          </div>
         </div>
 
-        <div class="download-section">
-          <button @click="downloadPDF" class="btn-download">
-            <FileText :size="18" /> Baixar PDF
-          </button>
-          <button @click="downloadExcel" class="btn-download">
-            <Table :size="18" /> Baixar Excel
-          </button>
-        </div>
-        
         <div class="cards-list">
-          <CartaCard v-for="carta in cartasFiltradas" :key="carta.id" :carta="carta" />
+          <CartaCard 
+            v-for="carta in cartasFiltradas" 
+            :key="carta.id" 
+            :carta="carta" 
+            :selected="selectedCartas.some(c => c.id === carta.id)"
+            :disabled="isSelectionDisabled(carta)"
+            @toggle-selection="toggleSelection"
+          />
         </div>
       </div>
+
+      <Transition name="slide-up">
+        <div v-if="selectedCartas.length > 0" class="summary-bar">
+          <div class="summary-content">
+            <div class="summary-left">
+              <div class="count-circle">{{ selectedCartas.length }}</div>
+              <div class="summary-label">
+                <strong>Cartas Selecionadas</strong>
+                <span>Mesma Administradora</span>
+              </div>
+            </div>
+            <div class="summary-values">
+              <div class="val-group">
+                <span class="v-label">Total Crédito</span>
+                <span class="v-val">{{ formatCurrency(totals.credito) }}</span>
+              </div>
+              <div class="val-group">
+                <span class="v-label">Total Entrada</span>
+                <span class="v-val highlight-yellow">{{ formatCurrency(totals.entrada) }}</span>
+              </div>
+              <div class="val-group hide-mobile">
+                <span class="v-label">Total Parcelas</span>
+                <span class="v-val">{{ formatCurrency(totals.parcelas) }}</span>
+              </div>
+            </div>
+            <button class="btn-clear-selection" @click="selectedCartas = []">Limpar</button>
+          </div>
+        </div>
+      </Transition>
     </main>
+
     <AppFooter />
   </div>
 </template>
 
 <style scoped>
-.home-container { min-height: 100vh; display: flex; flex-direction: column; background-color: #f3f4f6; font-family: 'Segoe UI', sans-serif; }
+.home-container { background-color: #f3f4f6; min-height: 100vh; }
+.hero-section { height: 350px; background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80'); background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+.hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.4)); }
+.hero-content { position: relative; z-index: 1; padding: 0 20px; }
+.hero-content h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 16px; text-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.hero-content p { font-size: 1.25rem; max-width: 600px; margin: 0 auto; opacity: 0.9; }
 
-/* VARIÁVEL DA LOGO */
-.home-container {
-  --brand-blue: #1e3a8a;
-  --brand-logo: #F6D001; /* Cor da Logo */
-  --text-dark: #1e293b;
-}
-
-/* HERO */
-.hero-section { position: relative; height: 450px; background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
-.hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(17, 24, 39, 0.7) 100%); }
-.hero-content { position: relative; z-index: 2; margin-bottom: 60px; max-width: 800px; padding: 0 20px; animation: fadeIn 0.8s ease-out; }
-.hero-content h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; line-height: 1.1; }
-.hero-content p { font-size: 1.25rem; font-weight: 300; opacity: 0.9; }
-
-/* FILTROS */
-.filter-section-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 10; margin-top: -60px; }
-.filter-bar { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
-.filter-group { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px; }
-.filter-group label { font-size: 0.85rem; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
-
-.filter-group select, .filter-group input[type="text"], .range-inputs input {
-  padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; width: 100%; background-color: #fff; transition: all 0.2s; color: #1f2937; height: 48px;
-}
-
-/* FOCO EM AMARELO LOGO */
-.filter-group select:focus, .filter-group input:focus { 
-  border-color: var(--brand-logo); 
-  outline: none; 
-  box-shadow: 0 0 0 3px rgba(246, 208, 1, 0.2); 
-}
-
+.filter-section-wrapper { margin-top: -50px; position: relative; z-index: 10; padding: 0 20px; }
+.filter-bar { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; align-items: end; }
+.filter-group { display: flex; flex-direction: column; gap: 8px; }
+.filter-group label { font-size: 0.85rem; font-weight: 700; color: #374151; text-transform: uppercase; }
+.filter-group input, .filter-group select { padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; }
+.filter-group input:focus, .filter-group select:focus { border-color: #1e3a8a; outline: none; box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); }
 .range-inputs { display: flex; align-items: center; gap: 8px; }
-.separator { color: #9ca3af; font-weight: bold; }
-.filter-actions { flex: 0 0 auto; }
-.btn-clean { background: transparent; color: #ef4444; border: 1px solid #fecaca; padding: 0 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; height: 48px; }
-.btn-clean:hover { background: #fef2f2; border-color: #ef4444; }
+.range-inputs input { width: 100%; }
+.separator { color: #9ca3af; }
 
-/* CATEGORIAS */
-.quick-categories { text-align: center; padding: 60px 20px 40px; }
-.quick-categories h3 { color: #6b7280; margin-bottom: 30px; font-weight: 600; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
-.categories-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+.btn-clean { background: #f3f4f6; color: #4b5563; padding: 12px 24px; border-radius: 12px; font-weight: 700; }
+.btn-clean:hover { background: #e5e7eb; color: #111827; }
 
-.cat-card {
-  width: 160px; padding: 20px; background: white; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 15px;
-  cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 2px solid transparent;
+.quick-categories { max-width: 1200px; margin: 60px auto 40px; padding: 0 20px; text-align: center; }
+.quick-categories h3 { font-size: 1.5rem; color: #111827; font-weight: 800; margin-bottom: 24px; }
+.categories-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.cat-card { background: white; padding: 20px 40px; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: all 0.3s; border: 2px solid transparent; min-width: 160px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.cat-card .icon-box { width: 48px; height: 48px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #1e3a8a; transition: all 0.3s; }
+.cat-card .icon-box svg { width: 24px; height: 24px; }
+.cat-card span { font-weight: 700; color: #4b5563; }
+.cat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: #1e3a8a; }
+.cat-card.active { background: #1e3a8a; border-color: #1e3a8a; }
+.cat-card.active .icon-box { background: rgba(255,255,255,0.2); color: white; }
+.cat-card.active span { color: white; }
+
+.main-content { max-width: 1200px; margin: 0 auto; padding: 40px 20px 150px; }
+.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.results-header h2 { font-size: 1.8rem; font-weight: 800; color: #111827; }
+.results-meta { display: flex; align-items: center; gap: 20px; }
+.badge { background: #1e3a8a; color: white; padding: 6px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 700; }
+.download-btns { display: flex; gap: 10px; }
+.btn-download { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 700; color: #4b5563; }
+.btn-download:hover { border-color: #1e3a8a; color: #1e3a8a; }
+.btn-download.excel:hover { border-color: #16a34a; color: #16a34a; }
+
+.cards-list { display: flex; flex-direction: column; gap: 20px; }
+
+.loading { text-align: center; padding: 80px 0; color: #6b7280; }
+.spinner { width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top-color: #1e3a8a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; background: white; padding: 60px; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.empty-icon { font-size: 4rem; margin-bottom: 20px; }
+.empty-state h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.empty-state p { color: #6b7280; margin-bottom: 24px; }
+.btn-link { color: #1e3a8a; font-weight: 700; text-decoration: underline; background: none; border: none; cursor: pointer; }
+
+.summary-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 1000px; background: #1e3a8a; border-radius: 20px; padding: 20px 30px; color: white; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); z-index: 1000; }
+.summary-content { display: flex; justify-content: space-between; align-items: center; gap: 30px; }
+.summary-left { display: flex; align-items: center; gap: 15px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 25px; }
+.count-circle { width: 45px; height: 45px; background: white; color: #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; }
+.summary-label { display: flex; flex-direction: column; }
+.summary-label strong { font-size: 1.1rem; }
+.summary-label span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-values { flex: 1; display: flex; justify-content: space-around; gap: 20px; }
+.val-group { display: flex; flex-direction: column; }
+.v-label { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; margin-bottom: 2px; }
+.v-val { font-size: 1.2rem; font-weight: 800; white-space: nowrap; }
+.highlight-yellow { color: #F6D001; }
+.btn-clear-selection { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; transition: all 0.2s; }
+.btn-clear-selection:hover { background: white; color: #1e3a8a; }
+
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { transform: translate(-50%, 100%); opacity: 0; }
+
+@media (max-width: 1024px) { 
+  .hero-content h1 { font-size: 2.5rem; } 
+  .summary-content { gap: 15px; }
+  .summary-left { padding-right: 15px; }
+  .v-val { font-size: 1rem; }
 }
-.icon-box {
-  width: 60px; height: 60px; background: #f1f5f9;
-  border-radius: 14px; display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s; color: var(--brand-blue);
-}
-.cat-card svg { width: 30px; height: 30px; fill: currentColor; }
-.cat-card span { font-weight: 600; color: #374151; font-size: 1rem; transition: color 0.3s; }
 
-.cat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
-
-/* ESTADO ATIVO - AMARELO LOGO */
-.cat-card.active { border-color: var(--brand-logo); background: #FFFBEB; }
-.cat-card.active .icon-box { background: var(--brand-logo); color: #1e293b; box-shadow: 0 4px 10px rgba(246, 208, 1, 0.4); }
-.cat-card.active span { color: #1e293b; font-weight: 700; }
-
-/* RESULTADOS & BADGE */
-.main-content { max-width: 1200px; margin: 0 auto; padding: 20px 20px 80px; width: 100%; flex: 1; }
-.results-header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; }
-.results-header h2 { font-size: 1.5rem; font-weight: 700; color: #111827; }
-
-/* BADGE COM A COR DA LOGO */
-.badge { 
-  background: var(--brand-logo); 
-  color: #1e293b; /* Texto escuro para contraste no amarelo vivo */
-  padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;
-}
-
-.download-section { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
-.btn-download { display: flex; align-items: center; gap: 8px; background-color: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
-.btn-download:hover { background-color: #cbd5e1; color: #1e293b; transform: translateY(-2px); }
-
-.cards-list { display: flex; flex-direction: column; gap: 24px; width: 100%; max-width: 900px; margin: 0 auto; }
-.empty-state { text-align: center; padding: 80px 20px; background: white; border-radius: 16px; max-width: 600px; margin: 0 auto; }
-.empty-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
-.btn-link { background: none; border: none; color: var(--brand-blue); font-weight: 600; margin-top: 20px; cursor: pointer; text-decoration: underline; }
-
-.loading { text-align: center; padding: 100px 0; color: #6b7280; }
-.spinner { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid var(--brand-logo); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-@media (max-width: 768px) {
-  .hero-content h1 { font-size: 2.5rem; }
-  .filter-section-wrapper { margin-top: -30px; }
+@media (max-width: 768px) { 
+  .hero-section { height: 280px; } 
+  .hero-content h1 { font-size: 2rem; } 
+  .filter-bar { grid-template-columns: 1fr; padding: 20px; } 
+  .results-header { flex-direction: column; align-items: flex-start; gap: 15px; } 
+  .hide-mobile { display: none; }
+  .summary-bar { padding: 15px; border-radius: 15px; }
+  .summary-left { border-right: none; padding-right: 0; }
+  .summary-label { display: none; }
+  .summary-values { justify-content: flex-start; }
 }
 </style>

@@ -1,15 +1,19 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useConfigStore } from '../stores/config' 
+import { useConfigStore } from '../stores/config'
 
 const props = defineProps({
-  carta: Object
+  carta: Object,
+  selected: Boolean,
+  disabled: Boolean
 })
 
-// Acessa a store para pegar o número do WhatsApp configurado no painel
+const emit = defineEmits(['toggle-selection'])
+
 const configStore = useConfigStore()
 
-// --- FORMATADORES ---
+const API_BASE_URL = 'http://localhost:8000'
+
 const formatCurrency = (value) => {
   if (!value && value !== 0) return ''
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -26,24 +30,18 @@ const formatTaxa = (valor) => {
   return valor
 }
 
-// --- DADOS COMPUTADOS ---
 const adminDetalhes = computed(() => props.carta.administradora_detalhes || {})
 const showModal = ref(false)
 
-// Cálculo do custo total aproximado
 const custoTotal = computed(() => {
   const totalParcelas = props.carta.numero_parcelas * parseFloat(props.carta.valor_parcela)
   return parseFloat(props.carta.valor_entrada) + totalParcelas
 })
 
-// --- AÇÕES ---
 const abrirWhatsapp = () => {
   const nomeBanco = adminDetalhes.value.nome || 'Banco'
   const texto = `Olá! Tenho interesse na carta Cód: ${props.carta.codigo} (${nomeBanco}) de ${formatCurrency(props.carta.valor_credito)}.`
-  
-  // Usa o número dinâmico da store
   const numeroDestino = configStore.whatsapp || '5547999999999'
-  
   window.open(`https://wa.me/${numeroDestino}?text=${encodeURIComponent(texto)}`, '_blank')
 }
 
@@ -61,10 +59,25 @@ const compartilhar = async () => {
     }
   } catch (err) { console.error(err) }
 }
+
+const handleCardClick = () => {
+  if (props.disabled || props.carta.status !== 'DISPONIVEL') return
+  emit('toggle-selection', props.carta)
+}
 </script>
 
 <template>
-  <div class="card-horizontal" :class="carta.status.toLowerCase()">
+  <div 
+    class="card-horizontal" 
+    :class="[
+      carta.status.toLowerCase(), 
+      { 'is-selected': selected, 'is-disabled': disabled || carta.status !== 'DISPONIVEL' }
+    ]"
+    @click="handleCardClick"
+  >
+    <div v-if="carta.status === 'DISPONIVEL'" class="selection-indicator">
+      <div class="checkbox-custom" :class="{ checked: selected }"></div>
+    </div>
     
     <div class="card-main">
       <div class="primary-section">
@@ -79,7 +92,7 @@ const compartilhar = async () => {
         
         <div class="info-principal">
           <span class="bank-name">{{ adminDetalhes.nome || 'Administradora' }}</span>
-          <h3 class="credit-value">{{ formatCurrency(carta.valor_credito) }}</h3>
+          <h3 class="credit-value">{{ formatCurrency(props.carta.valor_credito) }}</h3>
           <span class="subtitle">Crédito</span>
         </div>
       </div>
@@ -87,27 +100,32 @@ const compartilhar = async () => {
       <div class="details-section">
         <div class="detail-group">
           <span class="label">Entrada</span>
-          <span class="val destaque">{{ formatCurrency(carta.valor_entrada) }}</span>
+          <span class="val destaque">{{ formatCurrency(props.carta.valor_entrada) }}</span>
         </div>
         <div class="detail-group">
           <span class="label">Parcelas</span>
-          <span class="val">{{ carta.numero_parcelas }}x {{ formatCurrency(carta.valor_parcela) }}</span>
+          <span class="val">{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</span>
         </div>
         <div class="detail-group desktop-only">
           <span class="label">Código</span>
-          <span class="val code">#{{ carta.codigo }}</span>
+          <span class="val code">#{{ props.carta.codigo }}</span>
         </div>
       </div>
 
       <div class="logo-section">
-        <img v-if="adminDetalhes.logo" :src="adminDetalhes.logo" class="logo-img" alt="Logo" />
+        <img 
+          v-if="adminDetalhes.logo" 
+          :src="API_BASE_URL + adminDetalhes.logo" 
+          class="logo-img" 
+          :alt="adminDetalhes.nome" 
+        />
       </div>
     </div>
 
     <div class="card-footer">
       <div class="footer-left">
          <span class="status-badge" :class="carta.status.toLowerCase()">
-            <span class="dot"></span> {{ carta.status }}
+            <span class="dot"></span> {{ props.carta.status }}
          </span>
       </div>
 
@@ -132,7 +150,6 @@ const compartilhar = async () => {
       <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
         <div class="modal-content" :class="carta.status.toLowerCase()">
           <button class="close-btn" @click="showModal = false">✕</button>
-          
           <div class="modal-header">
             <div class="modal-icon-box">
               <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
@@ -146,70 +163,60 @@ const compartilhar = async () => {
               <span class="modal-subtitle">Detalhes da Oportunidade</span>
               <h2 class="modal-title">{{ adminDetalhes.nome }}</h2>
               <span class="status-badge modal-badge" :class="carta.status.toLowerCase()">
-                {{ carta.status }}
+                {{ props.carta.status }}
               </span>
             </div>
           </div>
-
           <div class="modal-section-title">Financeiro</div>
           <div class="modal-grid">
             <div class="modal-item highlight">
               <span>Crédito</span>
-              <strong style="color: #1e3a8a">{{ formatCurrency(carta.valor_credito) }}</strong>
+              <strong style="color: #1e3a8a">{{ formatCurrency(props.carta.valor_credito) }}</strong>
             </div>
             <div class="modal-item">
               <span>Entrada</span>
-              <strong style="color: #F6D001; text-shadow: 0px 0px 1px rgba(0,0,0,0.1);">{{ formatCurrency(carta.valor_entrada) }}</strong>
+              <strong style="color: #F6D001; text-shadow: 0px 0px 1px rgba(0,0,0,0.1);">{{ formatCurrency(props.carta.valor_entrada) }}</strong>
             </div>
             <div class="modal-item">
               <span>Parcelas</span>
-              <strong>{{ carta.numero_parcelas }}x {{ formatCurrency(carta.valor_parcela) }}</strong>
+              <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
             </div>
-
-            <div class="modal-item" v-if="carta.saldo_devedor && parseFloat(carta.saldo_devedor) > 0">
+            <div class="modal-item" v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0">
               <span>Saldo Devedor</span>
-              <strong>{{ formatCurrency(carta.saldo_devedor) }}</strong>
+              <strong>{{ formatCurrency(props.carta.saldo_devedor) }}</strong>
             </div>
             <div class="modal-item" v-else>
                <span>Custo Total (Aprox.)</span>
                <strong>{{ formatCurrency(custoTotal) }}</strong>
             </div>
           </div>
-
           <div class="modal-section-title">Especificações</div>
           <div class="modal-grid secondary">
-            
             <div class="modal-item">
               <span>Taxa Transf.</span>
-              <strong>{{ formatTaxa(carta.taxa_transferencia) }}</strong>
+              <strong>{{ formatTaxa(props.carta.taxa_transferencia) }}</strong>
             </div>
-            
             <div class="modal-item">
               <span>Vencimento</span>
-              <strong>{{ formatDate(carta.vencimento) }}</strong>
+              <strong>{{ formatDate(props.carta.vencimento) }}</strong>
             </div>
-            
             <div class="modal-item">
               <span>Contemplação</span>
-              <strong>{{ carta.tipo_contemplacao }}</strong>
+              <strong>{{ props.carta.tipo_contemplacao }}</strong>
             </div>
-
-            <div class="modal-item" v-if="carta.seguro_vida && parseFloat(carta.seguro_vida) > 0">
+            <div class="modal-item" v-if="props.carta.seguro_vida && parseFloat(props.carta.seguro_vida) > 0">
               <span>Seguro de Vida</span>
-              <strong>{{ formatCurrency(carta.seguro_vida) }}</strong>
+              <strong>{{ formatCurrency(props.carta.seguro_vida) }}</strong>
             </div>
-
             <div class="modal-item">
               <span>Código</span>
-              <strong>#{{ carta.codigo }}</strong>
+              <strong>#{{ props.carta.codigo }}</strong>
             </div>
-            
-            <div class="modal-item full-width" v-if="carta.observacoes">
+            <div class="modal-item full-width" v-if="props.carta.observacoes">
               <span>Observações</span>
-              <p>{{ carta.observacoes }}</p>
+              <p>{{ props.carta.observacoes }}</p>
             </div>
           </div>
-
           <div class="modal-actions">
             <button class="btn-primary btn-whatsapp block" @click="abrirWhatsapp">
               <svg viewBox="0 0 24 24" fill="currentColor" class="w-icon">
@@ -221,20 +228,57 @@ const compartilhar = async () => {
         </div>
       </div>
     </Teleport>
-
   </div>
 </template>
 
 <style scoped>
-/* CARD LISTA */
 .card-horizontal {
   background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
   width: 100%; overflow: hidden; transition: all 0.3s ease; position: relative;
-  border-left: 5px solid #e5e7eb; 
+  border-left: 5px solid #e5e7eb; cursor: pointer;
 }
-.card-horizontal:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); }
+.card-horizontal:hover:not(.is-disabled) { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #1e3a8a; }
 
-/* Borda por status - Reservado com a cor da logo */
+.card-horizontal.is-selected {
+  border-color: #1e3a8a;
+  background-color: #f0f7ff;
+}
+
+.card-horizontal.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+
+.selection-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.checkbox-custom.checked {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+}
+
+.checkbox-custom.checked::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+
 .card-horizontal.disponivel { border-left-color: #22c55e; }
 .card-horizontal.reservado { border-left-color: #F6D001; }
 .card-horizontal.vendido { border-left-color: #ef4444; }
@@ -242,7 +286,6 @@ const compartilhar = async () => {
 .card-main { padding: 24px; display: grid; grid-template-columns: 1.8fr 3fr 1fr; gap: 24px; align-items: center; }
 .primary-section { display: flex; align-items: center; gap: 16px; }
 
-/* Ícone Azul */
 .icon-box {
   width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); color: white; background: #1e3a8a;
@@ -259,11 +302,10 @@ const compartilhar = async () => {
 .label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 700; }
 .val { font-size: 1.05rem; font-weight: 600; color: #374151; white-space: nowrap; }
 
-/* DESTAQUE COM A COR DA LOGO */
 .val.destaque { 
   color: #F6D001; 
   font-weight: 800; 
-  text-shadow: 0px 0px 1px rgba(0,0,0,0.1); /* Leve sombra para contraste */
+  text-shadow: 0px 0px 1px rgba(0,0,0,0.1);
 }
 
 .code { font-family: ui-monospace, monospace; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
@@ -278,7 +320,7 @@ const compartilhar = async () => {
 .status-badge { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
 .status-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .status-badge.disponivel { background: #dcfce7; color: #166534; }
-.status-badge.reservado { background: #F6D001; color: #1e293b; /* Texto escuro para contraste */ }
+.status-badge.reservado { background: #F6D001; color: #1e293b; }
 .status-badge.vendido { background: #fee2e2; color: #991b1b; }
 
 .actions { display: flex; gap: 10px; }
@@ -294,7 +336,6 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 .btn-whatsapp:hover { background-color: #1da851; }
 .w-icon { width: 20px; height: 20px; fill: white; }
 
-/* MODAL */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-content { background: white; width: 100%; max-width: 550px; border-radius: 24px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 90vh; overflow-y: auto; border-top: 8px solid #1e3a8a; }
 
