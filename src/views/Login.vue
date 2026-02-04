@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import { User, Lock, ArrowRight, Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const username = ref('')
@@ -14,22 +15,20 @@ const handleLogin = async () => {
   error.value = ''
   
   try {
-    // Tenta fazer login no Django
     const response = await api.post('login/', {
       username: username.value,
       password: password.value
     })
 
-    // Se der certo, salva o token no navegador
     const token = response.data.token
     localStorage.setItem('token', token)
     
-    // Redireciona para o Painel
+    // Redireciona para o Dashboard (rota /painel)
     router.push('/painel')
     
   } catch (err) {
     console.error(err)
-    error.value = 'Usuário ou senha inválidos.'
+    error.value = 'Acesso negado. Verifique suas credenciais.'
   } finally {
     loading.value = false
   }
@@ -37,175 +36,204 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-container">
+  <div class="login-page">
+    <div class="bg-decoration"></div>
+
     <div class="login-card">
-      <div class="brand">
-        <h2>Capital<span class="highlight">X</span></h2>
-        <span class="badge">Admin</span>
+      <div class="header">
+        <div class="brand">
+          <span class="logo-icon">CX</span>
+          <h1>Capital<span class="highlight">X</span></h1>
+        </div>
+        <p class="subtitle">Painel Administrativo</p>
       </div>
-      
-      <p class="subtitle">Acesse o painel gerenciador</p>
 
       <form @submit.prevent="handleLogin">
-        <div class="form-group">
+        
+        <div class="input-wrapper">
           <label>Usuário</label>
-          <input 
-            type="text" 
-            v-model="username" 
-            placeholder="Digite seu usuário" 
-            required 
-            autofocus
-          />
+          <div class="input-box">
+            <User :size="18" class="icon" />
+            <input 
+              type="text" 
+              v-model="username" 
+              placeholder="Digite seu usuário" 
+              required 
+              autofocus
+            />
+          </div>
         </div>
 
-        <div class="form-group">
+        <div class="input-wrapper">
           <label>Senha</label>
-          <input 
-            type="password" 
-            v-model="password" 
-            placeholder="Digite sua senha" 
-            required 
-          />
+          <div class="input-box">
+            <Lock :size="18" class="icon" />
+            <input 
+              type="password" 
+              v-model="password" 
+              placeholder="••••••••" 
+              required 
+            />
+          </div>
         </div>
 
-        <div v-if="error" class="error-msg">
+        <div v-if="error" class="error-box">
           {{ error }}
         </div>
 
-        <button type="submit" :disabled="loading" class="btn-login">
-          {{ loading ? 'Entrando...' : 'Entrar' }}
+        <button type="submit" :disabled="loading" class="btn-submit">
+          <span v-if="!loading" class="content-btn">
+            Entrar no Sistema <ArrowRight :size="18" />
+          </span>
+          <span v-else class="content-btn">
+            <Loader2 :size="20" class="spin" /> Verificando...
+          </span>
         </button>
       </form>
       
-      <div class="footer-link">
-        <router-link to="/">Voltar ao site</router-link>
+      <div class="footer">
+        <router-link to="/" class="back-link">
+          &larr; Voltar para o site
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.login-container {
+.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
-  font-family: 'Segoe UI', sans-serif;
+  background-color: #f1f5f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fundo Decorativo */
+.bg-decoration {
+  position: absolute;
+  width: 100%;
+  height: 50vh;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  top: 0;
+  left: 0;
+  z-index: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   background: white;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  padding: 48px;
   width: 100%;
-  max-width: 400px;
-  text-align: center;
+  max-width: 420px;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.brand {
-  font-size: 1.8rem;
-  color: #111827;
-  font-weight: 800;
-  margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+.header { text-align: center; margin-bottom: 40px; }
+
+.brand { 
+  display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; 
+}
+
+.logo-icon {
+  width: 40px; height: 40px; background: #1e3a8a; color: white;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.1rem; letter-spacing: -1px;
+}
+
+h1 { font-size: 1.8rem; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; margin: 0; }
 .highlight { color: #10b981; }
 
-.badge {
-  font-size: 0.7rem;
-  background: #eff6ff;
-  color: #1e3a8a;
-  padding: 2px 8px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.subtitle { color: #64748b; font-size: 0.95rem; font-weight: 500; }
+
+.input-wrapper { margin-bottom: 24px; }
+label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 8px; margin-left: 2px; }
+
+.input-box {
+  position: relative;
+  display: flex; align-items: center;
 }
 
-.subtitle {
-  color: #6b7280;
-  margin-bottom: 30px;
-  font-size: 0.95rem;
-}
-
-.form-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
+.icon {
+  position: absolute; left: 14px; color: #94a3b8; pointer-events: none;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 14px 16px 14px 44px; /* Espaço para o ícone */
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
   font-size: 1rem;
+  color: #1e293b;
   outline: none;
-  transition: border-color 0.2s;
-  background-color: #f9fafb;
+  transition: all 0.2s;
+  background-color: #f8fafc;
 }
 
 input:focus {
   border-color: #1e3a8a;
   background-color: white;
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
 }
 
-.btn-login {
+.btn-submit {
   width: 100%;
-  padding: 12px;
-  background-color: #1e3a8a;
+  padding: 14px;
+  background: #1e3a8a;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   margin-top: 10px;
+  box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
 }
 
-.btn-login:hover {
-  background-color: #1e40af;
+.btn-submit:hover:not(:disabled) {
+  background: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
 }
 
-.btn-login:disabled {
-  background-color: #9ca3af;
+.btn-submit:disabled {
+  background: #94a3b8;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-.error-msg {
-  color: #ef4444;
-  font-size: 0.9rem;
-  margin-bottom: 15px;
-  background: #fef2f2;
-  padding: 8px;
-  border-radius: 6px;
+.content-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 
-.footer-link {
-  margin-top: 25px;
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.error-box {
+  background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px;
+  font-size: 0.9rem; font-weight: 500; text-align: center; margin-bottom: 20px;
+  border: 1px solid #fecaca;
 }
 
-.footer-link a {
-  color: #6b7280;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
+.footer { text-align: center; margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+.back-link { color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+.back-link:hover { color: #1e3a8a; }
 
-.footer-link a:hover {
-  color: #1e3a8a;
-  text-decoration: underline;
+@media (max-width: 480px) {
+  .login-card { padding: 32px 24px; max-width: 90%; }
+  .bg-decoration { height: 40vh; }
 }
 </style>

@@ -1,9 +1,13 @@
 import { createApp } from 'vue'
-import './assets/main.css'
-import './assets/admin-theme.css'
+import { createPinia } from 'pinia' // <--- Importante: Importar o Pinia
 import App from './App.vue'
-import router from './router' // Importe o router
+import router from './router'
 
-createApp(App)
-  .use(router) // Use o router
-  .mount('#app')
+import './assets/main.css' // Certifique-se de que o CSS global está sendo importado aqui
+
+const app = createApp(App)
+
+app.use(createPinia()) // <--- Importante: Ativar o Pinia antes do router
+app.use(router)
+
+app.mount('#app')

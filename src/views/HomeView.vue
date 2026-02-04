@@ -1,15 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-// Ajuste dos caminhos: subimos um nível (../) para achar as pastas services e components
 import api from '../services/api'
 import CartaCard from '../components/CartaCard.vue'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
+import { FileText, Table } from 'lucide-vue-next'
 
 const cartas = ref([])
 const carregando = ref(true)
 
-// Estados dos Filtros
+// Filtros
 const filtroTipo = ref('')
 const filtroAdmin = ref('')
 const creditoMin = ref('')
@@ -30,25 +30,32 @@ const buscarCartas = async () => {
 
 const cartasFiltradas = computed(() => {
   return cartas.value.filter(c => {
-    // Filtro por Tipo
     if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
+    if (filtroAdmin.value && !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())) return false
     
-    // Filtro por Administradora (texto parcial)
-    if (filtroAdmin.value && !c.administradora.toLowerCase().includes(filtroAdmin.value.toLowerCase())) return false
-    
-    // Filtro por Crédito (Mínimo e Máximo)
     const valorCredito = parseFloat(c.valor_credito)
     if (creditoMin.value && valorCredito < parseFloat(creditoMin.value)) return false
     if (creditoMax.value && valorCredito > parseFloat(creditoMax.value)) return false
 
-    // Filtro por Entrada (Mínimo e Máximo)
     const valorEntrada = parseFloat(c.valor_entrada)
     if (entradaMin.value && valorEntrada < parseFloat(entradaMin.value)) return false
     if (entradaMax.value && valorEntrada > parseFloat(entradaMax.value)) return false
 
+    if (c.status !== 'DISPONIVEL') return false
+
     return true
   })
 })
+
+const getApiUrl = (endpoint) => {
+  const params = new URLSearchParams()
+  if (filtroTipo.value) params.append('tipo', filtroTipo.value)
+  const baseUrl = 'http://localhost:8000/api' 
+  return `${baseUrl}/${endpoint}/?${params.toString()}`
+}
+
+const downloadPDF = () => window.open(getApiUrl('exportar/pdf'), '_blank')
+const downloadExcel = () => window.open(getApiUrl('exportar/excel'), '_blank')
 
 const selecionarCategoriaRapida = (tipo) => {
   filtroTipo.value = tipo
@@ -65,40 +72,40 @@ const limparFiltros = () => {
   entradaMax.value = ''
 }
 
-onMounted(() => {
-  buscarCartas()
-})
+onMounted(buscarCartas)
 </script>
 
 <template>
   <div class="home-container">
-    
     <AppHeader />
 
     <section class="hero-section">
       <div class="hero-overlay"></div>
       <div class="hero-content">
-        <h1>Cartas Contempladas</h1>
-        <p>Agilidade, economia e oportunidade para realizar seu sonho.</p>
+        <h1>Oportunidades Exclusivas</h1>
+        <p>Encontre a carta contemplada ideal para realizar seu sonho com economia e agilidade.</p>
       </div>
     </section>
 
     <div class="filter-section-wrapper">
       <div class="filter-bar">
+        
         <div class="filter-group">
           <label>Tipo de Bem</label>
-          <select v-model="filtroTipo">
-            <option value="">Todos</option>
-            <option value="IMOVEL">Imóvel</option>
-            <option value="AUTOMOVEL">Automóvel</option>
-          </select>
+          <div class="input-wrapper">
+            <select v-model="filtroTipo">
+              <option value="">Todos os tipos</option>
+              <option value="IMOVEL">Imóvel</option>
+              <option value="AUTOMOVEL">Automóvel</option>
+            </select>
+          </div>
         </div>
 
         <div class="filter-group">
           <label>Crédito (R$)</label>
           <div class="range-inputs">
             <input type="number" v-model="creditoMin" placeholder="Mín" />
-            <span>-</span>
+            <span class="separator">-</span>
             <input type="number" v-model="creditoMax" placeholder="Máx" />
           </div>
         </div>
@@ -107,43 +114,43 @@ onMounted(() => {
           <label>Entrada (R$)</label>
           <div class="range-inputs">
             <input type="number" v-model="entradaMin" placeholder="Mín" />
-            <span>-</span>
+            <span class="separator">-</span>
             <input type="number" v-model="entradaMax" placeholder="Máx" />
           </div>
         </div>
 
         <div class="filter-group">
           <label>Administradora</label>
-          <input type="text" v-model="filtroAdmin" placeholder="Ex: Bradesco" />
+          <input type="text" v-model="filtroAdmin" placeholder="Ex: Caixa, Bradesco..." />
         </div>
 
         <div class="filter-actions">
             <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">
-                ✕
+                Limpar
             </button>
         </div>
       </div>
     </div>
 
     <section class="quick-categories">
-      <h3>Escolha um segmento:</h3>
+      <h3>Navegue por categoria</h3>
       <div class="categories-grid">
         <div class="cat-card" @click="selecionarCategoriaRapida('IMOVEL')" :class="{ active: filtroTipo === 'IMOVEL' }">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>Imóvel</span>
+          <div class="icon-box">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </div>
+          <span>Imóveis</span>
         </div>
 
         <div class="cat-card" @click="selecionarCategoriaRapida('AUTOMOVEL')" :class="{ active: filtroTipo === 'AUTOMOVEL' }">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="7" cy="17" r="2"></circle>
-            <circle cx="17" cy="17" r="2"></circle>
-            <path d="M5 17h-2v-6l2-5h9l2 5v6h-2"></path>
-            <path d="M9 17h6"></path>
-          </svg>
-          <span>Veículo</span>
+          <div class="icon-box">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+            </svg>
+          </div>
+          <span>Veículos</span>
         </div>
       </div>
     </section>
@@ -151,290 +158,133 @@ onMounted(() => {
     <main class="main-content" id="resultados">
       <div v-if="carregando" class="loading">
         <div class="spinner"></div>
+        <p>Carregando oportunidades...</p>
       </div>
 
       <div v-else-if="cartasFiltradas.length === 0" class="empty-state">
-        <p>Nenhuma carta encontrada com esses filtros.</p>
+        <div class="empty-icon">🔍</div>
+        <h3>Nenhuma carta encontrada</h3>
+        <p>Tente ajustar os filtros.</p>
         <button @click="limparFiltros" class="btn-link">Limpar filtros</button>
       </div>
 
-      <div v-else class="cards-gcards-grid">
-        <CartaCard 
-          v-for="carta in cartasFiltradas" 
-          :key="carta.id" 
-          :carta="carta" 
-        />
+      <div v-else class="results-container">
+        <div class="results-header">
+          <h2>Resultados disponíveis</h2>
+          <span class="badge">{{ cartasFiltradas.length }} cartas</span>
+        </div>
+
+        <div class="download-section">
+          <button @click="downloadPDF" class="btn-download">
+            <FileText :size="18" /> Baixar PDF
+          </button>
+          <button @click="downloadExcel" class="btn-download">
+            <Table :size="18" /> Baixar Excel
+          </button>
+        </div>
+        
+        <div class="cards-list">
+          <CartaCard v-for="carta in cartasFiltradas" :key="carta.id" :carta="carta" />
+        </div>
       </div>
     </main>
-
     <AppFooter />
-
   </div>
 </template>
 
 <style scoped>
+.home-container { min-height: 100vh; display: flex; flex-direction: column; background-color: #f3f4f6; font-family: 'Segoe UI', sans-serif; }
+
+/* VARIÁVEL DA LOGO */
 .home-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --brand-blue: #1e3a8a;
+  --brand-logo: #F6D001; /* Cor da Logo */
+  --text-dark: #1e293b;
 }
 
-/* --- HERO SECTION --- */
-.hero-section {
-  position: relative;
-  height: 400px;
-  background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
+/* HERO */
+.hero-section { position: relative; height: 450px; background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
+.hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(17, 24, 39, 0.7) 100%); }
+.hero-content { position: relative; z-index: 2; margin-bottom: 60px; max-width: 800px; padding: 0 20px; animation: fadeIn 0.8s ease-out; }
+.hero-content h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; line-height: 1.1; }
+.hero-content p { font-size: 1.25rem; font-weight: 300; opacity: 0.9; }
+
+/* FILTROS */
+.filter-section-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 10; margin-top: -60px; }
+.filter-bar { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+.filter-group { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px; }
+.filter-group label { font-size: 0.85rem; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.filter-group select, .filter-group input[type="text"], .range-inputs input {
+  padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; width: 100%; background-color: #fff; transition: all 0.2s; color: #1f2937; height: 48px;
 }
 
-.hero-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.65); 
+/* FOCO EM AMARELO LOGO */
+.filter-group select:focus, .filter-group input:focus { 
+  border-color: var(--brand-logo); 
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(246, 208, 1, 0.2); 
 }
 
-.hero-content {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 40px;
-}
+.range-inputs { display: flex; align-items: center; gap: 8px; }
+.separator { color: #9ca3af; font-weight: bold; }
+.filter-actions { flex: 0 0 auto; }
+.btn-clean { background: transparent; color: #ef4444; border: 1px solid #fecaca; padding: 0 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; height: 48px; }
+.btn-clean:hover { background: #fef2f2; border-color: #ef4444; }
 
-.hero-content h1 {
-  font-size: 3rem;
-  font-weight: 800;
-  margin-bottom: 15px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  font-weight: 300;
-  opacity: 0.9;
-}
-
-/* --- FILTER BAR --- */
-.filter-section-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  position: relative;
-  z-index: 10;
-  margin-top: -50px;
-}
-
-.filter-bar {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1.5fr 1fr 0.2fr;
-  gap: 20px;
-  align-items: center;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filter-group label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #6b7280;
-  text-transform: uppercase;
-}
-
-.filter-group select, 
-.filter-group input[type="text"] {
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  width: 100%;
-  background-color: #f9fafb;
-}
-
-.range-inputs {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.range-inputs input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background-color: #f9fafb;
-}
-
-.btn-clean {
-  background: #ef4444;
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-top: 22px;
-  cursor: pointer;
-}
-
-/* --- QUICK CATEGORIES --- */
-.quick-categories {
-  text-align: center;
-  padding: 60px 20px 40px;
-}
-
-.quick-categories h3 {
-  color: #374151;
-  margin-bottom: 25px;
-  font-weight: 600;
-  font-size: 1.2rem;
-}
-
-.categories-grid {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-}
+/* CATEGORIAS */
+.quick-categories { text-align: center; padding: 60px 20px 40px; }
+.quick-categories h3 { color: #6b7280; margin-bottom: 30px; font-weight: 600; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+.categories-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
 
 .cat-card {
-  width: 160px;
-  height: 140px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: white;
+  width: 160px; padding: 20px; background: white; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 15px;
+  cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 2px solid transparent;
+}
+.icon-box {
+  width: 60px; height: 60px; background: #f1f5f9;
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s; color: var(--brand-blue);
+}
+.cat-card svg { width: 30px; height: 30px; fill: currentColor; }
+.cat-card span { font-weight: 600; color: #374151; font-size: 1rem; transition: color 0.3s; }
+
+.cat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+
+/* ESTADO ATIVO - AMARELO LOGO */
+.cat-card.active { border-color: var(--brand-logo); background: #FFFBEB; }
+.cat-card.active .icon-box { background: var(--brand-logo); color: #1e293b; box-shadow: 0 4px 10px rgba(246, 208, 1, 0.4); }
+.cat-card.active span { color: #1e293b; font-weight: 700; }
+
+/* RESULTADOS & BADGE */
+.main-content { max-width: 1200px; margin: 0 auto; padding: 20px 20px 80px; width: 100%; flex: 1; }
+.results-header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; }
+.results-header h2 { font-size: 1.5rem; font-weight: 700; color: #111827; }
+
+/* BADGE COM A COR DA LOGO */
+.badge { 
+  background: var(--brand-logo); 
+  color: #1e293b; /* Texto escuro para contraste no amarelo vivo */
+  padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 800;
 }
 
-.cat-card svg {
-  width: 40px;
-  height: 40px;
-  stroke: #fbbf24;
-}
+.download-section { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
+.btn-download { display: flex; align-items: center; gap: 8px; background-color: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+.btn-download:hover { background-color: #cbd5e1; color: #1e293b; transform: translateY(-2px); }
 
-.cat-card span {
-  font-weight: 700;
-  color: #4b5563;
-  text-transform: uppercase;
-}
+.cards-list { display: flex; flex-direction: column; gap: 24px; width: 100%; max-width: 900px; margin: 0 auto; }
+.empty-state { text-align: center; padding: 80px 20px; background: white; border-radius: 16px; max-width: 600px; margin: 0 auto; }
+.empty-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+.btn-link { background: none; border: none; color: var(--brand-blue); font-weight: 600; margin-top: 20px; cursor: pointer; text-decoration: underline; }
 
-.cat-card:hover, .cat-card.active {
-  border-color: #1e3a8a;
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-}
+.loading { text-align: center; padding: 100px 0; color: #6b7280; }
+.spinner { width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid var(--brand-logo); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
 
-.cat-card.active svg {
-  stroke: #1e3a8a;
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- MAIN CONTENT --- */
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px 80px;
-  width: 100%;
-  flex: 1;
-}
-
-.cards-grid {
-  display: flex;
-  flex-direction: column; /* Um embaixo do outro */
-  gap: 24px;
-  width: 100%;
-  max-width: 1000px; /* Limita a largura para não ficar gigante em monitores ultra-wide */
-  margin: 0 auto;    /* Centraliza a lista na tela */
-}
-
-.loading, .empty-state {
-  text-align: center;
-  padding: 60px;
-  color: #6b7280;
-}
-
-.btn-link {
-  background: none;
-  border: none;
-  color: #1e3a8a;
-  text-decoration: underline;
-  margin-top: 10px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #e5e7eb;
-  border-top: 5px solid #1e3a8a;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 900px) {
-  .filter-bar {
-    grid-template-columns: 1fr 1fr;
-    margin-top: 20px;
-  }
-  
-  .filter-section-wrapper {
-      margin-top: -30px;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero-content h1 {
-    font-size: 2rem;
-  }
-  
-  .filter-bar {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-  
-  .filter-section-wrapper {
-      margin-top: 0;
-      background: #f8f9fa;
-      padding-top: 20px;
-  }
-  
-  .range-inputs {
-    display: grid;
-    grid-template-columns: 1fr 0.1fr 1fr;
-    text-align: center;
-  }
-  
-  .btn-clean {
-      width: 100%;
-      margin-top: 10px;
-  }
+@media (max-width: 768px) {
+  .hero-content h1 { font-size: 2.5rem; }
+  .filter-section-wrapper { margin-top: -30px; }
 }
 </style>
