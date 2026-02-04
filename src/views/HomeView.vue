@@ -4,11 +4,13 @@ import api from '../services/api'
 import CartaCard from '../components/CartaCard.vue'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
-import { FileText, Table } from 'lucide-vue-next'
+import ModalJuncao from '../components/ModalJuncao.vue'
+import { FileText, Table, PlusCircle } from 'lucide-vue-next'
 
 const cartas = ref([])
 const carregando = ref(true)
 const selectedCartas = ref([])
+const showModalJuncao = ref(false)
 
 const filtroTipo = ref('')
 const filtroAdmin = ref('')
@@ -29,15 +31,15 @@ const buscarCartas = async () => {
 }
 
 const toggleSelection = (carta) => {
-  const index = selectedCartas.value.findIndex(c => c.id === carta.id)
-  
+  const index = selectedCartas.value.findIndex((c) => c.id === carta.id)
+
   if (index > -1) {
     selectedCartas.value.splice(index, 1)
   } else {
     if (selectedCartas.value.length > 0) {
       const firstAdm = selectedCartas.value[0].administradora
       if (carta.administradora !== firstAdm) {
-        alert("Atenção: Você só pode somar cartas da mesma administradora!")
+        alert('Atenção: Você só pode somar cartas da mesma administradora!')
         return
       }
     }
@@ -46,12 +48,15 @@ const toggleSelection = (carta) => {
 }
 
 const totals = computed(() => {
-  return selectedCartas.value.reduce((acc, curr) => {
-    acc.credito += parseFloat(curr.valor_credito)
-    acc.entrada += parseFloat(curr.valor_entrada)
-    acc.parcelas += parseFloat(curr.valor_parcela)
-    return acc
-  }, { credito: 0, entrada: 0, parcelas: 0 })
+  return selectedCartas.value.reduce(
+    (acc, curr) => {
+      acc.credito += parseFloat(curr.valor_credito)
+      acc.entrada += parseFloat(curr.valor_entrada)
+      acc.parcelas += parseFloat(curr.valor_parcela)
+      return acc
+    },
+    { credito: 0, entrada: 0, parcelas: 0 },
+  )
 })
 
 const isSelectionDisabled = (carta) => {
@@ -65,10 +70,14 @@ const formatCurrency = (value) => {
 }
 
 const cartasFiltradas = computed(() => {
-  return cartas.value.filter(c => {
+  return cartas.value.filter((c) => {
     if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
-    if (filtroAdmin.value && !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())) return false
-    
+    if (
+      filtroAdmin.value &&
+      !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())
+    )
+      return false
+
     const valorCredito = parseFloat(c.valor_credito)
     if (creditoMin.value && valorCredito < parseFloat(creditoMin.value)) return false
     if (creditoMax.value && valorCredito > parseFloat(creditoMax.value)) return false
@@ -84,7 +93,7 @@ const cartasFiltradas = computed(() => {
 const getApiUrl = (endpoint) => {
   const params = new URLSearchParams()
   if (filtroTipo.value) params.append('tipo', filtroTipo.value)
-  const baseUrl = 'http://localhost:8000/api' 
+  const baseUrl = 'http://localhost:8000/api'
   return `${baseUrl}/${endpoint}/?${params.toString()}`
 }
 
@@ -154,9 +163,7 @@ onMounted(buscarCartas)
           <input type="text" v-model="filtroAdmin" placeholder="Ex: Caixa, Bradesco..." />
         </div>
         <div class="filter-actions">
-            <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">
-                Limpar
-            </button>
+          <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">Limpar</button>
         </div>
       </div>
     </div>
@@ -164,18 +171,28 @@ onMounted(buscarCartas)
     <section class="quick-categories">
       <h3>Navegue por categoria</h3>
       <div class="categories-grid">
-        <div class="cat-card" @click="selecionarCategoriaRapida('IMOVEL')" :class="{ active: filtroTipo === 'IMOVEL' }">
+        <div
+          class="cat-card"
+          @click="selecionarCategoriaRapida('IMOVEL')"
+          :class="{ active: filtroTipo === 'IMOVEL' }"
+        >
           <div class="icon-box">
             <svg viewBox="0 0 24 24" fill="currentColor">
-               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
           </div>
           <span>Imóveis</span>
         </div>
-        <div class="cat-card" @click="selecionarCategoriaRapida('AUTOMOVEL')" :class="{ active: filtroTipo === 'AUTOMOVEL' }">
+        <div
+          class="cat-card"
+          @click="selecionarCategoriaRapida('AUTOMOVEL')"
+          :class="{ active: filtroTipo === 'AUTOMOVEL' }"
+        >
           <div class="icon-box">
             <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+              <path
+                d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"
+              />
             </svg>
           </div>
           <span>Veículos</span>
@@ -202,18 +219,20 @@ onMounted(buscarCartas)
           <div class="results-meta">
             <span class="badge">{{ cartasFiltradas.length }} cartas</span>
             <div class="download-btns">
-              <button class="btn-download" @click="downloadPDF"><FileText size="18"/> PDF</button>
-              <button class="btn-download excel" @click="downloadExcel"><Table size="18"/> Excel</button>
+              <button class="btn-download" @click="downloadPDF"><FileText size="18" /> PDF</button>
+              <button class="btn-download excel" @click="downloadExcel">
+                <Table size="18" /> Excel
+              </button>
             </div>
           </div>
         </div>
 
         <div class="cards-list">
-          <CartaCard 
-            v-for="carta in cartasFiltradas" 
-            :key="carta.id" 
-            :carta="carta" 
-            :selected="selectedCartas.some(c => c.id === carta.id)"
+          <CartaCard
+            v-for="carta in cartasFiltradas"
+            :key="carta.id"
+            :carta="carta"
+            :selected="selectedCartas.some((c) => c.id === carta.id)"
             :disabled="isSelectionDisabled(carta)"
             @toggle-selection="toggleSelection"
           />
@@ -239,15 +258,26 @@ onMounted(buscarCartas)
                 <span class="v-label">Total Entrada</span>
                 <span class="v-val highlight-yellow">{{ formatCurrency(totals.entrada) }}</span>
               </div>
-              <div class="val-group hide-mobile">
-                <span class="v-label">Total Parcelas</span>
-                <span class="v-val">{{ formatCurrency(totals.parcelas) }}</span>
-              </div>
             </div>
-            <button class="btn-clear-selection" @click="selectedCartas = []">Limpar</button>
+            <div class="summary-actions">
+              <button class="btn-clear-selection" @click="selectedCartas = []">Limpar</button>
+              <button
+                v-if="selectedCartas.length > 1"
+                class="btn-view-juncao"
+                @click="showModalJuncao = true"
+              >
+                <PlusCircle size="20" /> Ver Junção
+              </button>
+            </div>
           </div>
         </div>
       </Transition>
+
+      <ModalJuncao
+        :show="showModalJuncao"
+        :cartas="selectedCartas"
+        @close="showModalJuncao = false"
+      />
     </main>
 
     <AppFooter />
@@ -255,94 +285,470 @@ onMounted(buscarCartas)
 </template>
 
 <style scoped>
-.home-container { background-color: #f3f4f6; min-height: 100vh; }
-.hero-section { height: 350px; background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80'); background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; color: white; }
-.hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.4)); }
-.hero-content { position: relative; z-index: 1; padding: 0 20px; }
-.hero-content h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 16px; text-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-.hero-content p { font-size: 1.25rem; max-width: 600px; margin: 0 auto; opacity: 0.9; }
-
-.filter-section-wrapper { margin-top: -50px; position: relative; z-index: 10; padding: 0 20px; }
-.filter-bar { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; align-items: end; }
-.filter-group { display: flex; flex-direction: column; gap: 8px; }
-.filter-group label { font-size: 0.85rem; font-weight: 700; color: #374151; text-transform: uppercase; }
-.filter-group input, .filter-group select { padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; }
-.filter-group input:focus, .filter-group select:focus { border-color: #1e3a8a; outline: none; box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); }
-.range-inputs { display: flex; align-items: center; gap: 8px; }
-.range-inputs input { width: 100%; }
-.separator { color: #9ca3af; }
-
-.btn-clean { background: #f3f4f6; color: #4b5563; padding: 12px 24px; border-radius: 12px; font-weight: 700; }
-.btn-clean:hover { background: #e5e7eb; color: #111827; }
-
-.quick-categories { max-width: 1200px; margin: 60px auto 40px; padding: 0 20px; text-align: center; }
-.quick-categories h3 { font-size: 1.5rem; color: #111827; font-weight: 800; margin-bottom: 24px; }
-.categories-grid { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.cat-card { background: white; padding: 20px 40px; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: all 0.3s; border: 2px solid transparent; min-width: 160px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.cat-card .icon-box { width: 48px; height: 48px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #1e3a8a; transition: all 0.3s; }
-.cat-card .icon-box svg { width: 24px; height: 24px; }
-.cat-card span { font-weight: 700; color: #4b5563; }
-.cat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: #1e3a8a; }
-.cat-card.active { background: #1e3a8a; border-color: #1e3a8a; }
-.cat-card.active .icon-box { background: rgba(255,255,255,0.2); color: white; }
-.cat-card.active span { color: white; }
-
-.main-content { max-width: 1200px; margin: 0 auto; padding: 40px 20px 150px; }
-.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.results-header h2 { font-size: 1.8rem; font-weight: 800; color: #111827; }
-.results-meta { display: flex; align-items: center; gap: 20px; }
-.badge { background: #1e3a8a; color: white; padding: 6px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 700; }
-.download-btns { display: flex; gap: 10px; }
-.btn-download { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 700; color: #4b5563; }
-.btn-download:hover { border-color: #1e3a8a; color: #1e3a8a; }
-.btn-download.excel:hover { border-color: #16a34a; color: #16a34a; }
-
-.cards-list { display: flex; flex-direction: column; gap: 20px; }
-
-.loading { text-align: center; padding: 80px 0; color: #6b7280; }
-.spinner { width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top-color: #1e3a8a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.empty-state { text-align: center; background: white; padding: 60px; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.empty-icon { font-size: 4rem; margin-bottom: 20px; }
-.empty-state h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
-.empty-state p { color: #6b7280; margin-bottom: 24px; }
-.btn-link { color: #1e3a8a; font-weight: 700; text-decoration: underline; background: none; border: none; cursor: pointer; }
-
-.summary-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 1000px; background: #1e3a8a; border-radius: 20px; padding: 20px 30px; color: white; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); z-index: 1000; }
-.summary-content { display: flex; justify-content: space-between; align-items: center; gap: 30px; }
-.summary-left { display: flex; align-items: center; gap: 15px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 25px; }
-.count-circle { width: 45px; height: 45px; background: white; color: #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; }
-.summary-label { display: flex; flex-direction: column; }
-.summary-label strong { font-size: 1.1rem; }
-.summary-label span { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
-.summary-values { flex: 1; display: flex; justify-content: space-around; gap: 20px; }
-.val-group { display: flex; flex-direction: column; }
-.v-label { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; margin-bottom: 2px; }
-.v-val { font-size: 1.2rem; font-weight: 800; white-space: nowrap; }
-.highlight-yellow { color: #F6D001; }
-.btn-clear-selection { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 700; transition: all 0.2s; }
-.btn-clear-selection:hover { background: white; color: #1e3a8a; }
-
-.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-up-enter-from, .slide-up-leave-to { transform: translate(-50%, 100%); opacity: 0; }
-
-@media (max-width: 1024px) { 
-  .hero-content h1 { font-size: 2.5rem; } 
-  .summary-content { gap: 15px; }
-  .summary-left { padding-right: 15px; }
-  .v-val { font-size: 1rem; }
+.home-container {
+  background-color: #f3f4f6;
+  min-height: 100vh;
+}
+.hero-section {
+  height: 350px;
+  background-image: url('/src/assets/imagens/hero1.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  opacity: 1;
+}
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /*background: linear-gradient(to bottom, rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.4));*/
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 0 20px;
+}
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+.hero-content p {
+  font-size: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+  opacity: 0.9;
 }
 
-@media (max-width: 768px) { 
-  .hero-section { height: 280px; } 
-  .hero-content h1 { font-size: 2rem; } 
-  .filter-bar { grid-template-columns: 1fr; padding: 20px; } 
-  .results-header { flex-direction: column; align-items: flex-start; gap: 15px; } 
-  .hide-mobile { display: none; }
-  .summary-bar { padding: 15px; border-radius: 15px; }
-  .summary-left { border-right: none; padding-right: 0; }
-  .summary-label { display: none; }
-  .summary-values { justify-content: flex-start; }
+.filter-section-wrapper {
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+  padding: 0 20px;
+}
+.filter-bar {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: end;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+}
+.filter-group input,
+.filter-group select {
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+.filter-group input:focus,
+.filter-group select:focus {
+  border-color: #1e3a8a;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+}
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.range-inputs input {
+  width: 100%;
+}
+.separator {
+  color: #9ca3af;
+}
+
+.btn-clean {
+  background: #f3f4f6;
+  color: #4b5563;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+.btn-clean:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.quick-categories {
+  max-width: 1200px;
+  margin: 60px auto 40px;
+  padding: 0 20px;
+  text-align: center;
+}
+.quick-categories h3 {
+  font-size: 1.5rem;
+  color: #111827;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+.categories-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.cat-card {
+  background: white;
+  padding: 20px 40px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  min-width: 160px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.cat-card .icon-box {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e3a8a;
+  transition: all 0.3s;
+}
+.cat-card .icon-box svg {
+  width: 24px;
+  height: 24px;
+}
+.cat-card span {
+  font-weight: 700;
+  color: #4b5563;
+}
+.cat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: #1e3a8a;
+}
+.cat-card.active {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+}
+.cat-card.active .icon-box {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+.cat-card.active span {
+  color: white;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 150px;
+}
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.results-header h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111827;
+}
+.results-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.badge {
+  background: #1e3a8a;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.download-btns {
+  display: flex;
+  gap: 10px;
+}
+.btn-download {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4b5563;
+}
+.btn-download:hover {
+  border-color: #1e3a8a;
+  color: #1e3a8a;
+}
+.btn-download.excel:hover {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 80px 0;
+  color: #6b7280;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #1e3a8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  background: white;
+  padding: 60px;
+  border-radius: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.empty-state p {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+.btn-link {
+  color: #1e3a8a;
+  font-weight: 700;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.summary-bar {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 1000px;
+  background: #1e3a8a;
+  border-radius: 20px;
+  padding: 20px 30px;
+  color: white;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+.summary-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+.summary-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  padding-right: 25px;
+}
+.count-circle {
+  width: 45px;
+  height: 45px;
+  background: white;
+  color: #1e3a8a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+.summary-label {
+  display: flex;
+  flex-direction: column;
+}
+.summary-label strong {
+  font-size: 1.1rem;
+}
+.summary-label span {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.summary-values {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+.val-group {
+  display: flex;
+  flex-direction: column;
+}
+.v-label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.v-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.highlight-yellow {
+  color: #f6d001;
+}
+
+.summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.btn-clear-selection {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-clear-selection:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.btn-view-juncao {
+  background: #f6d001;
+  color: #1e3a8a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+.btn-view-juncao:hover {
+  transform: scale(1.05);
+  background: #ffe033;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translate(-50%, 100%);
+  opacity: 0;
+}
+
+@media (max-width: 1024px) {
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+  .summary-content {
+    gap: 15px;
+  }
+  .summary-left {
+    padding-right: 15px;
+  }
+  .v-val {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    height: 280px;
+  }
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  .filter-bar {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .summary-bar {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  .summary-left {
+    border-right: none;
+    padding-right: 0;
+  }
+  .summary-label {
+    display: none;
+  }
+  .summary-values {
+    justify-content: flex-start;
+  }
+  .summary-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  .btn-view-juncao,
+  .btn-clear-selection {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

@@ -32,7 +32,9 @@ const salvar = async () => {
   loading.value = true
   const formData = new FormData()
   Object.keys(form.value).forEach(key => {
-    if (key !== 'administradora_detalhes' && form.value[key]) formData.append(key, form.value[key])
+    if (key !== 'administradora_detalhes' && form.value[key] !== null && form.value[key] !== undefined) {
+      formData.append(key, form.value[key])
+    }
   })
   try {
     if (isEditing.value) await api.put(`cartas/${route.params.id}/`, formData, { headers: {'Content-Type': 'multipart/form-data'} })
@@ -84,6 +86,8 @@ const salvar = async () => {
           <div class="field"><label>Entrada (R$)</label><input type="number" step="0.01" v-model="form.valor_entrada" required /></div>
           <div class="field"><label>Parcela (R$)</label><input type="number" step="0.01" v-model="form.valor_parcela" required /></div>
           <div class="field"><label>Qtd. Parcelas</label><input type="number" v-model="form.numero_parcelas" required /></div>
+          <div class="field"><label>Saldo Devedor (R$)</label><input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Opcional" /></div>
+          <div class="field"><label>Seguro de Vida (R$)</label><input type="number" step="0.01" v-model="form.seguro_vida" placeholder="Opcional" /></div>
 
           <div class="section-label mt-4">Detalhes</div>
 
@@ -115,33 +119,20 @@ const salvar = async () => {
 
 <style scoped>
 .form-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-.form-header h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin: 0; }
-.btn-back { background: white; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-muted); transition: all 0.2s; }
-.btn-back:hover { background: #f8fafc; color: var(--text-main); }
-
-.form-card { background: white; border-radius: 16px; box-shadow: var(--shadow-md); padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid var(--border-color); }
-
+.form-header h2 { font-size: 1.8rem; font-weight: 800; color: #111827; margin: 0; }
+.btn-back { background: white; border: 1px solid #e5e7eb; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; color: #6b7280; transition: all 0.2s; }
+.btn-back:hover { background: #f8fafc; color: #111827; }
+.form-card { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #e5e7eb; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.section-label { grid-column: 1 / -1; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 16px; }
+.section-label { grid-column: 1 / -1; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-top: 16px; }
 .mt-4 { margin-top: 24px; }
 .full { grid-column: 1 / -1; }
-
 .field { display: flex; flex-direction: column; gap: 8px; }
-label { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
-
-input, select, textarea {
-  padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;
-  font-size: 1rem; color: var(--text-main); background: #fdfdfd; transition: all 0.2s;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--brand-yellow); outline: none; box-shadow: 0 0 0 3px rgba(246, 208, 1, 0.2); background: white;
-}
-
-.form-actions { margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px; }
-.btn-cancel { background: transparent; border: none; color: var(--text-muted); font-weight: 600; cursor: pointer; padding: 12px 24px; }
-.btn-save {
-  background: var(--primary-blue); color: white; border: none; padding: 12px 32px; border-radius: 8px;
-  font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); transition: all 0.2s;
-}
+label { font-size: 0.9rem; font-weight: 600; color: #111827; }
+input, select, textarea { padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem; color: #111827; background: #fdfdfd; transition: all 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: #F6D001; outline: none; box-shadow: 0 0 0 3px rgba(246, 208, 1, 0.2); background: white; }
+.form-actions { margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px; border-top: 1px solid #e5e7eb; padding-top: 24px; }
+.btn-cancel { background: transparent; border: none; color: #6b7280; font-weight: 600; cursor: pointer; padding: 12px 24px; }
+.btn-save { background: #1e3a8a; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s; }
 .btn-save:hover { background: #172554; transform: translateY(-2px); }
 </style>
