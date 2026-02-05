@@ -11,7 +11,7 @@ const unidadePrincipal = {
   telefone: '(47) 3170-3656',
   email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/dir//Capital-X+Consórcios'
+  googleMapsLink: 'https://www.google.com/maps/dir//Capital-X+Cons%C3%B3rcios'
 }
 </script>
 
@@ -86,7 +86,7 @@ const unidadePrincipal = {
           <div class="map-container">
             <div class="map-wrapper">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.535266874311!2d-49.3837424!3d-26.2443213!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a992a62805%3A0xed844437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1707160000000!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3586.23432082269!2d-49.3907715!3d-26.2378875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a996286005%3A0x39a00437663a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1710000000000!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
@@ -144,23 +144,35 @@ const unidadePrincipal = {
 .location-hero h1 { font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 900; }
 .location-hero h1 span { color: #F6D001; }
 
-.office-preview { margin-top: -80px; margin-bottom: 60px; position: relative; z-index: 10; }
-.image-card { background: #e2e8f0; border-radius: 24px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+/* Ajuste da Imagem para tamanho normal */
+.office-preview { 
+  margin-top: -80px; 
+  margin-bottom: 60px; 
+  position: relative; 
+  z-index: 10; 
+  max-width: 1000px; /* Limita a largura máxima para a foto não ficar gigante */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-card { 
+  background: white; 
+  border-radius: 24px; 
+  overflow: hidden; 
+  border: 1px solid #e2e8f0; 
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+}
 
 .image-wrapper { 
   position: relative; 
-  height: 500px; 
   width: 100%; 
-  background: #0f172a; /* Fundo escuro para a foto não sumir */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
 }
 
 .office-img { 
   width: 100%; 
-  height: 100%; 
-  object-fit: contain; /* AFASTA A IMAGEM: Garante que ela apareça inteira */
+  height: auto; /* IMPORTANTE: Mantém a proporção real da foto */
+  display: block;
 }
 
 .image-overlay {
@@ -177,7 +189,7 @@ const unidadePrincipal = {
   font-size: 0.85rem;
 }
 
-.image-caption { padding: 20px; background: white; text-align: center; color: #64748b; }
+.image-caption { padding: 20px; background: white; text-align: center; color: #64748b; border-top: 1px solid #f1f5f9; }
 
 .location-main { padding-bottom: 100px; }
 .location-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 50px; }
@@ -209,6 +221,5 @@ const unidadePrincipal = {
 
 @media (max-width: 992px) {
   .location-grid { grid-template-columns: 1fr; }
-  .image-wrapper { height: 350px; }
 }
 </style>
