@@ -36,7 +36,7 @@ const unidadePrincipal = {
         <section class="office-preview">
           <div class="image-card">
             <div class="image-wrapper">
-              <img src="/src/assets/imagens/escritorio-fachada.jpg" alt="Fachada Capital X Consórcios" class="office-img" />
+              <img src="/src/assets/imagens/logo_preto.png" alt="Fachada Capital X Consórcios" class="office-img" />
               <div class="image-overlay">
                 <Camera :size="24" />
                 <span>Nossa Sede em São Bento do Sul</span>
