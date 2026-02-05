@@ -11,7 +11,7 @@ const unidadePrincipal = {
   telefone: '(47) 3170-3656',
   email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/place/Capital-X+Cons%C3%B3rcios/@-26.227235,-49.4029359,17z/data=!3m1!4b1!4m6!3m5!1s0x94de15a992686005:0xe7a00437623a983b!8m2!3d-26.227235!4d-49.4029359!16s%2Fg%2F11vzclx9n9?entry=ttu'
+  googleMapsLink: 'https://www.google.com/maps/search/?api=1&query=Capital-X+Consórcios&query_place_id=ChIJBagipaXV3ZQRO5g6YjcEoOc'
 }
 </script>
 
@@ -87,7 +87,7 @@ const unidadePrincipal = {
           <div class="map-container">
             <div class="map-wrapper">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3587.2730321235123!2d-49.40551082459419!3d-26.22723507706173!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a992686005%3A0xe7a00437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3587.359286460113!2d-49.4055108237583!3d-26.2272302652136!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de16a5a8a92805%3A0xe7a00437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
