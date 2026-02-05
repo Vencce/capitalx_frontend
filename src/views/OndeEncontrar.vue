@@ -11,7 +11,7 @@ const unidadePrincipal = {
   telefone: '(47) 3170-3656',
   email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/dir//Capital-X+Cons%C3%B3rcios,+R.+Erhardt+Pauli,+221+-+Colonial,+S%C3%A3o+Bento+do+Sul+-+SC,+89288-040/@-26.241517,-49.4047545,17z'
+  googleMapsLink: 'https://www.google.com/maps/search/?api=1&query=Capital-X+Consórcios+São+Bento+do+Sul&query_place_id=ChIJBagipaXV3ZQRO5g6YjcEoOc'
 }
 </script>
 
@@ -22,7 +22,6 @@ const unidadePrincipal = {
     <section class="location-hero">
       <div class="hero-pattern"></div>
       <div class="container hero-inner">
-        <span class="gold-tag">Canais de Atendimento</span>
         <h1>Onde nos <span>Encontrar</span></h1>
       </div>
     </section>
@@ -34,7 +33,6 @@ const unidadePrincipal = {
           <aside class="contact-sidebar">
             <div class="brand-badge">Capital X</div>
             <h2 class="title">Nossa Sede</h2>
-            <p class="subtitle">Visite-nos para uma consultoria exclusiva e personalizada.</p>
 
             <div class="info-group">
               <div class="info-card">
@@ -88,12 +86,13 @@ const unidadePrincipal = {
 
             <div class="map-box-modern">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3587.3190822646675!2d-49.40732942459427!3d-26.241512165997277!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a689a16205%3A0x27a00437363a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1m1!2sChIJBagipaXV3ZQRO5g6YjcEoOc!2m2!1d-49.4029359!2d-26.227235!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a5a928a805%3A0xe7a00437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1715800000000!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
                 allowfullscreen="" 
-                loading="lazy">
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
           </div>
@@ -110,10 +109,9 @@ const unidadePrincipal = {
 .location-page { background-color: #f8fafc; min-height: 100vh; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-/* Hero */
 .location-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  padding: 60px 0 80px;
+  padding: 40px 0 60px; /* Reduzi o padding para tirar o branco excessivo */
   position: relative;
   text-align: center;
   color: white;
@@ -125,71 +123,68 @@ const unidadePrincipal = {
   background-size: 30px 30px;
 }
 .hero-inner { position: relative; z-index: 2; }
-.gold-tag { color: #F6D001; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
-.location-hero h1 { font-size: 2.5rem; font-weight: 900; }
+.location-hero h1 { font-size: 2.2rem; font-weight: 900; margin: 0; }
 .location-hero h1 span { color: #F6D001; }
 
-/* Layout Split */
-.location-main { margin-top: -40px; padding-bottom: 80px; position: relative; z-index: 10; }
+.location-main { margin-top: -30px; padding-bottom: 50px; position: relative; z-index: 10; }
 
 .split-layout {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 30px;
+  grid-template-columns: 380px 1fr;
+  gap: 25px;
 }
 
-/* Sidebar Esquerda */
 .contact-sidebar {
   background: white;
-  padding: 40px;
-  border-radius: 24px;
+  padding: 30px;
+  border-radius: 20px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  height: fit-content;
 }
 
 .brand-badge {
   background: #fef3c7; color: #b45309;
-  padding: 4px 12px; border-radius: 6px;
-  font-size: 0.7rem; font-weight: 900;
-  display: inline-block; margin-bottom: 15px;
+  padding: 3px 10px; border-radius: 4px;
+  font-size: 0.65rem; font-weight: 900;
+  display: inline-block; margin-bottom: 12px;
 }
 
-.contact-sidebar .title { font-size: 1.8rem; font-weight: 900; color: #1e3a8a; margin-bottom: 10px; }
-.contact-sidebar .subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 35px; line-height: 1.5; }
+.contact-sidebar .title { font-size: 1.5rem; font-weight: 900; color: #1e3a8a; margin-bottom: 25px; }
 
-.info-group { display: flex; flex-direction: column; gap: 25px; margin-bottom: 40px; }
-.info-card { display: flex; gap: 15px; }
+.info-group { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
+.info-card { display: flex; gap: 12px; }
 .icon-accent { color: #F6D001; flex-shrink: 0; }
-.info-card label { display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 4px; }
-.info-card span { display: block; color: #1e293b; font-weight: 600; font-size: 1rem; line-height: 1.4; }
+.info-card label { display: block; font-size: 0.7rem; text-transform: uppercase; font-weight: 800; color: #94a3b8; margin-bottom: 2px; }
+.info-card span { display: block; color: #1e293b; font-weight: 600; font-size: 0.95rem; line-height: 1.3; }
 
 .btn-gps-full {
-  background: #1e3a8a; color: white; padding: 18px; border-radius: 12px;
+  background: #1e3a8a; color: white; padding: 15px; border-radius: 10px;
   text-decoration: none; font-weight: 800; display: flex;
-  align-items: center; justify-content: center; gap: 10px; transition: 0.3s;
+  align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+  font-size: 0.9rem;
 }
-.btn-gps-full:hover { background: #F6D001; color: #1e3a8a; transform: translateY(-3px); }
+.btn-gps-full:hover { background: #F6D001; color: #1e3a8a; transform: translateY(-2px); }
 
-/* Conteúdo Visual Direita */
-.visual-content { display: flex; flex-direction: column; gap: 25px; }
+.visual-content { display: flex; flex-direction: column; gap: 20px; }
 
 .image-box-modern {
-  background: white; border-radius: 24px; overflow: hidden;
-  border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  background: white; border-radius: 20px; overflow: hidden;
+  border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   position: relative; line-height: 0;
 }
-.image-box-modern img { width: 100%; height: auto; display: block; max-height: 450px; object-fit: cover; }
+.image-box-modern img { width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover; }
 .img-label {
-  position: absolute; top: 20px; right: 20px;
-  background: rgba(255, 255, 255, 0.9); color: #1e3a8a;
-  padding: 8px 16px; border-radius: 50px; font-weight: 800;
-  font-size: 0.75rem; display: flex; align-items: center; gap: 8px;
+  position: absolute; bottom: 15px; right: 15px;
+  background: rgba(15, 23, 42, 0.8); color: white;
+  padding: 6px 12px; border-radius: 50px; font-weight: 700;
+  font-size: 0.7rem; display: flex; align-items: center; gap: 6px;
 }
 
 .map-box-modern {
-  background: white; border-radius: 24px; overflow: hidden;
-  border: 1px solid #e2e8f0; height: 350px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  background: white; border-radius: 20px; overflow: hidden;
+  border: 1px solid #e2e8f0; height: 320px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 @media (max-width: 992px) {
