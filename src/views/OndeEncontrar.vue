@@ -11,7 +11,8 @@ const unidadePrincipal = {
   telefone: '(47) 3170-3656',
   email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/search/?api=1&query=Capital-X+Consórcios+São+Bento+do+Sul&query_place_id=ChIJBagipaXV3ZQRO5g6YjcEoOc'
+  // Link para o botão abrir no aplicativo de GPS do celular
+  googleMapsLink: 'https://www.google.com/maps/dir/?api=1&destination=-26.241512,-49.366405'
 }
 </script>
 
@@ -22,6 +23,7 @@ const unidadePrincipal = {
     <section class="location-hero">
       <div class="hero-pattern"></div>
       <div class="container hero-inner">
+        <span class="gold-tag">Canais de Atendimento</span>
         <h1>Onde nos <span>Encontrar</span></h1>
       </div>
     </section>
@@ -86,12 +88,12 @@ const unidadePrincipal = {
 
             <div class="map-box-modern">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m13!1m1!2sChIJBagipaXV3ZQRO5g6YjcEoOc!2m2!1d-49.4029359!2d-26.227235!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a5a928a805%3A0xe7a00437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1715800000000!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3592.512686762319!2d-49.36859368497843!3d-26.24151218342082!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de95a896a06205%3A0xed8404373636983b!2sR.%20Erhardt%20Pauli%2C%20221%20-%20Colonial%2C%20S%C3%A3o%20Bento%20do%20Sul%20-%20SC%2C%2089288-040!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr"
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
                 allowfullscreen="" 
-                loading="lazy"
+                loading="lazy" 
                 referrerpolicy="no-referrer-when-downgrade">
               </iframe>
             </div>
@@ -109,9 +111,10 @@ const unidadePrincipal = {
 .location-page { background-color: #f8fafc; min-height: 100vh; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
+/* Hero Compacto */
 .location-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  padding: 40px 0 60px; /* Reduzi o padding para tirar o branco excessivo */
+  padding: 40px 0 60px;
   position: relative;
   text-align: center;
   color: white;
@@ -123,9 +126,11 @@ const unidadePrincipal = {
   background-size: 30px 30px;
 }
 .hero-inner { position: relative; z-index: 2; }
+.gold-tag { color: #F6D001; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
 .location-hero h1 { font-size: 2.2rem; font-weight: 900; margin: 0; }
 .location-hero h1 span { color: #F6D001; }
 
+/* Layout Split */
 .location-main { margin-top: -30px; padding-bottom: 50px; position: relative; z-index: 10; }
 
 .split-layout {
@@ -162,10 +167,10 @@ const unidadePrincipal = {
   background: #1e3a8a; color: white; padding: 15px; border-radius: 10px;
   text-decoration: none; font-weight: 800; display: flex;
   align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
-  font-size: 0.9rem;
 }
 .btn-gps-full:hover { background: #F6D001; color: #1e3a8a; transform: translateY(-2px); }
 
+/* Direita */
 .visual-content { display: flex; flex-direction: column; gap: 20px; }
 
 .image-box-modern {
@@ -189,7 +194,5 @@ const unidadePrincipal = {
 
 @media (max-width: 992px) {
   .split-layout { grid-template-columns: 1fr; }
-  .contact-sidebar { order: 2; }
-  .visual-content { order: 1; }
 }
 </style>
