@@ -125,7 +125,7 @@ onMounted(buscarCartas)
     <section class="hero-section">
       <div class="hero-overlay"></div>
       <div class="hero-content">
-        <h1>Oportunidades Exclusivas</h1>
+        <h1>Cartas Contempladas</h1>
         <p>Encontre a carta contemplada ideal para realizar seu sonho com economia e agilidade.</p>
       </div>
     </section>
@@ -291,7 +291,7 @@ onMounted(buscarCartas)
 }
 .hero-section {
   height: 350px;
-  background-image: url('/src/assets/imagens/hero1.png');
+  background-image: url('/src/assets/imagens/hero.png');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -300,7 +300,7 @@ onMounted(buscarCartas)
   justify-content: center;
   text-align: center;
   color: white;
-  opacity: 1;
+  opacity: 0.85;
 }
 .hero-overlay {
   position: absolute;
