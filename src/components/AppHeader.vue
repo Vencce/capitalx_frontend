@@ -1,5 +1,5 @@
 <script setup>
-import logoSrc from '../assets/imagens/logo.png'
+import logoSrc from '../assets/imagens/logo_preto.png'
 import { RouterLink } from 'vue-router'
 import { useConfigStore } from '../stores/config'
 
