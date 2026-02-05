@@ -35,13 +35,37 @@ const totalParcelaMensal = computed(() => {
   return props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_parcela || 0), 0)
 })
 
+// Lógica para agrupar as parcelas individualmente
+const parcelamentoDetalhado = computed(() => {
+  const grupos = {}
+  props.cartas.forEach(c => {
+    const chave = `${c.prazo}x${c.valor_parcela}`
+    if (!grupos[chave]) {
+      grupos[chave] = {
+        prazo: c.prazo,
+        valor: parseFloat(c.valor_parcela),
+        qtd: 1
+      }
+    } else {
+      grupos[chave].qtd++
+    }
+  })
+  return Object.values(grupos)
+})
+
 const copiarTudo = async () => {
   let texto = `📊 RESULTADO DA JUNÇÃO\n`
   texto += `Crédito Total: ${formatCurrency(totalCredito.value)}\n`
   texto += `Entrada Total: ${formatCurrency(totalEntrada.value)}\n`
   texto += `Saldo Devedor: ${formatCurrency(totalSaldoDevedor.value)}\n\n`
-  texto += `COTAS SELECIONADAS:\n`
   
+  texto += `PARCELAMENTO:\n`
+  parcelamentoDetalhado.value.forEach(p => {
+    texto += `- ${p.prazo}x de ${formatCurrency(p.valor)}${p.qtd > 1 ? ` (${p.qtd} cotas)` : ''}\n`
+  })
+  texto += `Soma das parcelas: ${formatCurrency(totalParcelaMensal.value)}\n\n`
+
+  texto += `COTAS SELECIONADAS:\n`
   props.cartas.forEach(c => {
     texto += `- Cód: ${c.codigo} | ${c.tipo} | ${c.administradora_detalhes?.nome}: ${formatCurrency(c.valor_credito)}\n`
   })
@@ -56,7 +80,11 @@ const copiarTudo = async () => {
 
 const abrirWhatsapp = () => {
   const codigos = props.cartas.map(c => c.codigo).join(', ')
-  const texto = `Olá! Tenho interesse na junção das cartas (${codigos}) que totalizam ${formatCurrency(totalCredito.value)} de crédito.`
+  let parcelasTexto = parcelamentoDetalhado.value
+    .map(p => `${p.prazo}x de ${formatCurrency(p.valor)}`)
+    .join(' e ')
+
+  const texto = `Olá! Tenho interesse na junção das cartas (${codigos}) que totalizam ${formatCurrency(totalCredito.value)} de crédito. Parcelamento: ${parcelasTexto}.`
   const numero = configStore.whatsapp || '5547999999999'
   window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, '_blank')
 }
@@ -99,8 +127,12 @@ const compartilhar = async () => {
             <div class="section-divider"></div>
 
             <div class="parcelamento-box">
-              <p class="section-label">Parcelamento:</p>
-              <p class="parcela-val"><strong>Soma das parcelas: {{ formatCurrency(totalParcelaMensal) }}</strong></p>
+              <p class="section-label">Parcelamento Detalhado:</p>
+              <div v-for="(p, index) in parcelamentoDetalhado" :key="index" class="parcela-item">
+                <strong>{{ p.prazo }}x de {{ formatCurrency(p.valor) }}</strong>
+                <span v-if="p.qtd > 1" class="cota-badge">{{ p.qtd }} cotas</span>
+              </div>
+              <p class="parcela-total">Soma das parcelas: {{ formatCurrency(totalParcelaMensal) }}</p>
             </div>
 
             <div class="section-divider"></div>
@@ -212,7 +244,40 @@ const compartilhar = async () => {
 }
 
 .section-label {
-  color: #6b7280; font-size: 0.9rem; margin-bottom: 4px;
+  color: #6b7280; font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; text-transform: uppercase;
+}
+
+.parcelamento-box {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+
+.parcela-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.cota-badge {
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.parcela-total {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #d1d5db;
+  font-weight: 700;
+  color: #1e3a8a;
+  font-size: 0.9rem;
 }
 
 .cotas-selecionadas {
