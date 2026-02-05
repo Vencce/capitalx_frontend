@@ -39,7 +39,7 @@ const configStore = useConfigStore()
         <ul>
           <li>
             <MapPin :size="18" class="contact-icon" />
-            <span>Balneário Camboriú, SC</span>
+            <span>São Bento do Sul, SC</span>
           </li>
           <li>
             <Phone :size="18" class="contact-icon" />
