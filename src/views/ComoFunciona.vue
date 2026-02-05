@@ -1,124 +1,381 @@
 <script setup>
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
-import { Search, FileText, RefreshCw, CheckCircle } from 'lucide-vue-next'
+import { Search, FileCheck, RefreshCw, Key, ArrowRight } from 'lucide-vue-next'
+
+const passos = [
+  {
+    icon: Search,
+    titulo: 'Escolha seu Crédito',
+    descricao: 'Navegue em nosso estoque e encontre a carta contemplada que melhor se adapta ao seu objetivo, seja imóvel ou veículo.'
+  },
+  {
+    icon: FileCheck,
+    titulo: 'Análise e Reserva',
+    descricao: 'Nossa equipe realiza a análise do seu perfil e reserva a cota escolhida enquanto validamos a documentação necessária.'
+  },
+  {
+    icon: RefreshCw,
+    titulo: 'Transferência da Cota',
+    descricao: 'Realizamos todo o trâmite formal de transferência da titularidade da cota junto à administradora do consórcio com total segurança.'
+  },
+  {
+    icon: Key,
+    titulo: 'Liberação do Crédito',
+    descricao: 'Com a transferência aprovada, o crédito fica disponível para você adquirir seu bem à vista, com total poder de negociação.'
+  }
+]
 </script>
 
 <template>
-  <div class="page-container">
+  <div class="process-page">
     <AppHeader />
 
-    <section class="hero-simple">
-      <h1>Como Funciona</h1>
-      <p>Entenda o passo a passo para adquirir sua carta contemplada com segurança.</p>
+    <section class="process-hero">
+      <div class="hero-pattern"></div>
+      <div class="container">
+        <div class="hero-content">
+          <span class="gold-tag">Passo a Passo</span>
+          <h1>Como <span>Funciona?</span></h1>
+          <p>Entenda como a Capital X simplifica o acesso ao crédito contemplado para você realizar seus projetos hoje.</p>
+        </div>
+      </div>
     </section>
 
-    <main class="steps-wrapper">
-      <div class="step-card">
-        <div class="step-number">1</div>
-        <div class="step-icon"><Search :size="32" /></div>
-        <h3>Escolha</h3>
-        <p>Navegue pelo nosso catálogo e encontre a carta de crédito ideal para o seu objetivo.</p>
-      </div>
+    <main class="process-main">
+      <div class="container">
+        <div class="steps-grid">
+          <div v-for="(passo, index) in passos" :key="index" class="step-card">
+            <div class="step-number">0{{ index + 1 }}</div>
+            <div class="step-icon-box">
+              <component :is="passo.icon" :size="32" />
+            </div>
+            <h3>{{ passo.titulo }}</h3>
+            <p>{{ passo.descricao }}</p>
+            <div v-if="index < passos.length - 1" class="step-arrow">
+              <ArrowRight :size="20" />
+            </div>
+          </div>
+        </div>
 
-      <div class="step-arrow">➜</div>
+        <section class="comparison-section">
+          <div class="comparison-card">
+            <div class="comp-header">
+              <h2>Por que escolher uma Carta Contemplada?</h2>
+              <div class="divider"></div>
+            </div>
+            <div class="comp-grid">
+              <div class="comp-item">
+                <div class="check-icon">✓</div>
+                <div>
+                  <strong>Sem Juros de Financiamento</strong>
+                  <p>Você paga apenas a taxa administrativa, economizando milhares de reais.</p>
+                </div>
+              </div>
+              <div class="comp-item">
+                <div class="check-icon">✓</div>
+                <div>
+                  <strong>Compra à Vista</strong>
+                  <p>O crédito liberado permite negociar descontos agressivos com o vendedor do bem.</p>
+                </div>
+              </div>
+              <div class="comp-item">
+                <div class="check-icon">✓</div>
+                <div>
+                  <strong>Rapidez Estratégica</strong>
+                  <p>Diferente do consórcio comum, você não precisa esperar sorteios ou dar lances altos.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div class="step-card">
-        <div class="step-number">2</div>
-        <div class="step-icon"><FileText :size="32" /></div>
-        <h3>Análise</h3>
-        <p>A administradora fará uma análise do seu perfil. Nós cuidamos de toda a burocracia.</p>
-      </div>
-
-      <div class="step-arrow">➜</div>
-
-      <div class="step-card">
-        <div class="step-number">3</div>
-        <div class="step-icon"><RefreshCw :size="32" /></div>
-        <h3>Transferência</h3>
-        <p>Aprovado o cadastro, oficializamos a transferência da titularidade para o seu nome.</p>
-      </div>
-
-      <div class="step-arrow">➜</div>
-
-      <div class="step-card">
-        <div class="step-number">4</div>
-        <div class="step-icon"><CheckCircle :size="32" /></div>
-        <h3>Uso</h3>
-        <p>Pronto! O crédito fica disponível imediatamente para você comprar seu bem.</p>
+        <section class="process-cta">
+          <div class="cta-inner">
+            <div class="cta-text">
+              <h2>Pronto para começar?</h2>
+              <p>Confira as cartas disponíveis agora ou fale com um consultor.</p>
+            </div>
+            <div class="cta-actions">
+               <router-link to="/" class="btn-cta-gold">Ver Estoque</router-link>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
-
-    <section class="faq-section">
-      <h2>Dúvidas Frequentes</h2>
-      <div class="faq-grid">
-        <div class="faq-item">
-          <h4>É seguro comprar carta contemplada?</h4>
-          <p>Sim! Todo o processo é feito com a anuência da administradora do consórcio.</p>
-        </div>
-        <div class="faq-item">
-          <h4>Posso usar para comprar qualquer bem?</h4>
-          <p>Sim, respeitando a categoria (imóvel para imóveis, automóvel para veículos).</p>
-        </div>
-      </div>
-    </section>
 
     <AppFooter />
   </div>
 </template>
 
 <style scoped>
-.page-container { background: #f8fafc; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-
-.hero-simple { 
-  text-align: center; padding: 80px 20px; background: white; border-bottom: 1px solid #e2e8f0; 
-}
-.hero-simple h1 { color: #1e3a8a; font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; }
-.hero-simple p { color: #64748b; font-size: 1.1rem; }
-
-.steps-wrapper { 
-  display: flex; align-items: flex-start; justify-content: center; gap: 30px; 
-  max-width: 1200px; margin: 80px auto; padding: 0 20px; flex-wrap: wrap; 
+.process-page {
+  background-color: #f4f7f9;
+  min-height: 100vh;
 }
 
-.step-card { 
-  background: white; padding: 40px 20px; border-radius: 16px; width: 240px; text-align: center; 
-  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); position: relative; border: 1px solid #f1f5f9; 
-  transition: transform 0.3s;
-}
-.step-card:hover { transform: translateY(-5px); border-color: #F6D001; }
-
-/* NÚMERO AMARELO */
-.step-number { 
-  position: absolute; top: -20px; left: 50%; transform: translateX(-50%); 
-  background: #F6D001; color: #1e293b; /* Amarelo com texto escuro */
-  width: 40px; height: 40px; border-radius: 50%; 
-  display: flex; align-items: center; justify-content: center; 
-  font-weight: 800; font-size: 1.2rem;
-  box-shadow: 0 4px 6px rgba(246, 208, 1, 0.3);
-  border: 4px solid #f8fafc; /* Borda para separar do fundo */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.step-icon { color: #1e3a8a; margin: 10px 0 20px; }
-.step-card h3 { color: #1e293b; font-size: 1.1rem; margin-bottom: 10px; font-weight: 700; }
-.step-card p { color: #64748b; font-size: 0.9rem; line-height: 1.5; }
-
-.step-arrow { font-size: 2rem; color: #cbd5e1; align-self: center; }
-
-.faq-section { max-width: 800px; margin: 0 auto 100px; padding: 0 20px; }
-.faq-section h2 { text-align: center; color: #1e3a8a; margin-bottom: 40px; font-size: 2rem; }
-.faq-grid { display: grid; gap: 20px; }
-.faq-item { 
-  background: white; padding: 25px; border-radius: 12px; 
-  border-left: 4px solid #F6D001; /* Detalhe amarelo */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+/* Hero Section */
+.process-hero {
+  background: #0f172a;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  padding: 100px 0;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  color: white;
 }
-.faq-item h4 { margin-bottom: 8px; color: #1e293b; font-size: 1.1rem; }
-.faq-item p { color: #475569; font-size: 0.95rem; margin: 0; line-height: 1.6; }
 
-@media (max-width: 900px) {
-  .steps-wrapper { flex-direction: column; align-items: center; }
-  .step-arrow { transform: rotate(90deg); margin: 10px 0; }
-  .step-card { width: 100%; max-width: 350px; }
+.hero-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.gold-tag {
+  color: #F6D001;
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  border: 1px solid #F6D001;
+  padding: 6px 16px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.process-hero h1 {
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 900;
+  margin-bottom: 15px;
+}
+
+.process-hero h1 span {
+  color: #F6D001;
+}
+
+.process-hero p {
+  font-size: 1.15rem;
+  max-width: 600px;
+  margin: 0 auto;
+  opacity: 0.9;
+}
+
+/* Steps Grid */
+.process-main {
+  padding: 80px 0;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin-bottom: 100px;
+  position: relative;
+}
+
+.step-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-10px);
+  border-color: #F6D001;
+}
+
+.step-number {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #f1f5f9;
+  z-index: 1;
+}
+
+.step-icon-box {
+  width: 70px;
+  height: 70px;
+  background: #f8fafc;
+  color: #1e3a8a;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e2e8f0;
+}
+
+.step-card:hover .step-icon-box {
+  background: #F6D001;
+  color: #1e3a8a;
+}
+
+.step-card h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 15px;
+}
+
+.step-card p {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.step-arrow {
+  position: absolute;
+  right: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #F6D001;
+  z-index: 3;
+}
+
+/* Comparison Section */
+.comparison-section {
+  margin-bottom: 80px;
+}
+
+.comparison-card {
+  background: white;
+  border-radius: 24px;
+  padding: 60px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border-top: 6px solid #F6D001;
+}
+
+.comp-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.comp-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.divider {
+  width: 60px;
+  height: 4px;
+  background: #F6D001;
+  margin: 15px auto;
+}
+
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.comp-item {
+  display: flex;
+  gap: 15px;
+}
+
+.check-icon {
+  width: 24px;
+  height: 24px;
+  background: #F6D001;
+  color: #1e3a8a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.comp-item strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.comp-item p {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* CTA */
+.process-cta {
+  margin-top: 40px;
+}
+
+.cta-inner {
+  background: #0f172a;
+  border-radius: 20px;
+  padding: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  border-bottom: 5px solid #F6D001;
+}
+
+.cta-text h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.cta-text p {
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+.btn-cta-gold {
+  background: #F6D001;
+  color: #0f172a;
+  border: none;
+  padding: 18px 36px;
+  border-radius: 8px;
+  font-weight: 900;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.btn-cta-gold:hover {
+  background: #ffffff;
+  transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-arrow { display: none; }
+  .comp-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .steps-grid { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; text-align: center; gap: 30px; }
+  .comparison-card { padding: 30px; }
 }
 </style>
