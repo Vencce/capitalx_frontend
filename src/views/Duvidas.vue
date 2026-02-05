@@ -31,22 +31,22 @@ const todasDuvidas = ref([
   },
   {
     pergunta: 'Quais bens posso adquirir com a carta contemplada?',
-    resposta: 'É possível adquirir imóveis residenciais ou comerciais, terrenos, construção, reforma, quitação de financiamento e veículos automotores (carro, moto, caminhão, etc), conforme o regulamento.',
+    resposta: 'É possível adquirir imóveis residenciais ou comerciais, terrenos, construção, reforma, quitação de financiamento e veículos automotores (carro, moto, caminhão, etc).',
     aberta: false
   },
   {
     pergunta: 'Existe entrada para adquirir uma carta contemplada?',
-    resposta: 'Sim. A entrada corresponde aos valores já pagos pelo atual titular da cota, além de custos de intermediação, variando conforme o valor do crédito e condições da cota.',
+    resposta: 'Sim. A entrada corresponde aos valores já pagos pelo atual titular da cota, além de custos de intermediação, variando conforme o valor do crédito e as condições da cota.',
     aberta: false
   },
   {
     pergunta: 'Posso descontar o valor da entrada do crédito da carta?',
-    resposta: 'Não. O valor da entrada não pode ser descontado do crédito. Mas existem estratégias para usar parte do crédito para quitar financiamentos de entrada após o faturamento.',
+    resposta: 'Não. O valor da entrada não pode ser descontado do crédito. Porém, existem alternativas estratégicas para viabilizar a operação conforme as regras da administradora.',
     aberta: false
   },
   {
-    pergunta: 'Como a Capital X Consórcios atua nesse processo?',
-    resposta: 'Atuamos na intermediação e análise das melhores oportunidades, auxiliando o cliente desde a escolha da cota até a transferência e liberação do crédito com acompanhamento especializado.',
+    pergunta: 'Como faço para saber qual carta é ideal para mim?',
+    resposta: 'Basta entrar em contato. Avaliamos seu perfil, objetivo e capacidade de pagamento para indicar a carta contemplada mais adequada à sua estratégia financeira.',
     aberta: false
   }
 ])
@@ -64,76 +64,74 @@ const toggleDuvida = (index) => {
 
 const abrirWhatsapp = () => {
   const numero = configStore.whatsapp || '5547999999999'
-  const texto = encodeURIComponent('Olá! Estava vendo as dúvidas no site e gostaria de conversar.')
+  const texto = encodeURIComponent('Olá! Gostaria de tirar dúvidas sobre as cartas contempladas.')
   window.open(`https://wa.me/${numero}?text=${texto}`, '_blank')
 }
 </script>
 
 <template>
-  <div class="faq-modern-light">
+  <div class="faq-page">
     <AppHeader />
 
-    <header class="header-section">
-      <div class="sun-flare"></div>
+    <section class="faq-hero">
+      <div class="hero-pattern"></div>
       <div class="container">
-        <div class="top-info">
-          <span class="badge-new">Suporte Especializado</span>
+        <div class="hero-content">
+          <span class="gold-tag">Atendimento Exclusivo</span>
           <h1>Dúvidas <span>Frequentes</span></h1>
-          <p>Tudo o que você precisa saber para investir com segurança na Capital X.</p>
-        </div>
-
-        <div class="search-wrapper">
-          <div class="search-field">
-            <Search class="icon" :size="20" />
-            <input type="text" v-model="searchQuery" placeholder="Busque por termos como 'entrada', 'imóvel'..." />
+          <p>Tudo o que você precisa saber sobre o mercado de cartas contempladas com a segurança da Capital X.</p>
+          
+          <div class="search-box">
+            <Search class="search-icon" :size="20" />
+            <input type="text" v-model="searchQuery" placeholder="O que você deseja saber?" />
           </div>
         </div>
       </div>
-    </header>
+    </section>
 
-    <main class="faq-body">
+    <main class="faq-main">
       <div class="container">
-        <div class="faq-layout">
-          <div class="faq-column">
-             <div 
-              v-for="(item, index) in duvidasFiltradas.slice(0, Math.ceil(duvidasFiltradas.length / 2))" 
+        <div class="faq-grid" v-if="duvidasFiltradas.length > 0">
+          <div class="faq-col">
+            <div 
+              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 === 0)" 
               :key="index"
-              class="faq-box"
+              class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
             >
-              <div class="faq-trigger">
+              <div class="faq-header-card">
                 <h3>{{ item.pergunta }}</h3>
-                <div class="state-icon">
-                  <Plus v-if="!item.aberta" :size="18" />
-                  <Minus v-else :size="18" />
+                <div class="faq-icon">
+                  <Plus v-if="!item.aberta" :size="20" />
+                  <Minus v-else :size="20" />
                 </div>
               </div>
-              <Transition name="expand">
-                <div v-if="item.aberta" class="faq-content">
+              <Transition name="fade-height">
+                <div v-if="item.aberta" class="faq-body-card">
                   <p>{{ item.resposta }}</p>
                 </div>
               </Transition>
             </div>
           </div>
 
-          <div class="faq-column">
-             <div 
-              v-for="(item, index) in duvidasFiltradas.slice(Math.ceil(duvidasFiltradas.length / 2))" 
+          <div class="faq-col">
+            <div 
+              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 !== 0)" 
               :key="index"
-              class="faq-box"
+              class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
             >
-              <div class="faq-trigger">
+              <div class="faq-header-card">
                 <h3>{{ item.pergunta }}</h3>
-                <div class="state-icon">
-                  <Plus v-if="!item.aberta" :size="18" />
-                  <Minus v-else :size="18" />
+                <div class="faq-icon">
+                  <Plus v-if="!item.aberta" :size="20" />
+                  <Minus v-else :size="20" />
                 </div>
               </div>
-              <Transition name="expand">
-                <div v-if="item.aberta" class="faq-content">
+              <Transition name="fade-height">
+                <div v-if="item.aberta" class="faq-body-card">
                   <p>{{ item.resposta }}</p>
                 </div>
               </Transition>
@@ -141,23 +139,23 @@ const abrirWhatsapp = () => {
           </div>
         </div>
 
-        <div v-if="duvidasFiltradas.length === 0" class="no-results">
-            <HelpCircle :size="40" />
-            <p>Não encontramos resultados para sua busca.</p>
+        <div v-else class="no-results">
+          <HelpCircle :size="48" />
+          <p>Nenhuma dúvida encontrada para sua pesquisa.</p>
         </div>
 
-        <div class="contact-banner">
-          <div class="banner-inner">
-            <div class="banner-text">
-              <h2>Ainda precisa de ajuda?</h2>
-              <p>Fale agora pelo WhatsApp e tire suas dúvidas com um consultor real.</p>
+        <section class="faq-cta">
+          <div class="cta-inner">
+            <div class="cta-text">
+              <h2>Ainda restam dúvidas?</h2>
+              <p>Nossos consultores estão prontos para realizar uma análise personalizada do seu perfil.</p>
             </div>
-            <button @click="abrirWhatsapp" class="btn-yellow-main">
-              <MessageCircle :size="20" />
-              Chamar no WhatsApp
+            <button class="btn-cta-gold" @click="abrirWhatsapp">
+              <MessageCircle :size="22" />
+              Falar com um Consultor
             </button>
           </div>
-        </div>
+        </section>
       </div>
     </main>
 
@@ -166,242 +164,236 @@ const abrirWhatsapp = () => {
 </template>
 
 <style scoped>
-.faq-modern-light {
-  background-color: #fcfcfc;
-  color: #1a202c;
+.faq-page {
+  background-color: #f4f7f9;
   min-height: 100vh;
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 20px;
 }
 
-/* Header Estilo Apple/Moderno */
-.header-section {
+/* Hero Section */
+.faq-hero {
+  background: #1e3a8a; /* Azul Capital X */
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  padding: 100px 0 120px;
   position: relative;
-  padding: 100px 0 60px;
-  background: white;
   overflow: hidden;
   text-align: center;
+  color: white;
 }
 
-.sun-flare {
+.hero-pattern {
   position: absolute;
-  top: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(246, 208, 1, 0.1) 0%, rgba(255,255,255,0) 70%);
-  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 30px 30px;
 }
 
-.top-info { position: relative; z-index: 2; }
-
-.badge-new {
-  display: inline-block;
-  background: #f1f5f9;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #64748b;
+.gold-tag {
+  color: #F6D001;
   text-transform: uppercase;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  border: 1px solid #F6D001;
+  padding: 6px 16px;
+  border-radius: 4px;
+  display: inline-block;
   margin-bottom: 20px;
 }
 
-.header-section h1 {
-  font-size: clamp(2rem, 5vw, 3.2rem);
+.faq-hero h1 {
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
   font-weight: 900;
-  color: #1e3a8a;
-  letter-spacing: -1px;
+  margin-bottom: 15px;
 }
 
-.header-section h1 span {
-  color: #F6D001;
+.faq-hero h1 span {
+  color: #F6D001; /* Amarelo Capital X */
 }
 
-.header-section p {
-  color: #64748b;
+.faq-hero p {
   font-size: 1.15rem;
-  max-width: 500px;
-  margin: 15px auto 40px;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  opacity: 0.9;
 }
 
-/* Busca */
-.search-wrapper {
+/* Barra de Busca */
+.search-box {
   max-width: 600px;
   margin: 0 auto;
   position: relative;
-  z-index: 2;
+  z-index: 5;
 }
 
-.search-field {
-  display: flex;
-  align-items: center;
-  background: #f8fafc;
-  border: 2px solid #f1f5f9;
-  border-radius: 16px;
-  padding: 5px 20px;
-  transition: all 0.3s ease;
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1e3a8a;
 }
 
-.search-field:focus-within {
-  background: white;
-  border-color: #F6D001;
-  box-shadow: 0 10px 25px -5px rgba(246, 208, 1, 0.15);
-}
-
-.search-field .icon { color: #94a3b8; }
-
-.search-field input {
-  border: none;
-  background: transparent;
+.search-box input {
   width: 100%;
-  padding: 15px;
+  padding: 18px 20px 18px 55px;
+  border-radius: 12px;
+  border: none;
   font-size: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   outline: none;
-  font-weight: 500;
 }
 
-/* Corpo do FAQ */
-.faq-body { padding: 80px 0; }
+/* FAQ Grid */
+.faq-main {
+  padding: 80px 0;
+  margin-top: -60px; /* Sobrepõe levemente o hero */
+}
 
-.faq-layout {
+.faq-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.faq-col {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  align-items: start;
 }
 
-.faq-box {
+.faq-card {
   background: white;
-  border: 1px solid #f1f5f9;
-  border-radius: 20px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.faq-box:hover {
-  border-color: #F6D001;
-  transform: translateY(-2px);
-}
-
-.faq-box.active {
-  background: white;
-  border-color: #F6D001;
-  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.03);
-}
-
-.faq-trigger {
+  border-radius: 12px;
   padding: 24px;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.faq-card:hover {
+  transform: translateY(-3px);
+  border-color: #F6D001;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.faq-card.active {
+  border-left: 4px solid #F6D001;
+}
+
+.faq-header-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 15px;
 }
 
-.faq-trigger h3 {
-  font-size: 1rem;
+.faq-header-card h3 {
+  font-size: 1.1rem;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.4;
 }
 
-.state-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #fcfcfc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.faq-icon {
   color: #F6D001;
-  transition: all 0.2s;
+  transition: transform 0.3s;
 }
 
-.faq-box.active .state-icon {
-  background: #F6D001;
-  color: #1e3a8a;
+.faq-card.active .faq-icon {
+  transform: rotate(180deg);
 }
 
-.faq-content {
-  padding: 0 24px 24px;
+.faq-body-card {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.faq-body-card p {
   color: #64748b;
-  font-size: 0.95rem;
   line-height: 1.6;
+  font-size: 0.95rem;
 }
 
-/* Banner Final */
-.contact-banner {
+/* CTA Section */
+.faq-cta {
   margin-top: 80px;
-  background: #1e3a8a;
-  border-radius: 30px;
-  padding: 40px;
-  color: white;
-  position: relative;
-  overflow: hidden;
 }
 
-.banner-inner {
-  position: relative;
-  z-index: 2;
+.cta-inner {
+  background: #0f172a;
+  background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+  border-radius: 20px;
+  padding: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
+  color: white;
+  border-bottom: 5px solid #F6D001;
 }
 
-.banner-text h2 {
+.cta-text h2 {
   font-size: 1.8rem;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.banner-text p { opacity: 0.8; font-size: 1rem; }
+.cta-text p {
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
 
-.btn-yellow-main {
+.btn-cta-gold {
   background: #F6D001;
-  color: #1e3a8a;
+  color: #0f172a;
   border: none;
-  padding: 16px 32px;
-  border-radius: 16px;
-  font-weight: 800;
+  padding: 18px 36px;
+  border-radius: 8px;
+  font-weight: 900;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
+  transition: all 0.3s;
+  font-size: 1rem;
 }
 
-.btn-yellow-main:hover {
+.btn-cta-gold:hover {
   background: #ffffff;
   transform: scale(1.05);
 }
 
-.no-results {
-    text-align: center;
-    padding: 40px;
-    color: #94a3b8;
-}
-
-/* Animação */
-.expand-enter-active, .expand-leave-active {
-  transition: all 0.3s ease-out;
-  max-height: 300px;
+/* Animations */
+.fade-height-enter-active, .fade-height-leave-active {
+  transition: all 0.3s ease;
+  max-height: 400px;
   overflow: hidden;
 }
-.expand-enter-from, .expand-leave-to {
+.fade-height-enter-from, .fade-height-leave-to {
   max-height: 0;
   opacity: 0;
 }
 
+.no-results {
+  text-align: center;
+  padding: 60px;
+  color: #94a3b8;
+}
+
 @media (max-width: 900px) {
-  .faq-layout { grid-template-columns: 1fr; }
-  .banner-inner { flex-direction: column; text-align: center; }
+  .faq-grid { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; text-align: center; gap: 30px; padding: 40px 20px; }
+  .faq-hero h1 { font-size: 2.2rem; }
 }
 </style>
