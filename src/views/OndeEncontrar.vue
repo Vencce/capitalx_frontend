@@ -11,7 +11,7 @@ const unidadePrincipal = {
   telefone: '(47) 3170-3656',
   email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/dir//Capital-X+Cons%C3%B3rcios+R.+Erhardt+Pauli,+221+Colonial+S%C3%A3o+Bento+do+Sul+-+SC+89288-040'
+  googleMapsLink: 'https://www.google.com/maps/place/Capital-X+Cons%C3%B3rcios/@-26.227235,-49.4029359,17z/data=!3m1!4b1!4m6!3m5!1s0x94de15a992686005:0xe7a00437623a983b!8m2!3d-26.227235!4d-49.4029359!16s%2Fg%2F11vzclx9n9?entry=ttu'
 }
 </script>
 
@@ -34,7 +34,7 @@ const unidadePrincipal = {
         <section class="office-preview">
           <div class="image-card">
             <div class="image-wrapper">
-              <img src="/src/assets/imagens/fachada.jpeg" alt="Fachada Capital X Consórcios" class="office-img" />
+              <img src="/src/assets/imagens/encontrar.jpeg" alt="Fachada Capital X Consórcios" class="office-img" />
               <div class="image-overlay">
                 <Camera :size="24" />
                 <span>Nossa Sede em São Bento do Sul</span>
@@ -87,7 +87,7 @@ const unidadePrincipal = {
           <div class="map-container">
             <div class="map-wrapper">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3587.4589025063464!2d-49.38138!3d-26.24673!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a989a1a601%3A0x39a00437663a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1707150000000!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3587.2730321235123!2d-49.40551082459419!3d-26.22723507706173!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a992686005%3A0xe7a00437623a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
@@ -110,7 +110,6 @@ const unidadePrincipal = {
 .location-page { background-color: #f4f7f9; min-height: 100vh; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-/* Correção do Fundo: Gradiente + Pattern */
 .location-hero {
   background: #0f172a;
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
@@ -133,10 +132,7 @@ const unidadePrincipal = {
   z-index: 1;
 }
 
-.hero-inner {
-  position: relative;
-  z-index: 2;
-}
+.hero-inner { position: relative; z-index: 2; }
 
 .gold-tag {
   color: #F6D001;
@@ -155,23 +151,28 @@ const unidadePrincipal = {
 .location-hero h1 span { color: #F6D001; }
 .location-hero p { font-size: 1.15rem; max-width: 600px; margin: 0 auto; opacity: 0.9; }
 
-/* Office Preview e Outros Estilos */
 .office-preview { margin-top: -60px; margin-bottom: 60px; position: relative; z-index: 10; }
 .image-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
 .image-wrapper { position: relative; height: 450px; width: 100%; }
 .office-img { width: 100%; height: 100%; object-fit: cover; }
 .image-overlay { position: absolute; bottom: 20px; left: 20px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); color: white; padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
 .image-caption { padding: 20px 30px; background: #f8fafc; text-align: center; color: #64748b; font-weight: 500; }
+
 .location-main { padding-bottom: 100px; }
 .location-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 50px; }
+
 .section-title { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-bottom: 30px; }
+
 .info-cards { display: flex; flex-direction: column; gap: 25px; margin-bottom: 40px; }
 .info-item { display: flex; gap: 20px; }
 .info-icon { width: 50px; height: 50px; background: white; color: #1e3a8a; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); flex-shrink: 0; border-bottom: 3px solid #F6D001; }
+
 .info-item h3 { font-size: 1.1rem; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
 .info-item p { color: #64748b; line-height: 1.5; }
+
 .btn-navigation { background: #0f172a; color: white; padding: 18px 30px; border-radius: 8px; text-decoration: none; font-weight: 800; display: inline-flex; align-items: center; gap: 12px; transition: all 0.3s; }
 .btn-navigation:hover { background: #F6D001; color: #0f172a; transform: translateY(-3px); }
+
 .map-container { min-height: 450px; }
 .map-wrapper { width: 100%; height: 100%; border-radius: 24px; overflow: hidden; border: 4px solid white; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
 
