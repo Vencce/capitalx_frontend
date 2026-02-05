@@ -20,6 +20,7 @@ const configStore = useConfigStore()
         <RouterLink to="/como-funciona" class="nav-link" active-class="active">Como Funciona</RouterLink>
         <RouterLink to="/" class="nav-link" active-class="active">Cartas Contempladas</RouterLink>
         <RouterLink to="/duvidas" class="nav-link" active-class="active">Duvidas</RouterLink>
+        <RouterLink to="/onde-encontrar" class="nav-link" active-class="active">Onde Estamos</RouterLink>
       </nav>
 
       <div class="cta-area">

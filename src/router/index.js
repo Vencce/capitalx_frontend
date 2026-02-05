@@ -18,6 +18,7 @@ const routes = [
   { path: '/como-funciona', name: 'ComoFunciona', component: ComoFunciona },
   { path: '/duvidas', name: 'Duvidas', component: Duvidas },
   { path: '/login', name: 'Login', component: Login },
+  { path: '/onde-encontrar', name: 'OndeEncontrar', component: () => import('../views/OndeEncontrar.vue') },
 
   // Área Administrativa (Protegida)
   { 
