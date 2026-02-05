@@ -1,8 +1,8 @@
 <script setup>
 import logoSrc from '../assets/imagens/logo_branco.png'
 import { useConfigStore } from '../stores/config'
+import { Instagram, Facebook, MapPin, Phone, Mail } from 'lucide-vue-next'
 
-// A store providencia os contatos configurados no painel
 const configStore = useConfigStore()
 </script>
 
@@ -13,6 +13,15 @@ const configStore = useConfigStore()
       <div class="footer-brand">
         <img :src="logoSrc" alt="Capital X" class="footer-logo" />
         <p>Especialistas em cartas contempladas. Transformando planos em conquistas com segurança e transparência.</p>
+        
+        <div class="socials">
+          <a :href="configStore.instagram || '#'" target="_blank" class="social-icon" aria-label="Instagram">
+            <Instagram :size="20" />
+          </a>
+          <a :href="configStore.facebook || '#'" target="_blank" class="social-icon" aria-label="Facebook">
+            <Facebook :size="20" />
+          </a>
+        </div>
       </div>
 
       <div class="footer-nav">
@@ -29,23 +38,18 @@ const configStore = useConfigStore()
         <h4>Fale Conosco</h4>
         <ul>
           <li>
-            <span class="icon">📍</span>
-            Balneário Camboriú, SC
+            <MapPin :size="18" class="contact-icon" />
+            <span>Balneário Camboriú, SC</span>
           </li>
           <li>
-            <span class="icon">📞</span>
-            {{ configStore.whatsapp || '(47) 99999-9999' }}
+            <Phone :size="18" class="contact-icon" />
+            <span>{{ configStore.whatsapp || '(47) 99999-9999' }}</span>
           </li>
           <li>
-            <span class="icon">✉️</span>
-            {{ configStore.email || 'contato@capitalx.com.br' }}
+            <Mail :size="18" class="contact-icon" />
+            <span>{{ configStore.email || 'contato@capitalx.com.br' }}</span>
           </li>
         </ul>
-        
-        <div class="socials">
-          <a :href="configStore.instagram || '#'" target="_blank" class="social-icon">IG</a>
-          <a :href="configStore.facebook || '#'" target="_blank" class="social-icon">FB</a>
-        </div>
       </div>
 
     </div>
@@ -58,57 +62,121 @@ const configStore = useConfigStore()
 
 <style scoped>
 .main-footer {
-  background-color: #0f172a; /* Slate 900 */
-  color: #94a3b8; /* Slate 400 */
-  padding-top: 60px;
+  background-color: #0f172a;
+  color: #94a3b8;
+  padding-top: 80px;
   margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-container {
-  max-width: 1200px; margin: 0 auto; padding: 0 20px 60px;
-  display: grid; grid-template-columns: 1.5fr 1fr 1.2fr; gap: 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr 1.2fr;
+  gap: 80px;
 }
 
+/* Logo aumentada */
 .footer-brand .footer-logo {
-  height: 40px; margin-bottom: 20px;
-  filter: brightness(0) invert(1); /* Deixa a logo branca */
-  opacity: 0.9;
+  height: 60px; 
+  margin-bottom: 25px;
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
-.footer-brand p { line-height: 1.6; font-size: 0.95rem; }
+.footer-brand p {
+  line-height: 1.7;
+  font-size: 0.95rem;
+  max-width: 350px;
+  margin-bottom: 25px;
+}
 
-h4 { color: white; font-size: 1.1rem; margin-bottom: 24px; font-weight: 700; }
+h4 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 ul { list-style: none; padding: 0; margin: 0; }
-li { margin-bottom: 12px; font-size: 0.95rem; }
+li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center; gap: 12px; }
 
 .footer-nav a {
-  text-decoration: none; color: #94a3b8; transition: color 0.2s;
+  text-decoration: none;
+  color: #94a3b8;
+  transition: all 0.3s ease;
 }
-.footer-nav a:hover { color: #38bdf8; } /* Azul claro */
 
-.footer-contact li { display: flex; align-items: center; gap: 12px; }
-.icon { font-size: 1.1rem; }
+.footer-nav a:hover {
+  color: #F6D001; /* Amarelo Capital X no hover */
+  padding-left: 5px;
+}
 
-.socials { display: flex; gap: 12px; margin-top: 24px; }
+.contact-icon {
+  color: #F6D001; /* Ícones de contato em amarelo */
+  flex-shrink: 0;
+}
+
+/* Estilização dos Ícones Sociais */
+.socials {
+  display: flex;
+  gap: 15px;
+}
+
 .social-icon {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: rgba(255,255,255,0.05); color: white;
-  display: flex; align-items: center; justify-content: center;
-  text-decoration: none; font-size: 0.8rem; font-weight: 700;
-  transition: all 0.2s;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px; /* Quadrado levemente arredondado fica mais moderno */
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.social-icon:hover { background: #38bdf8; color: #0f172a; transform: translateY(-3px); }
+
+.social-icon:hover {
+  background: #F6D001;
+  color: #0f172a;
+  transform: translateY(-5px);
+  border-color: #F6D001;
+}
 
 .footer-bottom {
-  border-top: 1px solid rgba(255,255,255,0.05);
-  text-align: center; padding: 24px; font-size: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  padding: 30px;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
 }
 
-@media (max-width: 800px) {
-  .footer-container { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-  .footer-contact li { justify-content: center; }
-  .socials { justify-content: center; }
-  .footer-brand .footer-logo { margin: 0 auto 20px; }
+@media (max-width: 900px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 50px;
+    text-align: center;
+  }
+  
+  .footer-brand p {
+    margin: 0 auto 25px;
+  }
+
+  .footer-contact li {
+    justify-content: center;
+  }
+
+  .socials {
+    justify-content: center;
+  }
+
+  .footer-brand .footer-logo {
+    margin: 0 auto 25px;
+  }
 }
 </style>
