@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useConfigStore } from '../stores/config'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
-import { ChevronDown, MessageCircle, Search, HelpCircle } from 'lucide-vue-next'
+import { ChevronRight, MessageCircle, Search, Sparkles } from 'lucide-vue-next'
 
 const configStore = useConfigStore()
 const searchQuery = ref('')
@@ -59,57 +59,65 @@ const duvidasFiltradas = computed(() => {
 })
 
 const toggleDuvida = (index) => {
+  // Fecha as outras ao abrir uma (opcional, estilo sanfona)
+  todasDuvidas.value.forEach((d, i) => {
+    if (i !== index) d.aberta = false
+  })
   todasDuvidas.value[index].aberta = !todasDuvidas.value[index].aberta
 }
 
 const abrirWhatsapp = () => {
   const numero = configStore.whatsapp || '5547999999999'
-  const texto = encodeURIComponent('Olá! Gostaria de tirar algumas dúvidas sobre as cartas contempladas.')
+  const texto = encodeURIComponent('Olá! Vi o FAQ no site e gostaria de um atendimento personalizado.')
   window.open(`https://wa.me/${numero}?text=${texto}`, '_blank')
 }
 </script>
 
 <template>
-  <div class="faq-page">
+  <div class="modern-faq">
     <AppHeader />
 
-    <section class="faq-hero">
-      <div class="hero-bg-shapes">
-        <div class="shape s1"></div>
-        <div class="shape s2"></div>
-        <div class="shape s3"></div>
-      </div>
-      
-      <div class="container hero-inner">
-        <span class="top-tag">FAQ</span>
-        <h1>Central de Ajuda</h1>
-        <p>Encontre respostas rápidas para as dúvidas mais comuns sobre consórcios contemplados.</p>
-        
-        <div class="search-bar">
-          <Search class="search-icon" :size="20" />
-          <input type="text" v-model="searchQuery" placeholder="Qual a sua dúvida?" />
-        </div>
-      </div>
-    </section>
+    <div class="ambient-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
 
-    <main class="faq-main">
-      <div class="container">
-        <div class="faq-grid" v-if="duvidasFiltradas.length > 0">
+    <div class="content-wrapper">
+      <section class="faq-header">
+        <div class="tag-modern">
+          <Sparkles :size="14" />
+          <span>Central de Conhecimento</span>
+        </div>
+        <h1>Como podemos <br/> <span class="text-gradient">te ajudar hoje?</span></h1>
+        
+        <div class="search-container">
+          <div class="search-box">
+            <Search class="search-icon" :size="22" />
+            <input type="text" v-model="searchQuery" placeholder="Busque por uma dúvida ou palavra-chave..." />
+          </div>
+        </div>
+      </section>
+
+      <main class="faq-section">
+        <div class="faq-container" v-if="duvidasFiltradas.length > 0">
           <div 
             v-for="(item, index) in duvidasFiltradas" 
             :key="index" 
-            class="faq-card"
-            :class="{ active: item.aberta }"
+            class="glass-card"
+            :class="{ 'is-active': item.aberta }"
             @click="toggleDuvida(index)"
           >
-            <div class="card-indicator">?</div>
-            <div class="card-content">
-              <div class="card-header">
+            <div class="card-inner">
+              <div class="question-row">
+                <span class="q-number">0{{ index + 1 }}</span>
                 <h3>{{ item.pergunta }}</h3>
-                <ChevronDown class="arrow" :size="20" />
+                <div class="icon-circle">
+                  <ChevronRight class="chevron" :size="20" />
+                </div>
               </div>
               <Transition name="expand">
-                <div v-if="item.aberta" class="card-body">
+                <div v-if="item.aberta" class="answer-row">
                   <p>{{ item.resposta }}</p>
                 </div>
               </Transition>
@@ -117,296 +125,289 @@ const abrirWhatsapp = () => {
           </div>
         </div>
 
-        <div v-else class="no-results">
-          <HelpCircle :size="64" color="#cbd5e1" />
-          <p>Não encontramos resultados para sua busca.</p>
-          <button @searchQuery="" @click="searchQuery = ''" class="btn-reset">Ver todas as dúvidas</button>
-        </div>
-
-        <section class="support-cta">
-          <div class="cta-box">
+        <div class="cta-floating">
+          <div class="cta-content">
             <div class="cta-text">
-              <h3>Ainda tem alguma dúvida específica?</h3>
-              <p>Fale agora com um de nossos especialistas e receba atendimento personalizado.</p>
+              <h3>Ainda com dúvida?</h3>
+              <p>Chame no WhatsApp agora.</p>
             </div>
-            <button class="btn-whatsapp-capital" @click="abrirWhatsapp">
-              <MessageCircle :size="22" />
-              Falar com um Especialista
+            <button class="btn-action-yellow" @click="abrirWhatsapp">
+              <MessageCircle :size="24" />
             </button>
           </div>
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
 
     <AppFooter />
   </div>
 </template>
 
 <style scoped>
-/* Variáveis de Cor */
-:export {
-  primary: #1e3a8a;
-  accent: #F6D001;
-}
-
-.faq-page {
-  background-color: #f4f7fa;
+.modern-faq {
+  background-color: #0a0f1d; /* Fundo escuro profundo para realçar o neon/vidro */
   min-height: 100vh;
-}
-
-.container {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-/* Background Dinâmico com Formas */
-.faq-hero {
   position: relative;
-  padding: 100px 0 80px;
-  text-align: center;
-  background: #ffffff;
-  overflow: hidden;
-  border-bottom: 1px solid #e2e8f0;
+  overflow-x: hidden;
+  color: #ffffff;
 }
 
-.hero-bg-shapes {
+/* Ambient Blobs */
+.ambient-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
   z-index: 1;
-  opacity: 0.4;
 }
 
-.shape {
+.blob {
   position: absolute;
-  filter: blur(80px);
+  filter: blur(120px);
   border-radius: 50%;
+  opacity: 0.15;
 }
 
-.s1 { width: 400px; height: 400px; background: #1e3a8a; top: -200px; left: -100px; }
-.s2 { width: 300px; height: 300px; background: #F6D001; bottom: -150px; right: -50px; }
-.s3 { width: 250px; height: 250px; background: #cbd5e1; top: 50px; right: 20%; }
+.blob-1 { width: 500px; height: 500px; background: #F6D001; top: -100px; right: -100px; }
+.blob-2 { width: 600px; height: 600px; background: #1e3a8a; bottom: -200px; left: -100px; }
+.blob-3 { width: 300px; height: 300px; background: #ffffff; top: 40%; left: 50%; }
 
-.hero-inner {
+.content-wrapper {
   position: relative;
   z-index: 2;
+  padding-top: 60px;
 }
 
-.top-tag {
-  background: #F6D001;
-  color: #1e3a8a;
-  padding: 6px 18px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 900;
+.faq-header {
+  text-align: center;
+  padding: 80px 20px 40px;
+}
+
+.tag-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(246, 208, 1, 0.1);
+  border: 1px solid rgba(246, 208, 1, 0.3);
+  color: #F6D001;
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
   letter-spacing: 1px;
+  margin-bottom: 24px;
 }
 
-.faq-hero h1 {
-  font-size: 3.2rem;
-  color: #1e3a8a;
+.faq-header h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
   font-weight: 900;
-  margin: 20px 0;
+  margin-bottom: 40px;
 }
 
-.faq-hero p {
-  color: #475569;
-  font-size: 1.2rem;
-  max-width: 650px;
-  margin: 0 auto 40px;
+.text-gradient {
+  background: linear-gradient(to right, #F6D001, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Barra de Busca */
-.search-bar {
-  max-width: 600px;
+.search-container {
+  max-width: 700px;
   margin: 0 auto;
-  position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  border-radius: 16px;
 }
 
-.search-icon {
-  position: absolute;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #1e3a8a;
+.search-box {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px 8px 25px;
+  transition: all 0.3s;
 }
 
-.search-bar input {
+.search-box:focus-within {
+  border-color: #F6D001;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 30px rgba(246, 208, 1, 0.1);
+}
+
+.search-icon { color: #F6D001; }
+
+.search-box input {
+  background: transparent;
+  border: none;
   width: 100%;
-  padding: 20px 20px 20px 55px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  padding: 15px;
+  color: white;
   font-size: 1.1rem;
   outline: none;
-  transition: all 0.3s;
 }
 
-.search-bar input:focus {
-  border-color: #F6D001;
-  box-shadow: 0 0 0 4px rgba(246, 208, 1, 0.15);
+/* Grid de Cards Freestyle */
+.faq-section {
+  max-width: 900px;
+  margin: 60px auto 120px;
+  padding: 0 20px;
+  position: relative;
 }
 
-/* Grid em Duas Colunas */
-.faq-main {
-  padding: 80px 0;
-}
-
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
-}
-
-.faq-card {
-  background: white;
-  border-radius: 18px;
-  border: 1px solid #e2e8f0;
-  padding: 25px;
+.faq-container {
   display: flex;
-  gap: 20px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: fit-content;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.card-indicator {
-  width: 40px;
-  height: 40px;
-  background: #f1f5f9;
-  color: #F6D001;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  transition: all 0.3s;
-}
-
-.faq-card:hover {
-  transform: translateY(-5px);
-  border-color: #F6D001;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
-}
-
-.faq-card.active {
-  border-color: #1e3a8a;
-  background: #ffffff;
-}
-
-.faq-card.active .card-indicator {
-  background: #1e3a8a;
-  color: #F6D001;
-}
-
-.card-content {
-  flex: 1;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-header h3 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #1e293b;
-  line-height: 1.4;
-}
-
-.arrow {
-  color: #94a3b8;
-  transition: transform 0.3s;
-}
-
-.faq-card.active .arrow {
-  transform: rotate(180deg);
-  color: #1e3a8a;
-}
-
-.card-body {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f1f5f9;
-  color: #64748b;
-  line-height: 1.7;
-}
-
-/* CTA Estilizado */
-.support-cta {
-  margin-top: 80px;
-}
-
-.cta-box {
-  background: #1e3a8a;
-  background-image: linear-gradient(135deg, #1e3a8a 0%, #152b63 100%);
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
-  padding: 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
 }
 
-.cta-box::before {
-  content: '';
-  position: absolute;
-  right: -50px;
-  top: -50px;
-  width: 200px;
-  height: 200px;
-  background: #F6D001;
-  opacity: 0.1;
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(246, 208, 1, 0.4);
+  transform: translateX(10px);
+}
+
+.glass-card.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #F6D001;
+}
+
+.card-inner { padding: 30px; }
+
+.question-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.q-number {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #F6D001;
+  opacity: 0.5;
+  font-family: serif;
+}
+
+.question-row h3 {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.icon-circle {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.chevron {
+  transition: transform 0.4s;
+  color: #64748b;
+}
+
+.glass-card.is-active .chevron {
+  transform: rotate(90deg);
+  color: #F6D001;
+}
+
+.glass-card.is-active .icon-circle {
+  background: #F6D001;
+}
+
+.glass-card.is-active .icon-circle .chevron {
+  color: #0a0f1d;
+}
+
+.answer-row {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.answer-row p {
+  color: #94a3b8;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+/* Floating CTA */
+.cta-floating {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 100;
+}
+
+.cta-content {
+  background: #F6D001;
+  padding: 10px 10px 10px 25px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(246, 208, 1, 0.3);
+  animation: float 3s ease-in-out infinite;
 }
 
 .cta-text h3 {
-  font-size: 1.8rem;
-  font-weight: 900;
-  margin-bottom: 10px;
+  color: #0a0f1d;
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin: 0;
 }
 
 .cta-text p {
-  opacity: 0.8;
-  font-size: 1.1rem;
+  color: #0a0f1d;
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.7;
 }
 
-.btn-whatsapp-capital {
-  background: #F6D001;
-  color: #1e3a8a;
+.btn-action-yellow {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #0a0f1d;
+  color: #F6D001;
   border: none;
-  padding: 18px 35px;
-  border-radius: 14px;
-  font-weight: 900;
-  font-size: 1rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
+  justify-content: center;
   transition: all 0.3s;
-  box-shadow: 0 10px 20px rgba(246, 208, 1, 0.2);
 }
 
-.btn-whatsapp-capital:hover {
-  background: #ffffff;
-  transform: scale(1.05);
-  box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+.btn-action-yellow:hover {
+  transform: scale(1.1) rotate(10deg);
 }
 
-/* Animações */
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
 .expand-enter-active, .expand-leave-active {
   transition: all 0.3s ease;
-  max-height: 300px;
+  max-height: 400px;
   overflow: hidden;
 }
 .expand-enter-from, .expand-leave-to {
@@ -414,9 +415,10 @@ const abrirWhatsapp = () => {
   opacity: 0;
 }
 
-@media (max-width: 992px) {
-  .faq-grid { grid-template-columns: 1fr; }
-  .cta-box { flex-direction: column; text-align: center; gap: 30px; padding: 40px 20px; }
-  .faq-hero h1 { font-size: 2.5rem; }
+@media (max-width: 768px) {
+  .faq-header h1 { font-size: 2.2rem; }
+  .glass-card:hover { transform: none; }
+  .cta-floating { right: 20px; left: 20px; bottom: 20px; }
+  .cta-content { width: 100%; justify-content: space-between; }
 }
 </style>
