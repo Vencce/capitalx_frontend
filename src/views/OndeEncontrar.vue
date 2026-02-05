@@ -1,7 +1,7 @@
 <script setup>
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
-import { MapPin, Phone, Clock, Navigation, Camera, Globe } from 'lucide-vue-next'
+import { MapPin, Phone, Clock, Navigation, Camera } from 'lucide-vue-next'
 
 const unidadePrincipal = {
   nome: 'Capital-X Consórcios',
@@ -9,9 +9,8 @@ const unidadePrincipal = {
   cidade: 'São Bento do Sul - SC',
   cep: '89288-040',
   telefone: '(47) 3170-3656',
-  email: 'contato@capitalxinvest.com.br',
   horario: 'Segunda a Sexta: 08:30 às 17:30',
-  googleMapsLink: 'https://www.google.com/maps/dir/?api=1&destination=-26.2415,-49.3815'
+  googleMapsLink: 'https://www.google.com/maps/dir//Capital-X+Cons%C3%B3rcios+-+R.+Erhardt+Pauli,+221+-+Colonial,+S%C3%A3o+Bento+do+Sul+-+SC,+89288-040/@-26.2427814,-49.3739726,17z'
 }
 </script>
 
@@ -22,60 +21,55 @@ const unidadePrincipal = {
     <section class="location-hero">
       <div class="hero-pattern"></div>
       <div class="container hero-inner">
-        <span class="gold-tag">Contato & Localização</span>
+        <span class="gold-tag">Nossa Sede</span>
         <h1>Onde nos <span>Encontrar</span></h1>
       </div>
     </section>
 
     <main class="location-main">
       <div class="container">
-        <div class="main-mosaico">
+        <div class="mosaico-wrapper">
           
-          <div class="side-card office-image">
-            <div class="image-container">
-              <img src="/src/assets/imagens/encontrar.jpeg" alt="Sede Capital X" />
-              <div class="img-badge">
-                <Camera :size="16" />
-                Sede Oficial
+          <div class="mosaico-card card-img">
+            <div class="image-box">
+              <img src="/src/assets/imagens/encontrar.jpeg" alt="Fachada Capital X" />
+              <div class="badge-office">
+                <Camera :size="14" />
+                <span>Sede Oficial</span>
               </div>
             </div>
           </div>
 
-          <div class="side-card info-content">
-            <div class="info-header">
-              <div class="brand-line"></div>
-              <h2>Capital-X Consórcios</h2>
-            </div>
+          <div class="mosaico-card card-info">
+            <div class="gold-line"></div>
+            <h2>Capital-X <br/> Consórcios</h2>
             
-            <div class="contact-list">
-              <div class="contact-item">
-                <MapPin class="c-icon" :size="20" />
-                <div>
-                  <p>{{ unidadePrincipal.endereco }}</p>
-                  <p>{{ unidadePrincipal.cidade }}</p>
-                </div>
+            <div class="info-list">
+              <div class="info-row">
+                <MapPin class="icon-gold" :size="20" />
+                <p>{{ unidadePrincipal.endereco }} <br/> {{ unidadePrincipal.cidade }}</p>
               </div>
-
-              <div class="contact-item">
-                <Clock class="c-icon" :size="20" />
+              
+              <div class="info-row">
+                <Clock class="icon-gold" :size="20" />
                 <p>{{ unidadePrincipal.horario }}</p>
               </div>
 
-              <div class="contact-item">
-                <Phone class="c-icon" :size="20" />
+              <div class="info-row">
+                <Phone class="icon-gold" :size="20" />
                 <p>{{ unidadePrincipal.telefone }}</p>
               </div>
             </div>
 
-            <a :href="unidadePrincipal.googleMapsLink" target="_blank" class="btn-gps">
+            <a :href="unidadePrincipal.googleMapsLink" target="_blank" class="btn-route">
               <Navigation :size="18" />
               Iniciar Rota no GPS
             </a>
           </div>
 
-          <div class="side-card map-box">
+          <div class="mosaico-card card-map">
             <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3587.356345862083!2d-49.38374242371999!3d-26.24194096594247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de15a489a26105%3A0x27a00437623a983b!2sR.%20Erhardt%20Pauli%2C%20221%20-%20Colonial%2C%20S%C3%A3o%20Bento%20do%20Sul%20-%20SC%2C%2089288-040!5e0!3m2!1spt-BR!2sbr!4v1700000000000!5m2!1spt-BR!2sbr" 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3587.408479589136!2d-49.3739726!3d-26.2427814!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94de16a989a0a805%3A0xed082427323a983b!2sCapital-X%20Cons%C3%B3rcios!5e0!3m2!1spt-BR!2sbr!4v1710000000000!5m2!1spt-BR!2sbr" 
               width="100%" 
               height="100%" 
               style="border:0;" 
@@ -93,13 +87,12 @@ const unidadePrincipal = {
 </template>
 
 <style scoped>
-.location-page { background-color: #f8fafc; min-height: 100vh; }
-.container { max-width: 1300px; margin: 0 auto; padding: 0 20px; }
+.location-page { background-color: #f1f5f9; min-height: 100vh; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-/* Hero Compacto para não empurrar o conteúdo para baixo */
 .location-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  padding: 60px 0 80px;
+  padding: 60px 0 100px;
   position: relative;
   text-align: center;
   color: white;
@@ -117,10 +110,10 @@ const unidadePrincipal = {
   color: #F6D001;
   text-transform: uppercase;
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   letter-spacing: 2px;
-  border: 1px solid rgba(246, 208, 1, 0.3);
-  padding: 4px 12px;
+  background: rgba(246, 208, 1, 0.1);
+  padding: 5px 15px;
   border-radius: 4px;
   margin-bottom: 15px;
   display: inline-block;
@@ -129,63 +122,64 @@ const unidadePrincipal = {
 .location-hero h1 { font-size: 2.5rem; font-weight: 900; }
 .location-hero h1 span { color: #F6D001; }
 
-/* Mosaico Principal */
-.location-main { margin-top: -40px; padding-bottom: 80px; position: relative; z-index: 10; }
+/* Mosaico Estilizado */
+.location-main { margin-top: -60px; padding-bottom: 100px; position: relative; z-index: 10; }
 
-.main-mosaico {
+.mosaico-wrapper {
   display: grid;
-  grid-template-columns: 350px 1fr 400px;
+  grid-template-columns: 320px 1fr 380px;
   gap: 20px;
-  align-items: stretch;
+  align-items: start;
 }
 
-.side-card {
+.mosaico-card {
   background: white;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+  border-radius: 24px;
+  box-shadow: 0 15px 35px -5px rgba(0,0,0,0.07);
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.8);
 }
 
-/* Coluna Imagem */
-.image-container { position: relative; height: 100%; min-height: 350px; }
-.image-container img { width: 100%; height: 100%; object-fit: cover; }
-.img-badge {
+/* Card Imagem */
+.image-box { position: relative; line-height: 0; }
+.image-box img { width: 100%; height: auto; display: block; }
+.badge-office {
   position: absolute; bottom: 15px; left: 15px;
-  background: rgba(15, 23, 42, 0.85); color: white;
-  padding: 6px 12px; border-radius: 8px; font-size: 0.75rem;
-  display: flex; align-items: center; gap: 6px;
+  background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px);
+  color: white; padding: 6px 14px; border-radius: 50px;
+  display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 600;
 }
 
-/* Coluna Info */
-.info-content { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
-.brand-line { width: 40px; height: 4px; background: #F6D001; margin-bottom: 15px; }
-.info-content h2 { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-bottom: 30px; }
+/* Card Info */
+.card-info { padding: 40px; min-height: 400px; display: flex; flex-direction: column; }
+.gold-line { width: 40px; height: 5px; background: #F6D001; margin-bottom: 20px; border-radius: 10px; }
+.card-info h2 { font-size: 1.8rem; font-weight: 900; color: #0f172a; margin-bottom: 35px; line-height: 1.2; }
 
-.contact-list { display: flex; flex-direction: column; gap: 25px; margin-bottom: 35px; }
-.contact-item { display: flex; gap: 15px; align-items: flex-start; }
-.c-icon { color: #F6D001; flex-shrink: 0; margin-top: 3px; }
-.contact-item p { color: #64748b; line-height: 1.5; font-size: 0.95rem; font-weight: 500; }
+.info-list { display: flex; flex-direction: column; gap: 25px; flex-grow: 1; }
+.info-row { display: flex; gap: 15px; align-items: flex-start; }
+.icon-gold { color: #F6D001; flex-shrink: 0; }
+.info-row p { color: #64748b; font-size: 1rem; font-weight: 500; line-height: 1.5; }
 
-.btn-gps {
-  background: #1e3a8a; color: white; padding: 15px 25px; border-radius: 12px;
-  text-decoration: none; font-weight: 800; display: inline-flex;
-  align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;
+.btn-route {
+  margin-top: 30px; background: #1e3a8a; color: white; padding: 18px; 
+  border-radius: 14px; text-decoration: none; font-weight: 800; 
+  display: flex; align-items: center; justify-content: center; gap: 10px; 
+  transition: all 0.3s;
 }
 
-.btn-gps:hover { background: #F6D001; color: #1e3a8a; transform: translateY(-3px); }
+.btn-route:hover { background: #F6D001; color: #1e3a8a; transform: translateY(-3px); }
 
-/* Coluna Mapa */
-.map-box { min-height: 350px; }
+/* Card Mapa */
+.card-map { height: 450px; }
 
-@media (max-width: 1200px) {
-  .main-mosaico { grid-template-columns: 1fr 1fr; }
-  .office-image { display: none; } /* Esconde a foto em tablets para focar no mapa/info */
+@media (max-width: 1100px) {
+  .mosaico-wrapper { grid-template-columns: 1fr 1fr; }
+  .card-img { display: none; }
 }
 
 @media (max-width: 768px) {
-  .main-mosaico { grid-template-columns: 1fr; }
-  .location-hero h1 { font-size: 2rem; }
-  .info-content { padding: 30px; }
+  .mosaico-wrapper { grid-template-columns: 1fr; }
+  .card-map { height: 350px; }
+  .card-info { padding: 30px; }
 }
 </style>
