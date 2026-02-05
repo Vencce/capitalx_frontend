@@ -37,9 +37,17 @@ const toggleSelection = (carta) => {
     selectedCartas.value.splice(index, 1)
   } else {
     if (selectedCartas.value.length > 0) {
-      const firstAdm = selectedCartas.value[0].administradora
-      if (carta.administradora !== firstAdm) {
+      const firstCarta = selectedCartas.value[0]
+      
+      // Validação de Administradora
+      if (carta.administradora !== firstCarta.administradora) {
         alert('Atenção: Você só pode somar cartas da mesma administradora!')
+        return
+      }
+
+      // Validação de Categoria (Tipo de Bem)
+      if (carta.tipo !== firstCarta.tipo) {
+        alert(`Atenção: Não é possível misturar categorias. Você já selecionou um(a) ${firstCarta.tipo}, e esta cota é de ${carta.tipo}.`)
         return
       }
     }
@@ -62,7 +70,10 @@ const totals = computed(() => {
 const isSelectionDisabled = (carta) => {
   if (carta.status !== 'DISPONIVEL') return true
   if (selectedCartas.value.length === 0) return false
-  return selectedCartas.value[0].administradora !== carta.administradora
+  
+  const firstCarta = selectedCartas.value[0]
+  // Desabilita se for admin diferente OU tipo diferente
+  return firstCarta.administradora !== carta.administradora || firstCarta.tipo !== carta.tipo
 }
 
 const formatCurrency = (value) => {
@@ -246,7 +257,7 @@ onMounted(buscarCartas)
               <div class="count-circle">{{ selectedCartas.length }}</div>
               <div class="summary-label">
                 <strong>Cartas Selecionadas</strong>
-                <span>Mesma Administradora</span>
+                <span>Mesma Administradora e Categoria</span>
               </div>
             </div>
             <div class="summary-values">
@@ -308,7 +319,6 @@ onMounted(buscarCartas)
   left: 0;
   right: 0;
   bottom: 0;
-  /*background: linear-gradient(to bottom, rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.4));*/
 }
 .hero-content {
   position: relative;
