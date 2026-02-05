@@ -4,7 +4,7 @@ import Login from '../views/Login.vue'
 // Novas Páginas Públicas
 import QuemSomos from '../views/QuemSomos.vue'
 import ComoFunciona from '../views/ComoFunciona.vue'
-import Depoimentos from '../views/Depomentos.vue'
+import Duvidas from '../views/Duvidas.vue'
 
 // Admin
 import Dashboard from '../views/admin/Dashboard.vue'
@@ -16,7 +16,7 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/quem-somos', name: 'QuemSomos', component: QuemSomos },
   { path: '/como-funciona', name: 'ComoFunciona', component: ComoFunciona },
-  { path: '/depoimentos', name: 'Depoimentos', component: Depoimentos },
+  { path: '/duvidas', name: 'Duvidas', component: Duvidas },
   { path: '/login', name: 'Login', component: Login },
 
   // Área Administrativa (Protegida)
