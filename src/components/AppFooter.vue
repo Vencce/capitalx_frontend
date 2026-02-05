@@ -1,5 +1,5 @@
 <script setup>
-import logoSrc from '../assets/imagens/logo.png'
+import logoSrc from '../assets/imagens/logo_branco.png'
 import { useConfigStore } from '../stores/config'
 
 // A store providencia os contatos configurados no painel
