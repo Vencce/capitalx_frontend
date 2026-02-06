@@ -11,50 +11,58 @@ const searchQuery = ref('')
 const todasDuvidas = ref([
   {
     pergunta: 'O que é uma carta de consórcio contemplada?',
-    resposta: 'É uma cota de consórcio que já foi contemplada por sorteio ou lance, ou seja, o crédito já está liberado para utilização imediata na compra de imóveis ou veículos, conforme as regras do grupo.',
-    aberta: false
+    resposta:
+      'É uma cota de consórcio que já foi contemplada por sorteio ou lance, ou seja, o crédito já está liberado para utilização imediata na compra de imóveis ou veículos, conforme as regras do grupo.',
+    aberta: false,
   },
   {
     pergunta: 'Qual a diferença entre carta contemplada e financiamento?',
-    resposta: 'No financiamento, há incidência de juros elevados. Na carta contemplada, não existem juros, apenas taxa administrativa, proporcionando uma forma mais econômica e planejada de adquirir bens.',
-    aberta: false
+    resposta:
+      'No financiamento, há incidência de juros elevados. Na carta contemplada, não existem juros, apenas taxa administrativa, proporcionando uma forma mais econômica e planejada de adquirir bens.',
+    aberta: false,
   },
   {
     pergunta: 'É seguro comprar uma carta contemplada?',
-    resposta: 'Sim. A negociação é feita com análise documental, transferência formal da cota e acompanhamento de todo o processo junto à administradora do consórcio, garantindo segurança e transparência.',
-    aberta: false
+    resposta:
+      'Sim. A negociação é feita com análise documental, transferência formal da cota e acompanhamento de todo o processo junto à administradora do consórcio, garantindo segurança e transparência.',
+    aberta: false,
   },
   {
     pergunta: 'A carta contemplada pode ser usada como compra à vista?',
-    resposta: 'Sim. Após a contemplação e aprovação da administradora, o crédito permite compra à vista, o que aumenta o poder de negociação com o vendedor.',
-    aberta: false
+    resposta:
+      'Sim. Após a contemplação e aprovação da administradora, o crédito permite compra à vista, o que aumenta o poder de negociação com o vendedor.',
+    aberta: false,
   },
   {
     pergunta: 'Quais bens posso adquirir com a carta contemplada?',
-    resposta: 'É possível adquirir imóveis residenciais ou comerciais, terrenos, construção, reforma, quitação de financiamento e veículos automotores (carro, moto, caminhão, etc).',
-    aberta: false
+    resposta:
+      'É possível adquirir imóveis residenciais ou comerciais, terrenos, construção, reforma, quitação de financiamento e veículos automotores (carro, moto, caminhão, etc).',
+    aberta: false,
   },
   {
     pergunta: 'Existe entrada para adquirir uma carta contemplada?',
-    resposta: 'Sim. A entrada corresponde aos valores já pagos pelo atual titular da cota, além de custos de intermediação, variando conforme o valor do crédito e as condições da cota.',
-    aberta: false
+    resposta:
+      'Sim. A entrada corresponde aos valores já pagos pelo atual titular da cota, além de custos de intermediação, variando conforme o valor do crédito e as condições da cota.',
+    aberta: false,
   },
   {
     pergunta: 'Posso descontar o valor da entrada do crédito da carta?',
-    resposta: 'Não. O valor da entrada não pode ser descontado do crédito. Porém, existem alternativas estratégicas para viabilizar a operação conforme as regras da administradora.',
-    aberta: false
+    resposta:
+      'Não. O valor da entrada não pode ser descontado do crédito. Porém, existem alternativas estratégicas para viabilizar a operação conforme as regras da administradora.',
+    aberta: false,
   },
   {
     pergunta: 'Como faço para saber qual carta é ideal para mim?',
-    resposta: 'Basta entrar em contato. Avaliamos seu perfil, objetivo e capacidade de pagamento para indicar a carta contemplada mais adequada à sua estratégia financeira.',
-    aberta: false
-  }
+    resposta:
+      'Basta entrar em contato. Avaliamos seu perfil, objetivo e capacidade de pagamento para indicar a carta contemplada mais adequada à sua estratégia financeira.',
+    aberta: false,
+  },
 ])
 
 const duvidasFiltradas = computed(() => {
   if (!searchQuery.value) return todasDuvidas.value
-  return todasDuvidas.value.filter(d => 
-    d.pergunta.toLowerCase().includes(searchQuery.value.toLowerCase())
+  return todasDuvidas.value.filter((d) =>
+    d.pergunta.toLowerCase().includes(searchQuery.value.toLowerCase()),
   )
 })
 
@@ -79,8 +87,11 @@ const abrirWhatsapp = () => {
         <div class="hero-content">
           <span class="gold-tag">Atendimento Exclusivo</span>
           <h1>Dúvidas <span>Frequentes</span></h1>
-          <p>Tudo o que você precisa saber sobre o mercado de cartas contempladas com a segurança da Capital X.</p>
-          
+          <p>
+            Tudo o que você precisa saber sobre o mercado de cartas contempladas com a segurança da
+            Capital X.
+          </p>
+
           <div class="search-box">
             <Search class="search-icon" :size="20" />
             <input type="text" v-model="searchQuery" placeholder="O que você deseja saber?" />
@@ -93,9 +104,9 @@ const abrirWhatsapp = () => {
       <div class="container">
         <div class="faq-grid" v-if="duvidasFiltradas.length > 0">
           <div class="faq-col">
-            <div 
-              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 === 0)" 
-              :key="'col1-'+index"
+            <div
+              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 === 0)"
+              :key="'col1-' + index"
               class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
@@ -116,9 +127,9 @@ const abrirWhatsapp = () => {
           </div>
 
           <div class="faq-col">
-            <div 
-              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 !== 0)" 
-              :key="'col2-'+index"
+            <div
+              v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 !== 0)"
+              :key="'col2-' + index"
               class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
@@ -148,7 +159,10 @@ const abrirWhatsapp = () => {
           <div class="cta-inner">
             <div class="cta-text">
               <h2>Ainda restam dúvidas?</h2>
-              <p>Nossos consultores estão prontos para realizar uma análise personalizada do seu perfil.</p>
+              <p>
+                Nossos consultores estão prontos para realizar uma análise personalizada do seu
+                perfil.
+              </p>
             </div>
             <button class="btn-cta-gold" @click="abrirWhatsapp">
               <MessageCircle :size="22" />
@@ -204,12 +218,12 @@ const abrirWhatsapp = () => {
 }
 
 .gold-tag {
-  color: #F6D001;
+  color: #f6d001;
   text-transform: uppercase;
   font-weight: 800;
   font-size: 0.8rem;
   letter-spacing: 2px;
-  border: 1px solid #F6D001;
+  border: 1px solid #f6d001;
   padding: 6px 16px;
   border-radius: 4px;
   display: inline-block;
@@ -223,7 +237,7 @@ const abrirWhatsapp = () => {
 }
 
 .faq-hero h1 span {
-  color: #F6D001;
+  color: #f6d001;
 }
 
 .faq-hero p {
@@ -257,7 +271,7 @@ const abrirWhatsapp = () => {
   border-radius: 12px;
   border: none;
   font-size: 1rem;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   outline: none;
 }
 
@@ -286,18 +300,18 @@ const abrirWhatsapp = () => {
   cursor: pointer;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   height: fit-content;
 }
 
 .faq-card:hover {
   transform: translateY(-3px);
-  border-color: #F6D001;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  border-color: #f6d001;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .faq-card.active {
-  border-left: 4px solid #F6D001;
+  border-left: 4px solid #f6d001;
 }
 
 .faq-header-card h3 {
@@ -330,7 +344,7 @@ const abrirWhatsapp = () => {
   justify-content: space-between;
   align-items: center;
   color: white;
-  border-bottom: 5px solid #F6D001;
+  border-bottom: 5px solid #f6d001;
   width: 100%;
   margin-top: 60px;
 }
@@ -342,7 +356,7 @@ const abrirWhatsapp = () => {
 }
 
 .btn-cta-gold {
-  background: #F6D001;
+  background: #f6d001;
   color: #0f172a;
   border: none;
   padding: 16px 30px;
@@ -358,28 +372,55 @@ const abrirWhatsapp = () => {
 
 /* Responsividade Geral */
 @media (max-width: 900px) {
-  .faq-grid { grid-template-columns: 1fr; }
-  .cta-inner { flex-direction: column; text-align: center; gap: 30px; padding: 30px 20px; }
-  .btn-cta-gold { width: 100%; justify-content: center; }
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 30px;
+    padding: 30px 20px;
+  }
+  .btn-cta-gold {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 490px) {
-  .faq-hero { padding: 60px 0 80px; }
-  .search-box { padding: 0 10px; }
-  .faq-main { padding: 40px 0; margin-top: -30px; }
-  .faq-card { padding: 15px; }
-  .faq-header-card h3 { font-size: 0.95rem; }
-  .cta-text h2 { font-size: 1.4rem; }
-  .cta-text p { font-size: 1rem; }
+  .faq-hero {
+    padding: 60px 0 80px;
+  }
+  .search-box {
+    padding: 0 10px;
+  }
+  .faq-main {
+    padding: 40px 0;
+    margin-top: -30px;
+  }
+  .faq-card {
+    padding: 15px;
+  }
+  .faq-header-card h3 {
+    font-size: 0.95rem;
+  }
+  .cta-text h2 {
+    font-size: 1.4rem;
+  }
+  .cta-text p {
+    font-size: 1rem;
+  }
 }
 
 /* Animações */
-.fade-height-enter-active, .fade-height-leave-active {
+.fade-height-enter-active,
+.fade-height-leave-active {
   transition: all 0.3s ease;
   max-height: 400px;
   overflow: hidden;
 }
-.fade-height-enter-from, .fade-height-leave-to {
+.fade-height-enter-from,
+.fade-height-leave-to {
   max-height: 0;
   opacity: 0;
 }
