@@ -67,6 +67,8 @@ const configStore = useConfigStore()
   padding-top: 80px;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  /* Impede o scroll horizontal */
+  overflow-x: hidden; 
 }
 
 .footer-container {
@@ -112,16 +114,15 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 }
 
 .footer-nav a:hover {
-  color: #F6D001; /* Amarelo Capital X no hover */
+  color: #F6D001;
   padding-left: 5px;
 }
 
 .contact-icon {
-  color: #F6D001; /* Ícones de contato em amarelo */
+  color: #F6D001;
   flex-shrink: 0;
 }
 
-/* Estilização dos Ícones Sociais */
 .socials {
   display: flex;
   gap: 15px;
@@ -130,7 +131,7 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 .social-icon {
   width: 42px;
   height: 42px;
-  border-radius: 10px; /* Quadrado levemente arredondado fica mais moderno */
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   color: white;
   display: flex;
@@ -156,25 +157,40 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* --- REGRAS DE RESPONSIVIDADE --- */
+/* --- REGRAS DE RESPONSIVIDADE ADICIONAIS --- */
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
+  .footer-container {
+    gap: 40px;
+    /* Reduz as colunas para caber em tablets sem quebrar */
+    grid-template-columns: 1fr 1fr; 
+  }
+  .footer-brand {
+    grid-column: span 2; /* Logo ocupa a largura toda no tablet */
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
   .main-footer {
-    padding-top: 60px;
+    padding-top: 40px;
   }
 
   .footer-container {
-    grid-template-columns: 1fr;
-    gap: 50px;
+    display: flex;
+    flex-direction: column; /* No celular empilha, mas mantém compacto */
+    align-items: center;
     text-align: center;
+    gap: 35px;
     padding-bottom: 40px;
   }
   
   .footer-brand p {
-    margin: 0 auto 25px;
+    margin: 0 auto 20px;
+    max-width: 100%; /* Evita que o parágrafo force largura */
   }
 
-  .footer-contact li {
+  .footer-contact li, .footer-nav li {
     justify-content: center;
   }
 
@@ -183,26 +199,24 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
   }
 
   .footer-brand .footer-logo {
-    margin: 0 auto 25px;
+    margin: 0 auto 20px;
+    height: 50px; /* Logo um pouco menor no mobile para não estourar */
   }
 
   h4 {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    font-size: 1rem;
   }
 
   .footer-nav a:hover {
-    padding-left: 0; /* Remove o deslocamento lateral no mobile para manter o alinhamento central */
-    color: #F6D001;
+    padding-left: 0;
   }
 }
 
 @media (max-width: 480px) {
   .footer-container {
-    gap: 40px;
-  }
-  
-  .footer-bottom {
-    padding: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
   }
 }
 </style>
