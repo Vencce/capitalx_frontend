@@ -278,7 +278,11 @@ const handleCardClick = () => {
 </template>
 
 <style scoped>
-/* CSS PADRÃO (DESKTOP) */
+/* RESET DE BOX SIZING PARA EVITAR ESTOURO */
+* {
+  box-sizing: border-box;
+}
+
 .card-horizontal {
   background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
   width: 100%; overflow: hidden; transition: all 0.3s ease; position: relative;
@@ -297,6 +301,7 @@ const handleCardClick = () => {
 .card-horizontal.reservado { border-left-color: #F6D001; }
 .card-horizontal.vendido { border-left-color: #ef4444; }
 
+/* LAYOUT DESKTOP */
 .card-main { padding: 24px; display: grid; grid-template-columns: 1.8fr 3fr 1fr; gap: 24px; align-items: center; }
 .primary-section { display: flex; align-items: center; gap: 16px; }
 .icon-box { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); color: white; background: #1e3a8a; }
@@ -362,68 +367,73 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 
 @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* RESPONSIVIDADE HORIZONTAL COMPACTA (MOBILE) */
+/* RESPONSIVIDADE HORIZONTAL COMPACTA (RESOLUÇÃO 490px) */
 @media (max-width: 600px) {
   .card-main { 
     grid-template-columns: 1fr auto; 
-    padding: 12px 12px 12px 35px; /* Espaço para o checkbox */
-    gap: 10px;
+    padding: 10px 10px 10px 32px; /* Reduzido padding */
+    gap: 8px;
   }
   
-  .primary-section { gap: 10px; }
-  .icon-box { width: 40px; height: 40px; border-radius: 8px; }
-  .icon-box svg { width: 20px; height: 20px; }
+  .primary-section { gap: 8px; }
+  .icon-box { width: 36px; height: 36px; border-radius: 6px; }
+  .icon-box svg { width: 18px; height: 18px; }
 
-  .credit-value { font-size: 1.15rem; }
-  .bank-name { font-size: 0.6rem; }
-  .subtitle { font-size: 0.7rem; }
+  .credit-value { font-size: 1.05rem; }
+  .bank-name { font-size: 0.55rem; }
+  .subtitle { font-size: 0.65rem; }
 
   .details-section { 
     grid-column: 1 / -1; 
     border-left: none; 
     padding-left: 0;
-    gap: 15px;
-    margin-top: 8px;
+    gap: 12px;
+    margin-top: 6px;
     border-top: 1px solid #f1f5f9;
-    padding-top: 10px;
+    padding-top: 8px;
+    justify-content: flex-start;
   }
   
-  .val { font-size: 0.9rem; }
-  .label { font-size: 0.6rem; }
+  .val { font-size: 0.8rem; letter-spacing: -0.2px; }
+  .label { font-size: 0.55rem; }
 
   .logo-section { 
     grid-row: 1; 
     grid-column: 2; 
-    align-self: flex-start;
+    align-self: center; /* Centralizado para caber melhor na linha */
   }
-  .logo-img { max-height: 25px; max-width: 70px; }
+  .logo-img { max-height: 22px; max-width: 65px; }
 
   .card-footer { 
-    padding: 10px 15px; 
-    flex-direction: row; 
-    justify-content: space-between;
+    padding: 8px 12px; 
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
 
-  .status-badge { font-size: 0.65rem; padding: 3px 8px; }
+  .status-badge { font-size: 0.6rem; padding: 2px 6px; }
   
   .actions { 
-    gap: 6px; 
+    gap: 5px; 
     width: 100%; 
     justify-content: space-between; 
     border-top: 1px solid #f1f5f9;
-    padding-top: 10px;
+    padding-top: 8px;
   }
   
-  button { padding: 8px 10px; font-size: 0.8rem; flex: 1; }
-  .btn-icon { width: 36px; height: 36px; flex: 0 0 auto; }
-  .w-icon { width: 14px; height: 14px; }
+  button { padding: 6px 8px; font-size: 0.75rem; flex: 1; height: 32px; }
+  .btn-icon { width: 32px; height: 32px; flex: 0 0 auto; }
+  .btn-secondary { font-size: 0.7rem; }
+  .btn-whatsapp { font-size: 0.75rem; }
+  .w-icon { width: 12px; height: 12px; }
   
-  /* MODAL MOBILE */
-  .modal-content { padding: 20px; }
-  .modal-grid { grid-template-columns: 1fr; gap: 15px; }
-  .modal-icon-box { width: 48px; height: 48px; border-radius: 12px; }
-  .modal-title { font-size: 1.2rem; }
+  .selection-indicator { top: 8px; left: 8px; }
+  .checkbox-custom { width: 18px; height: 18px; }
+}
+
+/* AJUSTE PARA TELAS EXTREMAMENTE PEQUENAS (ABAIXO DE 380px) */
+@media (max-width: 380px) {
+  .details-section { gap: 8px; }
+  .val { font-size: 0.75rem; }
+  .credit-value { font-size: 1rem; }
 }
 </style>
