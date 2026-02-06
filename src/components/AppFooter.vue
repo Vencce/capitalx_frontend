@@ -173,43 +173,45 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 
 @media (max-width: 768px) {
   .main-footer {
-    padding-top: 40px;
+    padding-top: 40px; /* Reduzido de 80px */
   }
 
   .footer-container {
     display: flex;
-    flex-direction: column; /* No celular empilha, mas mantém compacto */
+    flex-direction: column;
     align-items: center;
+    gap: 30px; /* Reduzido de 80px/50px para compactar */
     text-align: center;
-    gap: 35px;
-    padding-bottom: 40px;
-  }
-  
-  .footer-brand p {
-    margin: 0 auto 20px;
-    max-width: 100%; /* Evita que o parágrafo force largura */
+    padding-bottom: 30px;
   }
 
-  .footer-contact li, .footer-nav li {
-    justify-content: center;
-  }
-
-  .socials {
-    justify-content: center;
+  /* Faz Navegação e Contato ficarem lado a lado se couberem, ou apenas reduz o gap */
+  .footer-nav, .footer-contact {
+    width: 100%;
+    margin-bottom: 10px;
   }
 
   .footer-brand .footer-logo {
-    margin: 0 auto 20px;
-    height: 50px; /* Logo um pouco menor no mobile para não estourar */
+    height: 45px; /* Logo um pouco menor no mobile */
+    margin-bottom: 15px;
+  }
+
+  .footer-brand p {
+    font-size: 0.85rem;
+    margin-bottom: 15px;
   }
 
   h4 {
-    margin-bottom: 15px;
+    margin-bottom: 15px; /* Reduzido de 30px */
     font-size: 1rem;
   }
 
-  .footer-nav a:hover {
-    padding-left: 0;
+  li {
+    margin-bottom: 8px; /* Lista mais compacta */
+  }
+
+  .socials {
+    margin-top: 10px;
   }
 }
 
