@@ -24,38 +24,40 @@ const configStore = useConfigStore()
         </div>
       </div>
 
-      <div class="footer-nav">
-        <h4>Navegação</h4>
-        <ul>
-          <li><router-link to="/">Início</router-link></li>
-          <li><router-link to="/">Cartas de Imóveis</router-link></li>
-          <li><router-link to="/">Cartas de Veículos</router-link></li>
-          <li><router-link to="/quem-somos">Sobre Nós</router-link></li>
-        </ul>
-      </div>
+      <div class="footer-links-wrapper">
+        <div class="footer-nav">
+          <h4>Navegação</h4>
+          <ul>
+            <li><router-link to="/">Início</router-link></li>
+            <li><router-link to="/">Imóveis</router-link></li>
+            <li><router-link to="/">Veículos</router-link></li>
+            <li><router-link to="/quem-somos">Sobre Nós</router-link></li>
+          </ul>
+        </div>
 
-      <div class="footer-contact">
-        <h4>Fale Conosco</h4>
-        <ul>
-          <li>
-            <MapPin :size="18" class="contact-icon" />
-            <span>São Bento do Sul, SC</span>
-          </li>
-          <li>
-            <Phone :size="18" class="contact-icon" />
-            <span>{{ configStore.whatsapp || '(47) 99999-9999' }}</span>
-          </li>
-          <li>
-            <Mail :size="18" class="contact-icon" />
-            <span>{{ configStore.email || 'contato@capitalx.com.br' }}</span>
-          </li>
-        </ul>
+        <div class="footer-contact">
+          <h4>Contato</h4>
+          <ul>
+            <li>
+              <MapPin :size="14" class="contact-icon" />
+              <span>São Bento, SC</span>
+            </li>
+            <li>
+              <Phone :size="14" class="contact-icon" />
+              <span>WhatsApp</span>
+            </li>
+            <li>
+              <Mail :size="14" class="contact-icon" />
+              <span>E-mail</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
     </div>
     
     <div class="footer-bottom">
-      <p>&copy; {{ new Date().getFullYear() }} Capital X Invest. Todos os direitos reservados.</p>
+      <p>&copy; {{ new Date().getFullYear() }} Capital X Invest.</p>
     </div>
   </footer>
 </template>
@@ -67,8 +69,6 @@ const configStore = useConfigStore()
   padding-top: 80px;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  /* Impede o scroll horizontal */
-  overflow-x: hidden; 
 }
 
 .footer-container {
@@ -80,12 +80,14 @@ const configStore = useConfigStore()
   gap: 80px;
 }
 
-/* Logo aumentada */
+.footer-links-wrapper {
+  display: contents; /* No desktop ele se comporta como se não existisse para manter o grid pai */
+}
+
 .footer-brand .footer-logo {
   height: 60px; 
   margin-bottom: 25px;
   filter: brightness(0) invert(1);
-  opacity: 1;
 }
 
 .footer-brand p {
@@ -101,131 +103,83 @@ h4 {
   margin-bottom: 30px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 ul { list-style: none; padding: 0; margin: 0; }
 li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center; gap: 12px; }
 
-.footer-nav a {
-  text-decoration: none;
-  color: #94a3b8;
-  transition: all 0.3s ease;
-}
+.footer-nav a { text-decoration: none; color: #94a3b8; transition: 0.3s; }
+.footer-nav a:hover { color: #F6D001; }
 
-.footer-nav a:hover {
-  color: #F6D001;
-  padding-left: 5px;
-}
+.contact-icon { color: #F6D001; flex-shrink: 0; }
 
-.contact-icon {
-  color: #F6D001;
-  flex-shrink: 0;
-}
-
-.socials {
-  display: flex;
-  gap: 15px;
-}
-
+.socials { display: flex; gap: 15px; }
 .social-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.social-icon:hover {
-  background: #F6D001;
-  color: #0f172a;
-  transform: translateY(-5px);
-  border-color: #F6D001;
+  width: 42px; height: 42px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05); color: white;
+  display: flex; align-items: center; justify-content: center;
+  transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center;
-  padding: 30px;
-  font-size: 0.85rem;
-  background: rgba(0, 0, 0, 0.2);
+  text-align: center; padding: 30px; font-size: 0.85rem;
 }
 
-/* --- REGRAS DE RESPONSIVIDADE ADICIONAIS --- */
+/* --- RESPONSIVIDADE PARA CELULAR (480px) --- */
+@media (max-width: 480px) {
+  .main-footer { padding-top: 40px; }
 
-@media (max-width: 1024px) {
-  .footer-container {
-    gap: 40px;
-    /* Reduz as colunas para caber em tablets sem quebrar */
-    grid-template-columns: 1fr 1fr; 
-  }
-  .footer-brand {
-    grid-column: span 2; /* Logo ocupa a largura toda no tablet */
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 768px) {
   .footer-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 20px; /* Reduz o espaçamento geral */
-    padding-bottom: 20px;
+    gap: 30px;
+    text-align: center;
   }
 
-  /* Centraliza a Logo e a Descrição no topo */
   .footer-brand {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 10px;
+    order: 1; /* Logo em cima */
   }
 
   .footer-brand .footer-logo {
+    height: 50px;
     margin: 0 auto 15px;
-    height: 45px; /* Logo mais compacta */
   }
 
-  /* Coloca Navegação e Fale Conosco lado a lado */
-  .footer-sections-wrapper {
+  .footer-brand p {
+    font-size: 0.85rem;
+    margin: 0 auto 20px;
+  }
+
+  .socials { justify-content: center; }
+
+  /* COLOCA LADO A LADO */
+  .footer-links-wrapper {
+    order: 2;
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 100%;
+    text-align: left;
     gap: 10px;
   }
 
   .footer-nav, .footer-contact {
     flex: 1;
-    text-align: left; /* Ou center, conforme sua preferência */
   }
 
   h4 {
-    font-size: 0.9rem; /* Títulos menores para economizar espaço */
+    font-size: 0.9rem;
     margin-bottom: 15px;
   }
 
   li {
     font-size: 0.8rem;
-    margin-bottom: 8px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
 
-  .socials {
-    justify-content: center;
-    margin-top: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-container {
-    padding-left: 15px;
-    padding-right: 15px;
+  .footer-bottom {
+    padding: 20px;
   }
 }
 </style>
