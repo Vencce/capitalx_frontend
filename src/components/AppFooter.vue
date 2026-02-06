@@ -12,7 +12,9 @@ const configStore = useConfigStore()
       
       <div class="footer-brand">
         <img :src="logoSrc" alt="Capital X" class="footer-logo" />
-        <p>Especialistas em cartas contempladas. Transformando planos em conquistas com segurança e transparência.</p>
+        <p class="brand-description">
+          Especialistas em cartas contempladas. Transformando planos em conquistas com segurança e transparência.
+        </p>
         
         <div class="socials">
           <a :href="configStore.instagram || '#'" target="_blank" class="social-icon" aria-label="Instagram">
@@ -25,7 +27,7 @@ const configStore = useConfigStore()
       </div>
 
       <div class="footer-links-wrapper">
-        <div class="footer-nav">
+        <div class="footer-section footer-nav">
           <h4>Navegação</h4>
           <ul>
             <li><router-link to="/">Início</router-link></li>
@@ -35,7 +37,7 @@ const configStore = useConfigStore()
           </ul>
         </div>
 
-        <div class="footer-contact">
+        <div class="footer-section footer-contact">
           <h4>Contato</h4>
           <ul>
             <li>
@@ -66,47 +68,51 @@ const configStore = useConfigStore()
 .main-footer {
   background-color: #0f172a;
   color: #94a3b8;
-  padding-top: 80px;
+  padding-top: 60px;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  /* Previne estouro horizontal em qualquer dispositivo */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px 60px;
+  padding: 0 20px 40px;
   display: grid;
+  /* Layout padrão Desktop */
   grid-template-columns: 1.5fr 0.8fr 1.2fr;
-  gap: 80px;
+  gap: 40px;
 }
 
 .footer-links-wrapper {
-  display: contents; /* No desktop ele se comporta como se não existisse para manter o grid pai */
+  display: contents; /* Mantém o grid pai ativo no desktop */
 }
 
 .footer-brand .footer-logo {
-  height: 60px; 
-  margin-bottom: 25px;
+  height: 50px; 
+  margin-bottom: 20px;
   filter: brightness(0) invert(1);
 }
 
-.footer-brand p {
-  line-height: 1.7;
-  font-size: 0.95rem;
+.brand-description {
+  line-height: 1.6;
+  font-size: 0.9rem;
   max-width: 350px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 h4 {
   color: white;
-  font-size: 1.1rem;
-  margin-bottom: 30px;
+  font-size: 1rem;
+  margin-bottom: 20px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 ul { list-style: none; padding: 0; margin: 0; }
-li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center; gap: 12px; }
+li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
 
 .footer-nav a { text-decoration: none; color: #94a3b8; transition: 0.3s; }
 .footer-nav a:hover { color: #F6D001; }
@@ -115,71 +121,88 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 
 .socials { display: flex; gap: 15px; }
 .social-icon {
-  width: 42px; height: 42px; border-radius: 10px;
+  width: 38px; height: 38px; border-radius: 8px;
   background: rgba(255, 255, 255, 0.05); color: white;
   display: flex; align-items: center; justify-content: center;
-  transition: 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center; padding: 30px; font-size: 0.85rem;
+  text-align: center; padding: 20px; font-size: 0.8rem;
 }
 
-/* --- RESPONSIVIDADE PARA CELULAR (480px) --- */
-@media (max-width: 480px) {
-  .main-footer { padding-top: 40px; }
+/* --- MEDIA QUERIES PARA DIVERSAS RESOLUÇÕES --- */
 
+/* Tablet e Telas Médias */
+@media (max-width: 992px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  .footer-brand {
+    grid-column: span 2;
+    text-align: center;
+  }
+  .brand-description {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .socials { justify-content: center; }
+}
+
+/* Celulares (Ajuste solicitado para 480px e similares) */
+@media (max-width: 480px) {
   .footer-container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    align-items: center; /* Garante centralização total */
     text-align: center;
+    padding: 0 15px 30px;
   }
 
   .footer-brand {
-    order: 1; /* Logo em cima */
+    width: 100%;
+    margin-bottom: 25px;
   }
 
   .footer-brand .footer-logo {
-    height: 50px;
-    margin: 0 auto 15px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .footer-brand p {
-    font-size: 0.85rem;
-    margin: 0 auto 20px;
-  }
-
-  .socials { justify-content: center; }
-
-  /* COLOCA LADO A LADO */
+  /* Organiza Navegação e Contato Lado a Lado de forma centralizada */
   .footer-links-wrapper {
-    order: 2;
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    justify-content: space-around;
     width: 100%;
-    text-align: left;
     gap: 10px;
   }
 
-  .footer-nav, .footer-contact {
+  .footer-section {
     flex: 1;
-  }
-
-  h4 {
-    font-size: 0.9rem;
-    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza conteúdo interno das colunas */
   }
 
   li {
-    font-size: 0.8rem;
-    gap: 8px;
-    margin-bottom: 10px;
+    justify-content: center; /* Centraliza ícones e textos nos itens de lista */
+    text-align: center;
   }
 
-  .footer-bottom {
-    padding: 20px;
+  .brand-description {
+    font-size: 0.85rem;
+    max-width: 100%;
+  }
+}
+
+/* Ajustes finos para telas muito pequenas */
+@media (max-width: 360px) {
+  .footer-links-wrapper {
+    flex-direction: column;
+    gap: 20px;
   }
 }
 </style>
