@@ -65,15 +65,21 @@ const configStore = useConfigStore()
 </template>
 
 <style scoped>
+/* Reset global de box-sizing para este componente */
+* {
+  box-sizing: border-box;
+}
+
 .main-footer {
   background-color: #0f172a;
   color: #94a3b8;
   padding-top: 60px;
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  /* Previne estouro horizontal em qualquer dispositivo */
+  /* Blindagem absoluta contra scroll horizontal */
   overflow-x: hidden;
   width: 100%;
+  position: relative;
 }
 
 .footer-container {
@@ -81,13 +87,12 @@ const configStore = useConfigStore()
   margin: 0 auto;
   padding: 0 20px 40px;
   display: grid;
-  /* Layout padrão Desktop */
   grid-template-columns: 1.5fr 0.8fr 1.2fr;
   gap: 40px;
 }
 
 .footer-links-wrapper {
-  display: contents; /* Mantém o grid pai ativo no desktop */
+  display: contents; /* Mantém o grid no desktop */
 }
 
 .footer-brand .footer-logo {
@@ -132,9 +137,9 @@ li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center;
   text-align: center; padding: 20px; font-size: 0.8rem;
 }
 
-/* --- MEDIA QUERIES PARA DIVERSAS RESOLUÇÕES --- */
+/* --- REGRAS DE ADAPTAÇÃO PARA MÚLTIPLAS RESOLUÇÕES --- */
 
-/* Tablet e Telas Médias */
+/* Tablet e Telas Médias (992px) */
 @media (max-width: 992px) {
   .footer-container {
     grid-template-columns: 1fr 1fr;
@@ -143,40 +148,49 @@ li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center;
   .footer-brand {
     grid-column: span 2;
     text-align: center;
+    width: 100%;
   }
   .brand-description {
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto 20px;
+    max-width: 450px;
   }
   .socials { justify-content: center; }
 }
 
-/* Celulares (Ajuste solicitado para 480px e similares) */
+/* Celulares (480px e inferiores) */
 @media (max-width: 480px) {
   .footer-container {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Garante centralização total */
+    align-items: center;
     text-align: center;
     padding: 0 15px 30px;
+    width: 100%; /* Força o container a não ultrapassar a tela */
   }
 
   .footer-brand {
     width: 100%;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
   }
 
   .footer-brand .footer-logo {
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto 15px;
   }
 
-  /* Organiza Navegação e Contato Lado a Lado de forma centralizada */
+  .brand-description {
+    font-size: 0.85rem;
+    max-width: 100%; /* Permite que o texto quebre para evitar estouro */
+    padding: 0 10px;
+    line-height: 1.5;
+  }
+
+  /* Organiza colunas Lado a Lado centralizadas */
   .footer-links-wrapper {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 100%;
+    max-width: 400px; /* Limita largura para não encostar na borda */
     gap: 10px;
   }
 
@@ -184,25 +198,36 @@ li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center;
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centraliza conteúdo interno das colunas */
+    align-items: center;
   }
 
-  li {
-    justify-content: center; /* Centraliza ícones e textos nos itens de lista */
+  h4 {
+    font-size: 0.95rem;
+    width: 100%;
     text-align: center;
   }
 
-  .brand-description {
-    font-size: 0.85rem;
-    max-width: 100%;
+  ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
+
+  li {
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap; /* Evita quebra de palavras curtas */
+  }
+
+  .socials { margin-bottom: 10px; }
 }
 
-/* Ajustes finos para telas muito pequenas */
+/* iPhone Mini e Telas Pequenas (abaixo de 360px) */
 @media (max-width: 360px) {
   .footer-links-wrapper {
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: column; /* Em telas muito estreitas, empilha para evitar texto cortado */
+    gap: 25px;
   }
 }
 </style>
