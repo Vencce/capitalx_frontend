@@ -172,46 +172,53 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 }
 
 @media (max-width: 768px) {
-  .main-footer {
-    padding-top: 40px; /* Reduzido de 80px */
-  }
-
   .footer-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30px; /* Reduzido de 80px/50px para compactar */
-    text-align: center;
-    padding-bottom: 30px;
+    gap: 20px; /* Reduz o espaçamento geral */
+    padding-bottom: 20px;
   }
 
-  /* Faz Navegação e Contato ficarem lado a lado se couberem, ou apenas reduz o gap */
-  .footer-nav, .footer-contact {
+  /* Centraliza a Logo e a Descrição no topo */
+  .footer-brand {
     width: 100%;
+    text-align: center;
     margin-bottom: 10px;
   }
 
   .footer-brand .footer-logo {
-    height: 45px; /* Logo um pouco menor no mobile */
-    margin-bottom: 15px;
+    margin: 0 auto 15px;
+    height: 45px; /* Logo mais compacta */
   }
 
-  .footer-brand p {
-    font-size: 0.85rem;
-    margin-bottom: 15px;
+  /* Coloca Navegação e Fale Conosco lado a lado */
+  .footer-sections-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .footer-nav, .footer-contact {
+    flex: 1;
+    text-align: left; /* Ou center, conforme sua preferência */
   }
 
   h4 {
-    margin-bottom: 15px; /* Reduzido de 30px */
-    font-size: 1rem;
+    font-size: 0.9rem; /* Títulos menores para economizar espaço */
+    margin-bottom: 15px;
   }
 
   li {
-    margin-bottom: 8px; /* Lista mais compacta */
+    font-size: 0.8rem;
+    margin-bottom: 8px;
   }
 
   .socials {
-    margin-top: 10px;
+    justify-content: center;
+    margin-top: 15px;
   }
 }
 
