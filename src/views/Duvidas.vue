@@ -95,7 +95,7 @@ const abrirWhatsapp = () => {
           <div class="faq-col">
             <div 
               v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 === 0)" 
-              :key="index"
+              :key="'col1-'+index"
               class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
@@ -118,7 +118,7 @@ const abrirWhatsapp = () => {
           <div class="faq-col">
             <div 
               v-for="(item, index) in duvidasFiltradas.filter((_, i) => i % 2 !== 0)" 
-              :key="index"
+              :key="'col2-'+index"
               class="faq-card"
               :class="{ active: item.aberta }"
               @click="toggleDuvida(todasDuvidas.indexOf(item))"
@@ -164,9 +164,15 @@ const abrirWhatsapp = () => {
 </template>
 
 <style scoped>
+/* Reset global de box-sizing para evitar estouro horizontal */
+* {
+  box-sizing: border-box;
+}
+
 .faq-page {
   background-color: #f4f7f9;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .container {
@@ -177,9 +183,9 @@ const abrirWhatsapp = () => {
 
 /* Hero Section */
 .faq-hero {
-  background: #1e3a8a; /* Azul Capital X */
+  background: #1e3a8a;
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  padding: 100px 0 120px;
+  padding: 80px 0 100px;
   position: relative;
   overflow: hidden;
   text-align: center;
@@ -211,20 +217,21 @@ const abrirWhatsapp = () => {
 }
 
 .faq-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 15px;
 }
 
 .faq-hero h1 span {
-  color: #F6D001; /* Amarelo Capital X */
+  color: #F6D001;
 }
 
 .faq-hero p {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   max-width: 600px;
-  margin: 0 auto 40px;
+  margin: 0 auto 30px;
   opacity: 0.9;
+  padding: 0 15px;
 }
 
 /* Barra de Busca */
@@ -233,11 +240,12 @@ const abrirWhatsapp = () => {
   margin: 0 auto;
   position: relative;
   z-index: 5;
+  padding: 0 15px;
 }
 
 .search-icon {
   position: absolute;
-  left: 20px;
+  left: 35px; /* Ajustado para considerar o padding */
   top: 50%;
   transform: translateY(-50%);
   color: #1e3a8a;
@@ -245,7 +253,7 @@ const abrirWhatsapp = () => {
 
 .search-box input {
   width: 100%;
-  padding: 18px 20px 18px 55px;
+  padding: 16px 20px 16px 55px;
   border-radius: 12px;
   border: none;
   font-size: 1rem;
@@ -255,14 +263,14 @@ const abrirWhatsapp = () => {
 
 /* FAQ Grid */
 .faq-main {
-  padding: 80px 0;
-  margin-top: -60px; /* Sobrepõe levemente o hero */
+  padding: 60px 0;
+  margin-top: -40px;
 }
 
 .faq-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 20px;
 }
 
 .faq-col {
@@ -274,11 +282,12 @@ const abrirWhatsapp = () => {
 .faq-card {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   cursor: pointer;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  height: fit-content;
 }
 
 .faq-card:hover {
@@ -291,27 +300,12 @@ const abrirWhatsapp = () => {
   border-left: 4px solid #F6D001;
 }
 
-.faq-header-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-}
-
 .faq-header-card h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.4;
-}
-
-.faq-icon {
-  color: #F6D001;
-  transition: transform 0.3s;
-}
-
-.faq-card.active .faq-icon {
-  transform: rotate(180deg);
+  margin: 0;
 }
 
 .faq-body-card {
@@ -323,42 +317,34 @@ const abrirWhatsapp = () => {
 .faq-body-card p {
   color: #64748b;
   line-height: 1.6;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 /* CTA Section */
-.faq-cta {
-  margin-top: 80px;
-}
-
 .cta-inner {
   background: #0f172a;
-  background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
   border-radius: 20px;
-  padding: 50px;
+  padding: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
   border-bottom: 5px solid #F6D001;
+  width: 100%;
 }
 
 .cta-text h2 {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 800;
   margin-bottom: 10px;
-}
-
-.cta-text p {
-  opacity: 0.8;
-  font-size: 1.1rem;
 }
 
 .btn-cta-gold {
   background: #F6D001;
   color: #0f172a;
   border: none;
-  padding: 18px 36px;
+  padding: 16px 30px;
   border-radius: 8px;
   font-weight: 900;
   display: flex;
@@ -366,15 +352,27 @@ const abrirWhatsapp = () => {
   gap: 12px;
   cursor: pointer;
   transition: all 0.3s;
-  font-size: 1rem;
+  white-space: nowrap;
 }
 
-.btn-cta-gold:hover {
-  background: #ffffff;
-  transform: scale(1.05);
+/* Responsividade Geral */
+@media (max-width: 900px) {
+  .faq-grid { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; text-align: center; gap: 30px; padding: 30px 20px; }
+  .btn-cta-gold { width: 100%; justify-content: center; }
 }
 
-/* Animations */
+@media (max-width: 490px) {
+  .faq-hero { padding: 60px 0 80px; }
+  .search-box { padding: 0 10px; }
+  .faq-main { padding: 40px 0; margin-top: -30px; }
+  .faq-card { padding: 15px; }
+  .faq-header-card h3 { font-size: 0.95rem; }
+  .cta-text h2 { font-size: 1.4rem; }
+  .cta-text p { font-size: 1rem; }
+}
+
+/* Animações */
 .fade-height-enter-active, .fade-height-leave-active {
   transition: all 0.3s ease;
   max-height: 400px;
@@ -383,17 +381,5 @@ const abrirWhatsapp = () => {
 .fade-height-enter-from, .fade-height-leave-to {
   max-height: 0;
   opacity: 0;
-}
-
-.no-results {
-  text-align: center;
-  padding: 60px;
-  color: #94a3b8;
-}
-
-@media (max-width: 900px) {
-  .faq-grid { grid-template-columns: 1fr; }
-  .cta-inner { flex-direction: column; text-align: center; gap: 30px; padding: 40px 20px; }
-  .faq-hero h1 { font-size: 2.2rem; }
 }
 </style>
