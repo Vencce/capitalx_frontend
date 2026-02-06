@@ -139,10 +139,6 @@ const handleCardClick = () => {
           <span class="label">Parcelas</span>
           <span class="val">{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</span>
         </div>
-        <div class="detail-group desktop-only">
-          <span class="label">Código</span>
-          <span class="val code">#{{ props.carta.codigo }}</span>
-        </div>
       </div>
 
       <div class="logo-section">
@@ -163,87 +159,80 @@ const handleCardClick = () => {
       </div>
 
       <div class="actions">
-        <button class="btn-icon" @click.stop="copiarConteudo" title="Copiar Informações">
+        <button class="btn-icon" @click.stop="copiarConteudo" title="Copiar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
-        <button class="btn-icon" @click.stop="compartilhar" title="Compartilhar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-        </button>
-        <button class="btn-secondary" @click.stop="showModal = true">Mais Detalhes</button>
-        <button class="btn-primary btn-whatsapp" @click.stop="abrirWhatsapp">
+        <button class="btn-secondary" @click.stop="showModal = true">Detalhes</button>
+        <button class="btn-whatsapp" @click.stop="abrirWhatsapp">
           <svg viewBox="0 0 24 24" fill="currentColor" class="w-icon">
             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
           </svg>
-          Chamar no WhatsApp
+          WhatsApp
         </button>
       </div>
     </div>
 
     <Teleport to="body">
-      <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-        <div class="modal-content" :class="carta.status.toLowerCase()">
-          <button class="close-btn" @click="showModal = false">✕</button>
-          <div class="modal-header">
-            <div class="modal-icon-box">
-              <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor">
-                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-              </svg>
+        <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+          <div class="modal-content" :class="carta.status.toLowerCase()">
+            <button class="close-btn" @click="showModal = false">✕</button>
+            <div class="modal-header">
+              <div class="modal-icon-box">
+                <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+              </div>
+              <div>
+                <span class="modal-subtitle">Detalhes da Oportunidade</span>
+                <h2 class="modal-title">{{ adminDetalhes.nome }}</h2>
+                <span class="status-badge modal-badge" :class="carta.status.toLowerCase()">
+                  {{ props.carta.status }}
+                </span>
+              </div>
             </div>
-            <div>
-              <span class="modal-subtitle">Detalhes da Oportunidade</span>
-              <h2 class="modal-title">{{ adminDetalhes.nome }}</h2>
-              <span class="status-badge modal-badge" :class="carta.status.toLowerCase()">
-                {{ props.carta.status }}
-              </span>
+            <div class="modal-section-title">Financeiro</div>
+            <div class="modal-grid">
+              <div class="modal-item highlight">
+                <span>Crédito</span>
+                <strong style="color: #1e3a8a">{{ formatCurrency(props.carta.valor_credito) }}</strong>
+              </div>
+              <div class="modal-item">
+                <span>Entrada</span>
+                <strong style="color: #F6D001">{{ formatCurrency(props.carta.valor_entrada) }}</strong>
+              </div>
+              <div class="modal-item">
+                <span>Parcelas</span>
+                <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
+              </div>
+              <div class="modal-item">
+                 <span>Custo Total</span>
+                 <strong>{{ formatCurrency(custoTotal) }}</strong>
+              </div>
             </div>
-          </div>
-          <div class="modal-section-title">Financeiro</div>
-          <div class="modal-grid">
-            <div class="modal-item highlight">
-              <span>Crédito</span>
-              <strong style="color: #1e3a8a">{{ formatCurrency(props.carta.valor_credito) }}</strong>
+            <div class="modal-actions">
+              <button class="btn-whatsapp block" @click="abrirWhatsapp">
+                Chamar no WhatsApp
+              </button>
             </div>
-            <div class="modal-item">
-              <span>Entrada</span>
-              <strong style="color: #F6D001">{{ formatCurrency(props.carta.valor_entrada) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Parcelas</span>
-              <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
-            </div>
-            <div class="modal-item">
-               <span>Custo Total</span>
-               <strong>{{ formatCurrency(custoTotal) }}</strong>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button class="btn-primary btn-whatsapp block" @click="abrirWhatsapp">
-              Chamar no WhatsApp
-            </button>
           </div>
         </div>
-      </div>
     </Teleport>
   </div>
 </template>
 
 <style scoped>
-/* ESTILOS PADRÃO (DESKTOP) */
 .card-horizontal {
   background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
   width: 100%; overflow: hidden; transition: all 0.3s ease; position: relative;
   border-left: 5px solid #e5e7eb; cursor: pointer;
 }
-.card-horizontal:hover:not(.is-disabled) { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #1e3a8a; }
+.card-horizontal:hover:not(.is-disabled) { transform: translateY(-2px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); }
 .card-horizontal.is-selected { border-color: #1e3a8a; background-color: #f0f7ff; }
 .card-horizontal.is-disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.8); }
 
@@ -256,7 +245,8 @@ const handleCardClick = () => {
 .card-horizontal.reservado { border-left-color: #F6D001; }
 .card-horizontal.vendido { border-left-color: #ef4444; }
 
-.card-main { padding: 24px; display: grid; grid-template-columns: 1.8fr 3fr 1fr; gap: 24px; align-items: center; }
+/* LAYOUT DESKTOP */
+.card-main { padding: 24px; display: grid; grid-template-columns: 1.5fr 2.5fr 1fr; gap: 24px; align-items: center; }
 .primary-section { display: flex; align-items: center; gap: 16px; padding-left: 20px; }
 .icon-box { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; background: #1e3a8a; }
 .icon-box svg { width: 26px; height: 26px; fill: currentColor; }
@@ -271,7 +261,6 @@ const handleCardClick = () => {
 .label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 700; }
 .val { font-size: 1.05rem; font-weight: 600; color: #374151; white-space: nowrap; }
 .val.destaque { color: #F6D001; font-weight: 800; }
-.code { font-family: monospace; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; }
 
 .logo-section { display: flex; justify-content: flex-end; align-items: center; }
 .logo-img { max-height: 45px; max-width: 120px; object-fit: contain; }
@@ -284,14 +273,13 @@ const handleCardClick = () => {
 .status-badge.vendido { background: #fee2e2; color: #991b1b; }
 
 .actions { display: flex; gap: 8px; }
-button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.2s; }
+button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; transition: 0.2s; }
 .btn-icon { background: white; border: 1px solid #e5e7eb; color: #6b7280; width: 38px; padding: 0; }
-.btn-icon:hover { border-color: #F6D001; color: #F6D001; }
 .btn-secondary { background: white; border: 1px solid #e5e7eb; color: #4b5563; }
-.btn-primary { background: #1e3a8a; color: white; }
-.btn-whatsapp { background-color: #25D366; }
+.btn-whatsapp { background-color: #25D366; color: white; }
+.w-icon { width: 16px; height: 16px; fill: white; }
 
-/* MODAL STYLES */
+/* MODAL STYLES ... (mantido padrão) */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 24px; position: relative; border-top: 6px solid #1e3a8a; }
 .close-btn { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
@@ -304,35 +292,63 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 .modal-item strong { font-size: 1rem; color: #111827; }
 .block { width: 100%; margin-top: 10px; padding: 12px; }
 
-/* RESPONSIVIDADE (TABLET / CELULAR GRANDE) */
-@media (max-width: 1024px) {
-  .card-main { grid-template-columns: 1.5fr 2fr; }
-  .logo-section { display: none; }
-  .details-section { gap: 20px; }
-}
-
-/* RESPONSIVIDADE (CELULAR 480px / 640px) */
-@media (max-width: 640px) {
-  .card-main { grid-template-columns: 1fr; padding: 20px; gap: 15px; }
-  .primary-section { padding-left: 30px; }
-  .credit-value { font-size: 1.25rem; }
-  .details-section { border-left: none; padding-left: 30px; gap: 15px; flex-wrap: wrap; }
-  
-  .card-footer { flex-direction: column; gap: 12px; }
-  .footer-left { width: 100%; justify-content: center; }
-  .actions { width: 100%; flex-wrap: wrap; justify-content: center; }
-  .btn-secondary { flex: 1; }
-  .btn-whatsapp { width: 100%; order: 4; }
-  
-  .modal-grid { grid-template-columns: 1fr; }
-  .selection-indicator { top: 8px; left: 8px; }
-}
-
+/* RESPONSIVIDADE HORIZONTAL COMPACTA (MOBILE) */
 @media (max-width: 480px) {
-  .primary-section { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .icon-box { width: 40px; height: 40px; }
-  .icon-box svg { width: 20px; height: 20px; }
-  .credit-value { font-size: 1.15rem; }
-  .btn-icon { width: 32px; height: 32px; }
+  .card-main { 
+    grid-template-columns: 1fr auto; /* Texto esquerda, Logo direita */
+    padding: 12px 12px 12px 35px; /* Espaço para o checkbox */
+    gap: 10px;
+  }
+  
+  .primary-section { 
+    padding-left: 0;
+    gap: 10px;
+  }
+
+  .icon-box { 
+    width: 32px; height: 32px; border-radius: 8px;
+  }
+  .icon-box svg { width: 16px; height: 16px; }
+
+  .credit-value { font-size: 1.1rem; }
+  .bank-name { font-size: 0.6rem; }
+  .subtitle { font-size: 0.7rem; }
+
+  /* Detalhes ficam em linha compacta abaixo do crédito */
+  .details-section { 
+    grid-column: 1 / -1; 
+    border-left: none; 
+    padding-left: 0;
+    gap: 15px;
+    margin-top: 5px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+  }
+  
+  .val { font-size: 0.85rem; }
+  .label { font-size: 0.6rem; }
+
+  /* Logo reduzida na lateral direita do topo */
+  .logo-section { 
+    display: flex; 
+    grid-row: 1; 
+    grid-column: 2; 
+    align-self: flex-start;
+  }
+  .logo-img { max-height: 25px; max-width: 60px; }
+
+  /* Footer mais estreito */
+  .card-footer { 
+    padding: 10px 12px; 
+    flex-direction: row; /* Mantém horizontal */
+    justify-content: space-between;
+  }
+
+  .status-badge { font-size: 0.65rem; padding: 3px 6px; }
+  
+  .actions { gap: 4px; }
+  button { padding: 6px 8px; font-size: 0.75rem; }
+  .btn-icon { width: 30px; height: 30px; }
+  .w-icon { width: 12px; height: 12px; }
 }
 </style>
