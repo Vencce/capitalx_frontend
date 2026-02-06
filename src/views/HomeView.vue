@@ -5,12 +5,13 @@ import CartaCard from '../components/CartaCard.vue'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 import ModalJuncao from '../components/ModalJuncao.vue'
-import { FileText, Table, PlusCircle } from 'lucide-vue-next'
+import { FileText, Table, PlusCircle, Filter, X } from 'lucide-vue-next'
 
 const cartas = ref([])
 const carregando = ref(true)
 const selectedCartas = ref([])
 const showModalJuncao = ref(false)
+const showMobileFilters = ref(false) // Controle para filtros no mobile
 
 const filtroTipo = ref('')
 const filtroAdmin = ref('')
@@ -38,16 +39,12 @@ const toggleSelection = (carta) => {
   } else {
     if (selectedCartas.value.length > 0) {
       const firstCarta = selectedCartas.value[0]
-      
-      // Validação de Administradora
       if (carta.administradora !== firstCarta.administradora) {
         alert('Atenção: Você só pode somar cartas da mesma administradora!')
         return
       }
-
-      // Validação de Categoria (Tipo de Bem)
       if (carta.tipo !== firstCarta.tipo) {
-        alert(`Atenção: Não é possível misturar categorias. Você já selecionou um(a) ${firstCarta.tipo}, e esta cota é de ${carta.tipo}.`)
+        alert(`Atenção: Não é possível misturar categorias.`)
         return
       }
     }
@@ -70,9 +67,7 @@ const totals = computed(() => {
 const isSelectionDisabled = (carta) => {
   if (carta.status !== 'DISPONIVEL') return true
   if (selectedCartas.value.length === 0) return false
-  
   const firstCarta = selectedCartas.value[0]
-  // Desabilita se for admin diferente OU tipo diferente
   return firstCarta.administradora !== carta.administradora || firstCarta.tipo !== carta.tipo
 }
 
@@ -83,11 +78,7 @@ const formatCurrency = (value) => {
 const cartasFiltradas = computed(() => {
   return cartas.value.filter((c) => {
     if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
-    if (
-      filtroAdmin.value &&
-      !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())
-    )
-      return false
+    if (filtroAdmin.value && !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())) return false
 
     const valorCredito = parseFloat(c.valor_credito)
     if (creditoMin.value && valorCredito < parseFloat(creditoMin.value)) return false
@@ -134,30 +125,30 @@ onMounted(buscarCartas)
     <AppHeader />
 
     <section class="hero-section">
-      <div class="hero-overlay"></div>
       <div class="hero-content">
-        <h1>Cartas Contempladas</h1>
-        <p>Encontre a carta contemplada ideal para realizar seu sonho com economia e agilidade.</p>
+        <h1>Cartas <span>Contempladas</span></h1>
+        <p>A forma mais inteligente de conquistar seu bem com segurança.</p>
       </div>
     </section>
 
     <div class="filter-section-wrapper">
-      <div class="filter-bar">
+      <button class="mobile-filter-toggle" @click="showMobileFilters = !showMobileFilters">
+        <Filter size="18" /> {{ showMobileFilters ? 'Fechar Filtros' : 'Filtrar Oportunidades' }}
+      </button>
+
+      <div class="filter-bar" :class="{ 'is-visible': showMobileFilters }">
         <div class="filter-group">
           <label>Tipo de Bem</label>
-          <div class="input-wrapper">
-            <select v-model="filtroTipo">
-              <option value="">Todos os tipos</option>
-              <option value="IMOVEL">Imóvel</option>
-              <option value="AUTOMOVEL">Automóvel</option>
-            </select>
-          </div>
+          <select v-model="filtroTipo">
+            <option value="">Todos os tipos</option>
+            <option value="IMOVEL">Imóvel</option>
+            <option value="AUTOMOVEL">Automóvel</option>
+          </select>
         </div>
         <div class="filter-group">
           <label>Crédito (R$)</label>
           <div class="range-inputs">
             <input type="number" v-model="creditoMin" placeholder="Mín" />
-            <span class="separator">-</span>
             <input type="number" v-model="creditoMax" placeholder="Máx" />
           </div>
         </div>
@@ -165,7 +156,6 @@ onMounted(buscarCartas)
           <label>Entrada (R$)</label>
           <div class="range-inputs">
             <input type="number" v-model="entradaMin" placeholder="Mín" />
-            <span class="separator">-</span>
             <input type="number" v-model="entradaMax" placeholder="Máx" />
           </div>
         </div>
@@ -174,38 +164,19 @@ onMounted(buscarCartas)
           <input type="text" v-model="filtroAdmin" placeholder="Ex: Caixa, Bradesco..." />
         </div>
         <div class="filter-actions">
-          <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">Limpar</button>
+          <button class="btn-clean" @click="limparFiltros">Limpar</button>
         </div>
       </div>
     </div>
 
     <section class="quick-categories">
-      <h3>Navegue por categoria</h3>
       <div class="categories-grid">
-        <div
-          class="cat-card"
-          @click="selecionarCategoriaRapida('IMOVEL')"
-          :class="{ active: filtroTipo === 'IMOVEL' }"
-        >
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-          </div>
+        <div class="cat-card" @click="selecionarCategoriaRapida('IMOVEL')" :class="{ active: filtroTipo === 'IMOVEL' }">
+          <div class="icon-box">🏠</div>
           <span>Imóveis</span>
         </div>
-        <div
-          class="cat-card"
-          @click="selecionarCategoriaRapida('AUTOMOVEL')"
-          :class="{ active: filtroTipo === 'AUTOMOVEL' }"
-        >
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"
-              />
-            </svg>
-          </div>
+        <div class="cat-card" @click="selecionarCategoriaRapida('AUTOMOVEL')" :class="{ active: filtroTipo === 'AUTOMOVEL' }">
+          <div class="icon-box">🚗</div>
           <span>Veículos</span>
         </div>
       </div>
@@ -214,26 +185,17 @@ onMounted(buscarCartas)
     <main class="main-content" id="resultados">
       <div v-if="carregando" class="loading">
         <div class="spinner"></div>
-        <p>Carregando oportunidades...</p>
-      </div>
-
-      <div v-else-if="cartasFiltradas.length === 0" class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <h3>Nenhuma carta encontrada</h3>
-        <p>Tente ajustar os filtros.</p>
-        <button @click="limparFiltros" class="btn-link">Limpar filtros</button>
+        <p>Carregando...</p>
       </div>
 
       <div v-else class="results-container">
         <div class="results-header">
-          <h2>Resultados disponíveis</h2>
+          <h2>Oportunidades</h2>
           <div class="results-meta">
-            <span class="badge">{{ cartasFiltradas.length }} cartas</span>
+            <span class="count-badge">{{ cartasFiltradas.length }} disponíveis</span>
             <div class="download-btns">
-              <button class="btn-download" @click="downloadPDF"><FileText size="18" /> PDF</button>
-              <button class="btn-download excel" @click="downloadExcel">
-                <Table size="18" /> Excel
-              </button>
+              <button class="btn-download" @click="downloadPDF"><FileText size="16" /> PDF</button>
+              <button class="btn-download excel" @click="downloadExcel"><Table size="16" /> Excel</button>
             </div>
           </div>
         </div>
@@ -253,42 +215,25 @@ onMounted(buscarCartas)
       <Transition name="slide-up">
         <div v-if="selectedCartas.length > 0" class="summary-bar">
           <div class="summary-content">
-            <div class="summary-left">
-              <div class="count-circle">{{ selectedCartas.length }}</div>
-              <div class="summary-label">
-                <strong>Cartas Selecionadas</strong>
-                <span>Mesma Administradora e Categoria</span>
+            <div class="summary-main-info">
+              <div class="badge-count">{{ selectedCartas.length }}</div>
+              <div class="total-info">
+                <span>Total Crédito</span>
+                <strong>{{ formatCurrency(totals.credito) }}</strong>
               </div>
             </div>
-            <div class="summary-values">
-              <div class="val-group">
-                <span class="v-label">Total Crédito</span>
-                <span class="v-val">{{ formatCurrency(totals.credito) }}</span>
-              </div>
-              <div class="val-group">
-                <span class="v-label">Total Entrada</span>
-                <span class="v-val highlight-yellow">{{ formatCurrency(totals.entrada) }}</span>
-              </div>
-            </div>
+            
             <div class="summary-actions">
-              <button class="btn-clear-selection" @click="selectedCartas = []">Limpar</button>
-              <button
-                v-if="selectedCartas.length > 1"
-                class="btn-view-juncao"
-                @click="showModalJuncao = true"
-              >
-                <PlusCircle size="20" /> Ver Junção
+              <button class="btn-clear" @click="selectedCartas = []">Limpar</button>
+              <button v-if="selectedCartas.length > 1" class="btn-juncao-trigger" @click="showModalJuncao = true">
+                Ver Junção
               </button>
             </div>
           </div>
         </div>
       </Transition>
 
-      <ModalJuncao
-        :show="showModalJuncao"
-        :cartas="selectedCartas"
-        @close="showModalJuncao = false"
-      />
+      <ModalJuncao :show="showModalJuncao" :cartas="selectedCartas" @close="showModalJuncao = false" />
     </main>
 
     <AppFooter />
@@ -296,469 +241,96 @@ onMounted(buscarCartas)
 </template>
 
 <style scoped>
-.home-container {
-  background-color: #f3f4f6;
-  min-height: 100vh;
-}
+.home-container { background-color: #f8fafc; min-height: 100vh; }
+
+/* Hero Moderno e Responsivo */
 .hero-section {
-  height: 350px;
-  background-image: url('/src/assets/imagens/hero.png');
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-  opacity: 0.85;
+  height: 300px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; color: white; padding: 0 20px;
 }
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-.hero-content {
-  position: relative;
-  z-index: 1;
-  padding: 0 20px;
-}
-.hero-content h1 {
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin-bottom: 16px;
-  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-.hero-content p {
-  font-size: 1.25rem;
-  max-width: 600px;
-  margin: 0 auto;
-  opacity: 0.9;
-}
+.hero-content h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; margin-bottom: 10px; }
+.hero-content h1 span { color: #F6D001; }
+.hero-content p { font-size: 1.1rem; opacity: 0.8; max-width: 500px; margin: 0 auto; }
 
-.filter-section-wrapper {
-  margin-top: -50px;
-  position: relative;
-  z-index: 10;
-  padding: 0 20px;
-}
+/* Filtros */
+.filter-section-wrapper { margin-top: -40px; padding: 0 20px; z-index: 100; position: relative; }
 .filter-bar {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: end;
-}
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.filter-group label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #374151;
-  text-transform: uppercase;
-}
-.filter-group input,
-.filter-group select {
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  transition: all 0.2s;
-}
-.filter-group input:focus,
-.filter-group select:focus {
-  border-color: #1e3a8a;
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
-}
-.range-inputs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.range-inputs input {
-  width: 100%;
-}
-.separator {
-  color: #9ca3af;
+  background: white; border-radius: 16px; padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px; max-width: 1200px; margin: 0 auto;
 }
 
-.btn-clean {
-  background: #f3f4f6;
-  color: #4b5563;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-}
-.btn-clean:hover {
-  background: #e5e7eb;
-  color: #111827;
-}
+.mobile-filter-toggle { display: none; width: 100%; padding: 15px; background: #1e3a8a; color: white; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 10px; gap: 10px; align-items: center; justify-content: center; }
 
-.quick-categories {
-  max-width: 1200px;
-  margin: 60px auto 40px;
-  padding: 0 20px;
-  text-align: center;
-}
-.quick-categories h3 {
-  font-size: 1.5rem;
-  color: #111827;
-  font-weight: 800;
-  margin-bottom: 24px;
-}
-.categories-grid {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.cat-card {
-  background: white;
-  padding: 20px 40px;
-  border-radius: 20px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  min-width: 160px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-.cat-card .icon-box {
-  width: 48px;
-  height: 48px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1e3a8a;
-  transition: all 0.3s;
-}
-.cat-card .icon-box svg {
-  width: 24px;
-  height: 24px;
-}
-.cat-card span {
-  font-weight: 700;
-  color: #4b5563;
-}
-.cat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: #1e3a8a;
-}
-.cat-card.active {
-  background: #1e3a8a;
-  border-color: #1e3a8a;
-}
-.cat-card.active .icon-box {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-.cat-card.active span {
-  color: white;
-}
+.filter-group { display: flex; flex-direction: column; gap: 8px; }
+.filter-group label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+.filter-group input, .filter-group select { padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; }
+.filter-group input:focus { border-color: #F6D001; }
+.range-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px 150px;
-}
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-.results-header h2 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #111827;
-}
-.results-meta {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.badge {
-  background: #1e3a8a;
-  color: white;
-  padding: 6px 16px;
-  border-radius: 99px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-.download-btns {
-  display: flex;
-  gap: 10px;
-}
-.btn-download {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #4b5563;
-}
-.btn-download:hover {
-  border-color: #1e3a8a;
-  color: #1e3a8a;
-}
-.btn-download.excel:hover {
-  border-color: #16a34a;
-  color: #16a34a;
-}
+.btn-clean { background: #f1f5f9; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; color: #64748b; }
 
-.cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+/* Categorias */
+.quick-categories { margin: 40px auto; padding: 0 20px; max-width: 1200px; }
+.categories-grid { display: flex; gap: 15px; justify-content: center; }
+.cat-card { background: white; padding: 15px 25px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; border: 2px solid transparent; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+.cat-card.active { border-color: #F6D001; background: #fffbeb; }
+.cat-card span { font-weight: 700; color: #1e3a8a; }
 
-.loading {
-  text-align: center;
-  padding: 80px 0;
-  color: #6b7280;
-}
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #1e3a8a;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* Resultados */
+.main-content { max-width: 1200px; margin: 0 auto; padding: 0 20px 100px; }
+.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+.count-badge { background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+.download-btns { display: flex; gap: 8px; }
+.btn-download { display: flex; align-items: center; gap: 6px; padding: 8px 15px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
 
-.empty-state {
-  text-align: center;
-  background: white;
-  padding: 60px;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-.empty-state h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-.empty-state p {
-  color: #6b7280;
-  margin-bottom: 24px;
-}
-.btn-link {
-  color: #1e3a8a;
-  font-weight: 700;
-  text-decoration: underline;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
+.cards-list { display: grid; gap: 20px; }
 
+/* Barra de Junção Fixa no Mobile */
 .summary-bar {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 95%;
-  max-width: 1000px;
-  background: #1e3a8a;
-  border-radius: 20px;
-  padding: 20px 30px;
-  color: white;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 40px); max-width: 800px;
+  background: #0f172a; border-radius: 16px; padding: 15px 20px;
+  color: white; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
-.summary-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 30px;
-}
-.summary-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  padding-right: 25px;
-}
-.count-circle {
-  width: 45px;
-  height: 45px;
-  background: white;
-  color: #1e3a8a;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  font-weight: 900;
-}
-.summary-label {
-  display: flex;
-  flex-direction: column;
-}
-.summary-label strong {
-  font-size: 1.1rem;
-}
-.summary-label span {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.summary-values {
-  flex: 1;
-  display: flex;
-  justify-content: space-around;
-  gap: 20px;
-}
-.val-group {
-  display: flex;
-  flex-direction: column;
-}
-.v-label {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.v-val {
-  font-size: 1.2rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.highlight-yellow {
-  color: #f6d001;
-}
+.summary-content { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+.summary-main-info { display: flex; align-items: center; gap: 15px; }
+.badge-count { width: 35px; height: 35px; background: #F6D001; color: #0f172a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+.total-info { display: flex; flex-direction: column; }
+.total-info span { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; }
+.total-info strong { font-size: 1.1rem; color: #F6D001; }
 
-.summary-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.btn-clear-selection {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 700;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-.btn-clear-selection:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.btn-view-juncao {
-  background: #f6d001;
-  color: #1e3a8a;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.2s;
-}
-.btn-view-juncao:hover {
-  transform: scale(1.05);
-  background: #ffe033;
-}
+.summary-actions { display: flex; gap: 10px; }
+.btn-clear { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+.btn-juncao-trigger { background: #F6D001; color: #0f172a; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.9rem; }
 
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translate(-50%, 100%);
-  opacity: 0;
-}
-
-@media (max-width: 1024px) {
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-  .summary-content {
-    gap: 15px;
-  }
-  .summary-left {
-    padding-right: 15px;
-  }
-  .v-val {
-    font-size: 1rem;
-  }
-}
-
+/* Responsividade Geral */
 @media (max-width: 768px) {
-  .hero-section {
-    height: 280px;
+  .hero-section { height: 220px; }
+  .mobile-filter-toggle { display: flex; }
+  .filter-bar { 
+    display: none; /* Esconde filtros por padrão no mobile */
+    grid-template-columns: 1fr; 
+    position: absolute; width: calc(100% - 40px); top: 60px;
   }
-  .hero-content h1 {
-    font-size: 2rem;
-  }
-  .filter-bar {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-  .results-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .summary-bar {
-    padding: 15px;
-    border-radius: 15px;
-  }
-  .summary-left {
-    border-right: none;
-    padding-right: 0;
-  }
-  .summary-label {
-    display: none;
-  }
-  .summary-values {
-    justify-content: flex-start;
-  }
-  .summary-actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-  }
-  .btn-view-juncao,
-  .btn-clear-selection {
-    width: 100%;
-    justify-content: center;
-  }
+  .filter-bar.is-visible { display: grid; }
+  
+  .results-header { flex-direction: column; align-items: flex-start; }
+  .download-btns { width: 100%; }
+  .btn-download { flex: 1; justify-content: center; }
+
+  .summary-bar { bottom: 10px; padding: 12px; }
+  .total-info strong { font-size: 1rem; }
+  .btn-juncao-trigger { padding: 8px 12px; font-size: 0.8rem; }
 }
+
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s ease; }
+.slide-up-enter-from, .slide-up-leave-to { transform: translate(-50%, 100%); opacity: 0; }
+
+.loading { text-align: center; padding: 50px; }
+.spinner { width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top-color: #F6D001; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
