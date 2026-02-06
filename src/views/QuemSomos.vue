@@ -145,7 +145,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .about-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-size: clamp(2.2rem, 6vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 15px;
 }
@@ -236,7 +236,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   line-height: 1.5;
 }
 
-/* Values Grid (Estilo FAQ) */
+/* Values Grid */
 .values-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -285,7 +285,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   line-height: 1.6;
 }
 
-/* CTA (Mesmo do FAQ) */
+/* CTA */
 .about-cta {
   margin-top: 40px;
 }
@@ -322,6 +322,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   text-decoration: none;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   transition: all 0.3s;
   font-size: 1rem;
@@ -332,9 +333,65 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   transform: scale(1.05);
 }
 
-@media (max-width: 992px) {
-  .intro-grid { grid-template-columns: 1fr; gap: 40px; }
-  .values-grid { grid-template-columns: 1fr; }
-  .cta-inner { flex-direction: column; text-align: center; gap: 30px; }
+/* --- MEDIA QUERIES --- */
+
+@media (max-width: 1024px) {
+  .intro-grid {
+    gap: 40px;
+  }
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    padding: 60px 0;
+  }
+  .about-main {
+    padding: 40px 0;
+  }
+  .intro-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+  .values-grid {
+    grid-template-columns: 1fr;
+    margin-bottom: 60px;
+  }
+  .cta-inner {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+  .cta-text h2 {
+    font-size: 1.5rem;
+  }
+  .btn-cta-gold {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-hero h1 {
+    font-size: 1.8rem;
+  }
+  .about-hero p {
+    font-size: 1rem;
+  }
+  .section-title {
+    font-size: 1.6rem;
+  }
+  .intro-text p {
+    font-size: 1rem;
+  }
+  .stat-card {
+    padding: 20px;
+  }
+  .value-card {
+    padding: 30px 20px;
+  }
 }
 </style>
