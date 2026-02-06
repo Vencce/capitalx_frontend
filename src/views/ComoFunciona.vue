@@ -109,9 +109,15 @@ const passos = [
 </template>
 
 <style scoped>
+/* Reset de Box-Sizing para prevenir estouros */
+* {
+  box-sizing: border-box;
+}
+
 .process-page {
   background-color: #f4f7f9;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .container {
@@ -156,7 +162,7 @@ const passos = [
 }
 
 .process-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 15px;
 }
@@ -170,6 +176,7 @@ const passos = [
   max-width: 600px;
   margin: 0 auto;
   opacity: 0.9;
+  padding: 0 10px;
 }
 
 /* Steps Grid */
@@ -193,6 +200,7 @@ const passos = [
   border: 1px solid #e2e8f0;
   position: relative;
   transition: transform 0.3s ease;
+  height: 100%;
 }
 
 .step-card:hover {
@@ -263,6 +271,7 @@ const passos = [
   padding: 60px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   border-top: 6px solid #F6D001;
+  width: 100%;
 }
 
 .comp-header {
@@ -271,7 +280,7 @@ const passos = [
 }
 
 .comp-header h2 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 800;
   color: #0f172a;
 }
@@ -360,6 +369,7 @@ const passos = [
   gap: 12px;
   transition: all 0.3s;
   font-size: 1rem;
+  white-space: nowrap;
 }
 
 .btn-cta-gold:hover {
@@ -367,15 +377,54 @@ const passos = [
   transform: scale(1.05);
 }
 
+/* --- REGRAS DE RESPONSIVIDADE --- */
+
+/* Tablets (1024px) */
 @media (max-width: 1024px) {
-  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px;
+  }
   .step-arrow { display: none; }
-  .comp-grid { grid-template-columns: 1fr; }
+  .comp-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 30px;
+  }
 }
 
+/* Celulares (768px) */
 @media (max-width: 768px) {
+  .process-main { padding: 40px 0; }
   .steps-grid { grid-template-columns: 1fr; }
-  .cta-inner { flex-direction: column; text-align: center; gap: 30px; }
-  .comparison-card { padding: 30px; }
+  
+  .cta-inner { 
+    flex-direction: column; 
+    text-align: center; 
+    padding: 40px 20px; 
+    gap: 30px; 
+  }
+  
+  .comparison-card { padding: 30px 20px; }
+  .comp-grid { grid-template-columns: 1fr; }
+  
+  .cta-text h2 { font-size: 1.5rem; }
+}
+
+/* Celulares Pequenos (480px / 490px) */
+@media (max-width: 490px) {
+  .process-hero { padding: 60px 0; }
+  
+  .gold-tag { font-size: 0.7rem; padding: 4px 12px; }
+  
+  .step-card { padding: 30px 20px; }
+  .step-number { font-size: 1.2rem; top: 10px; right: 15px; }
+  
+  .btn-cta-gold { 
+    width: 100%; 
+    justify-content: center; 
+    padding: 15px;
+  }
+
+  .comp-header h2 { font-size: 1.3rem; }
 }
 </style>
