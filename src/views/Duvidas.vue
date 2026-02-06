@@ -332,6 +332,7 @@ const abrirWhatsapp = () => {
   color: white;
   border-bottom: 5px solid #F6D001;
   width: 100%;
+  margin-top: 60px;
 }
 
 .cta-text h2 {
