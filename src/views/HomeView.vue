@@ -336,6 +336,7 @@ onMounted(buscarCartas)
   max-width: 600px;
   margin: 0 auto;
   opacity: 0.9;
+  color: white;
 }
 
 .filter-section-wrapper {

@@ -156,11 +156,18 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* --- REGRAS DE RESPONSIVIDADE --- */
+
 @media (max-width: 900px) {
+  .main-footer {
+    padding-top: 60px;
+  }
+
   .footer-container {
     grid-template-columns: 1fr;
     gap: 50px;
     text-align: center;
+    padding-bottom: 40px;
   }
   
   .footer-brand p {
@@ -177,6 +184,25 @@ li { margin-bottom: 16px; font-size: 0.95rem; display: flex; align-items: center
 
   .footer-brand .footer-logo {
     margin: 0 auto 25px;
+  }
+
+  h4 {
+    margin-bottom: 20px;
+  }
+
+  .footer-nav a:hover {
+    padding-left: 0; /* Remove o deslocamento lateral no mobile para manter o alinhamento central */
+    color: #F6D001;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    gap: 40px;
+  }
+  
+  .footer-bottom {
+    padding: 20px;
   }
 }
 </style>
