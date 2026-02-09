@@ -12,7 +12,7 @@ const emit = defineEmits(['toggle-selection'])
 
 const configStore = useConfigStore()
 
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = 'https://seu-projeto.onrender.com'
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return ''
@@ -40,6 +40,7 @@ const custoTotal = computed(() => {
 
 const getLogoUrl = (path) => {
   if (!path) return ''
+  // Se o path já for uma URL completa (Cloudinary), retorna ele mesmo
   if (path.startsWith('http')) return path
   const separator = path.startsWith('/') ? '' : '/'
   return `${API_BASE_URL}${separator}${path}`
