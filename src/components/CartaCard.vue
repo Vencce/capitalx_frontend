@@ -12,7 +12,7 @@ const emit = defineEmits(['toggle-selection'])
 
 const configStore = useConfigStore()
 
-const API_BASE_URL = 'https://seu-projeto.onrender.com'
+const API_BASE_URL = 'https://capitalxinvest.onrender.com'
 
 const formatCurrency = (value) => {
   if (!value && value !== 0) return ''

@@ -30,6 +30,14 @@ const deletar = async (id) => {
   }
 }
 
+const getLogoUrl = (path) => {
+  if (!path) return ''
+  // Se já for link completo (Cloudinary), usa ele
+  if (path.startsWith('http')) return path
+  // Se for relativo, adiciona o dominio do backend
+  return `https://capitalxinvest.onrender.com${path}`
+}
+
 onMounted(carregar)
 </script>
 
@@ -64,7 +72,7 @@ onMounted(carregar)
           <tr v-for="emp in empresas" :key="emp.id">
             <td>
               <div class="logo-box">
-                <img v-if="emp.logo" :src="emp.logo" class="mini-logo" alt="Logo" />
+                <img v-if="emp.logo" :src="getLogoUrl(emp.logo)" class="mini-logo" alt="Logo" />
                 <Building2 v-else :size="24" class="text-muted" />
               </div>
             </td>
