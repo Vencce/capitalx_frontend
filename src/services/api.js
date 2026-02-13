@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://capitalxinvest.onrender.com/api/',
+    baseURL: 'https://api.capitalxinvest.com.br/api/',
 });
 
 // Interceptador: Antes de cada requisição, insere o token se existir
