@@ -99,7 +99,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 
 <style scoped>
 .about-page {
-  background-color: #f4f7f9;
+  background-color: #111111; /* Cinza quase preto */
   min-height: 100vh;
 }
 
@@ -111,13 +111,14 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 
 /* Hero Section */
 .about-hero {
-  background: #0f172a;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  background: #000000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   padding: 100px 0;
   position: relative;
   overflow: hidden;
   text-align: center;
   color: white;
+  border-bottom: 1px solid rgba(246, 208, 1, 0.2);
 }
 
 .hero-pattern {
@@ -126,8 +127,8 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.05;
-  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  opacity: 0.1;
+  background-image: radial-gradient(#F6D001 0.5px, transparent 0.5px);
   background-size: 30px 30px;
 }
 
@@ -142,6 +143,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   border-radius: 4px;
   display: inline-block;
   margin-bottom: 20px;
+  background: rgba(246, 208, 1, 0.05);
 }
 
 .about-hero h1 {
@@ -158,12 +160,14 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   font-size: 1.15rem;
   max-width: 600px;
   margin: 0 auto;
-  opacity: 0.9;
+  opacity: 0.8;
+  color: #cccccc; /* Cinza claro */
 }
 
 /* Intro Section */
 .about-main {
   padding: 80px 0;
+  background: #111111;
 }
 
 .intro-grid {
@@ -177,7 +181,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .section-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #ffffff;
   margin-bottom: 25px;
   position: relative;
 }
@@ -196,7 +200,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .intro-text p {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #475569;
+  color: #bbbbbb; /* Cinza médio */
   margin-bottom: 20px;
 }
 
@@ -207,11 +211,11 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .stat-card {
-  background: white;
+  background: #1a1a1a;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  border-left: 4px solid #1e3a8a;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+  border-left: 4px solid #333333; /* Cinza escuro */
 }
 
 .stat-card.gold-border {
@@ -226,13 +230,13 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .stat-card h3 {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #ffffff;
   margin-bottom: 10px;
 }
 
 .stat-card p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: #999999;
   line-height: 1.5;
 }
 
@@ -246,25 +250,25 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .value-card {
-  background: white;
+  background: #1a1a1a;
   padding: 40px 30px;
   border-radius: 12px;
   text-align: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #333333;
   transition: all 0.3s ease;
 }
 
 .value-card:hover {
   transform: translateY(-5px);
   border-color: #F6D001;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 40px -15px rgba(246, 208, 1, 0.15);
 }
 
 .value-icon {
   width: 50px;
   height: 50px;
-  background: #f0f4ff;
-  color: #1e3a8a;
+  background: rgba(246, 208, 1, 0.1);
+  color: #F6D001;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -275,13 +279,13 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .value-card h3 {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #ffffff;
   margin-bottom: 15px;
 }
 
 .value-card p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: #999999;
   line-height: 1.6;
 }
 
@@ -291,13 +295,15 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .cta-inner {
-  background: #0f172a;
+  background: #000000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   border-radius: 20px;
   padding: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
+  border: 1px solid rgba(246, 208, 1, 0.3);
   border-bottom: 5px solid #F6D001;
 }
 
@@ -310,11 +316,12 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .cta-text p {
   opacity: 0.8;
   font-size: 1.1rem;
+  color: #cccccc;
 }
 
 .btn-cta-gold {
   background: #F6D001;
-  color: #0f172a;
+  color: #000000;
   border: none;
   padding: 18px 36px;
   border-radius: 8px;
@@ -326,11 +333,13 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   gap: 12px;
   transition: all 0.3s;
   font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(246, 208, 1, 0.3);
 }
 
 .btn-cta-gold:hover {
   background: #ffffff;
   transform: scale(1.05);
+  box-shadow: 0 4px 25px rgba(255, 255, 255, 0.2);
 }
 
 /* --- MEDIA QUERIES --- */
