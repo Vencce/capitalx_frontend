@@ -97,7 +97,7 @@ const passos = [
               <p>Confira as cartas disponíveis agora ou fale com um consultor.</p>
             </div>
             <div class="cta-actions">
-               <router-link to="/" class="btn-cta-gold">Ver Estoque</router-link>
+              <router-link to="/" class="btn-cta-gold">Ver Estoque</router-link>
             </div>
           </div>
         </section>
@@ -109,13 +109,12 @@ const passos = [
 </template>
 
 <style scoped>
-/* Reset de Box-Sizing para prevenir estouros */
 * {
   box-sizing: border-box;
 }
 
 .process-page {
-  background-color: #f4f7f9;
+  background-color: #f8fafc;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -126,10 +125,10 @@ const passos = [
   padding: 0 20px;
 }
 
-/* Hero Section */
+/* Hero Section - PRETO E DOURADO COM TEXTURA */
 .process-hero {
-  background: #0f172a;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  background: #000000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   padding: 100px 0;
   position: relative;
   overflow: hidden;
@@ -143,9 +142,9 @@ const passos = [
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.05;
-  background-image: radial-gradient(#ffffff 1px, transparent 1px);
-  background-size: 30px 30px;
+  opacity: 0.15;
+  background-image: radial-gradient(#64748b 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
 }
 
 .gold-tag {
@@ -177,9 +176,10 @@ const passos = [
   margin: 0 auto;
   opacity: 0.9;
   padding: 0 10px;
+  color: #e2e8f0;
 }
 
-/* Steps Grid */
+/* Main Content - FUNDO CLARO PARA LEITURA */
 .process-main {
   padding: 80px 0;
 }
@@ -206,6 +206,7 @@ const passos = [
 .step-card:hover {
   transform: translateY(-10px);
   border-color: #F6D001;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
 }
 
 .step-number {
@@ -222,7 +223,7 @@ const passos = [
   width: 70px;
   height: 70px;
   background: #f8fafc;
-  color: #1e3a8a;
+  color: #000000;
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -235,7 +236,8 @@ const passos = [
 
 .step-card:hover .step-icon-box {
   background: #F6D001;
-  color: #1e3a8a;
+  color: #000000;
+  border-color: #F6D001;
 }
 
 .step-card h3 {
@@ -307,7 +309,7 @@ const passos = [
   width: 24px;
   height: 24px;
   background: #F6D001;
-  color: #1e3a8a;
+  color: #000000;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -329,13 +331,14 @@ const passos = [
   line-height: 1.5;
 }
 
-/* CTA */
+/* CTA - PRETO E DOURADO */
 .process-cta {
   margin-top: 40px;
 }
 
 .cta-inner {
-  background: #0f172a;
+  background: #000000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   border-radius: 20px;
   padding: 50px;
   display: flex;
@@ -358,7 +361,7 @@ const passos = [
 
 .btn-cta-gold {
   background: #F6D001;
-  color: #0f172a;
+  color: #000000;
   border: none;
   padding: 18px 36px;
   border-radius: 8px;
@@ -379,7 +382,6 @@ const passos = [
 
 /* --- REGRAS DE RESPONSIVIDADE --- */
 
-/* Tablets (1024px) */
 @media (max-width: 1024px) {
   .steps-grid { 
     grid-template-columns: repeat(2, 1fr); 
@@ -392,7 +394,6 @@ const passos = [
   }
 }
 
-/* Celulares (768px) */
 @media (max-width: 768px) {
   .process-main { padding: 40px 0; }
   .steps-grid { grid-template-columns: 1fr; }
@@ -410,21 +411,16 @@ const passos = [
   .cta-text h2 { font-size: 1.5rem; }
 }
 
-/* Celulares Pequenos (480px / 490px) */
 @media (max-width: 490px) {
   .process-hero { padding: 60px 0; }
-  
   .gold-tag { font-size: 0.7rem; padding: 4px 12px; }
-  
   .step-card { padding: 30px 20px; }
   .step-number { font-size: 1.2rem; top: 10px; right: 15px; }
-  
   .btn-cta-gold { 
     width: 100%; 
     justify-content: center; 
     padding: 15px;
   }
-
   .comp-header h2 { font-size: 1.3rem; }
 }
 </style>
