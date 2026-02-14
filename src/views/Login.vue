@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import logoSrc from '../assets/imagens/logo_branco.png' // Importando a logo oficial
 import { User, Lock, ArrowRight, Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -23,7 +24,6 @@ const handleLogin = async () => {
     const token = response.data.token
     localStorage.setItem('token', token)
     
-    // Redireciona para o Dashboard (rota /painel)
     router.push('/painel')
     
   } catch (err) {
@@ -37,13 +37,14 @@ const handleLogin = async () => {
 
 <template>
   <div class="login-page">
-    <div class="bg-decoration"></div>
+    <div class="bg-decoration">
+      <div class="pattern-overlay"></div>
+    </div>
 
     <div class="login-card">
       <div class="header">
         <div class="brand">
-          <span class="logo-icon">CX</span>
-          <h1>Capital<span class="highlight">X</span></h1>
+          <img :src="logoSrc" alt="Capital X" class="login-logo" />
         </div>
         <p class="subtitle">Painel Administrativo</p>
       </div>
@@ -106,22 +107,31 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f1f5f9;
+  background-color: #111111;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
   overflow: hidden;
 }
 
-/* Fundo Decorativo */
+/* Fundo Decorativo Premium */
 .bg-decoration {
   position: absolute;
   width: 100%;
-  height: 50vh;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  height: 60vh;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   top: 0;
   left: 0;
   z-index: 0;
-  clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 0 100%);
+  border-bottom: 2px solid #F6D001;
+}
+
+.pattern-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.15;
+  background-image: radial-gradient(#64748b 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
 }
 
 .login-card {
@@ -132,7 +142,7 @@ const handleLogin = async () => {
   width: 100%;
   max-width: 420px;
   border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -141,25 +151,25 @@ const handleLogin = async () => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.header { text-align: center; margin-bottom: 40px; }
+.header { text-align: center; margin-bottom: 35px; }
 
-.brand { 
-  display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; 
+.login-logo {
+  height: 45px;
+  width: auto;
+  margin-bottom: 15px;
+  filter: brightness(0); /* Garante que a logo fique preta no card branco */
 }
 
-.logo-icon {
-  width: 40px; height: 40px; background: #1e3a8a; color: white;
-  border-radius: 10px; display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 1.1rem; letter-spacing: -1px;
+.subtitle { 
+  color: #64748b; 
+  font-size: 0.9rem; 
+  font-weight: 700; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-h1 { font-size: 1.8rem; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; margin: 0; }
-.highlight { color: #10b981; }
-
-.subtitle { color: #64748b; font-size: 0.95rem; font-weight: 500; }
-
-.input-wrapper { margin-bottom: 24px; }
-label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 8px; margin-left: 2px; }
+.input-wrapper { margin-bottom: 20px; }
+label { display: block; font-size: 0.8rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; text-transform: uppercase; }
 
 .input-box {
   position: relative;
@@ -172,47 +182,48 @@ label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; ma
 
 input {
   width: 100%;
-  padding: 14px 16px 14px 44px; /* Espaço para o ícone */
-  border: 1px solid #cbd5e1;
+  padding: 14px 16px 14px 44px;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   font-size: 1rem;
-  color: #1e293b;
+  color: #0f172a;
   outline: none;
   transition: all 0.2s;
   background-color: #f8fafc;
 }
 
 input:focus {
-  border-color: #1e3a8a;
+  border-color: #F6D001;
   background-color: white;
-  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+  box-shadow: 0 0 0 4px rgba(246, 208, 1, 0.1);
 }
 
 .btn-submit {
   width: 100%;
-  padding: 14px;
-  background: #1e3a8a;
+  padding: 16px;
+  background: #000000;
   color: white;
   border: none;
   border-radius: 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
   margin-top: 10px;
-  box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
+  border-bottom: 4px solid #F6D001;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #1e40af;
+  background: #F6D001;
+  color: #000000;
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+  box-shadow: 0 10px 20px -5px rgba(246, 208, 1, 0.3);
 }
 
 .btn-submit:disabled {
   background: #94a3b8;
   cursor: not-allowed;
-  box-shadow: none;
+  border-bottom: 4px solid #64748b;
 }
 
 .content-btn {
@@ -224,16 +235,16 @@ input:focus {
 
 .error-box {
   background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px;
-  font-size: 0.9rem; font-weight: 500; text-align: center; margin-bottom: 20px;
+  font-size: 0.85rem; font-weight: 600; text-align: center; margin-bottom: 20px;
   border: 1px solid #fecaca;
 }
 
 .footer { text-align: center; margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
-.back-link { color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
-.back-link:hover { color: #1e3a8a; }
+.back-link { color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }
+.back-link:hover { color: #F6D001; }
 
 @media (max-width: 480px) {
-  .login-card { padding: 32px 24px; max-width: 90%; }
-  .bg-decoration { height: 40vh; }
+  .login-card { padding: 35px 20px; max-width: 90%; }
+  .bg-decoration { height: 45vh; }
 }
 </style>
