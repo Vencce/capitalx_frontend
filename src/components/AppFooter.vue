@@ -43,16 +43,19 @@ const configStore = useConfigStore()
           <h4>Contato</h4>
           <ul>
             <li>
-              <MapPin :size="14" class="contact-icon" />
-              <span>São Bento, SC</span>
+              <MapPin :size="16" class="contact-icon" />
+              <div class="address-text">
+                <span>R. Erhardt Pauli, 221 - Colonial</span>
+                <span>São Bento do Sul - SC</span>
+              </div>
             </li>
             <li>
-              <Phone :size="14" class="contact-icon" />
-              <span>{{ configStore.whatsapp || '(47) 99926-3529' }}</span>
+              <Phone :size="16" class="contact-icon" />
+              <span>{{ configStore.whatsapp || '(47) 3170-3656' }}</span>
             </li>
             <li>
-              <Mail :size="14" class="contact-icon" />
-              <span>{{ configStore.email || 'contato@capitalx.com.br' }}</span>
+              <Mail :size="16" class="contact-icon" />
+              <span>{{ configStore.email || 'contato@capitalxinvest.com.br' }}</span>
             </li>
           </ul>
         </div>
@@ -72,11 +75,12 @@ const configStore = useConfigStore()
 }
 
 .main-footer {
-  background-color: #0f172a;
-  color: #94a3b8;
+  background-color: #000000;
+  background: linear-gradient(180deg, #111111 0%, #000000 100%);
+  color: #cccccc;
   padding-top: 60px;
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(246, 208, 1, 0.2);
   overflow-x: hidden;
   width: 100%;
   position: relative;
@@ -86,14 +90,14 @@ const configStore = useConfigStore()
 .footer-pattern {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0.05;
-  background-image: radial-gradient(#ffffff 1px, transparent 1px);
-  background-size: 20px 20px;
+  opacity: 0.15;
+  background-image: radial-gradient(#64748b 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
   pointer-events: none;
 }
 
 .footer-container {
-  position: relative; /* Fica acima do pattern */
+  position: relative;
   z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
@@ -115,40 +119,58 @@ const configStore = useConfigStore()
 
 .brand-description {
   line-height: 1.6;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   max-width: 350px;
   margin-bottom: 25px;
+  color: #999999;
 }
 
 h4 {
-  color: white;
+  color: #F6D001;
   font-size: 1rem;
-  margin-bottom: 20px;
-  font-weight: 700;
+  margin-bottom: 25px;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 ul { list-style: none; padding: 0; margin: 0; }
-li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+li { margin-bottom: 18px; font-size: 0.95rem; display: flex; align-items: flex-start; gap: 12px; }
 
-.footer-nav a { text-decoration: none; color: #94a3b8; transition: 0.3s; }
-.footer-nav a:hover { color: #F6D001; }
+.address-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-.contact-icon { color: #F6D001; flex-shrink: 0; }
+.footer-nav a { text-decoration: none; color: #cccccc; transition: 0.3s; }
+.footer-nav a:hover { color: #F6D001; padding-left: 5px; }
+
+.contact-icon { color: #F6D001; flex-shrink: 0; margin-top: 2px; }
 
 .socials { display: flex; gap: 15px; }
 .social-icon {
-  width: 38px; height: 38px; border-radius: 8px;
+  width: 42px; height: 42px; border-radius: 10px;
   background: rgba(255, 255, 255, 0.05); color: white;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background: #F6D001;
+  color: #000000;
+  transform: translateY(-3px);
+  border-color: #F6D001;
 }
 
 .footer-bottom {
   position: relative;
   z-index: 1;
+  background: rgba(0,0,0,0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center; padding: 20px; font-size: 0.8rem;
+  text-align: center; padding: 25px; font-size: 0.85rem;
+  color: #666666;
 }
 
 @media (max-width: 992px) {
@@ -165,43 +187,44 @@ li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center;
   .socials { justify-content: center; }
 }
 
-/* AJUSTE FINAL PARA 480PX SEM ESTOURO */
 @media (max-width: 480px) {
   .footer-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 0 15px 30px;
+    padding: 0 15px 40px;
   }
 
   .brand-description {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     max-width: 100%;
     padding: 0 10px;
   }
 
   .footer-links-wrapper {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
     width: 100%;
-    gap: 15px;
+    gap: 30px;
   }
 
   .footer-section {
-    flex: 1;
-    text-align: left; /* Alinhado à esquerda para leitura lado a lado */
+    text-align: center;
   }
 
-  /* No mobile compacto, removemos o wrap para não quebrar a linha do número */
   li {
-    font-size: 0.75rem;
-    white-space: nowrap; 
-    gap: 6px;
+    font-size: 0.9rem;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    white-space: normal;
   }
 
-  h4 { font-size: 0.9rem; text-align: left; }
+  .address-text { align-items: center; }
+
+  h4 { text-align: center; margin-bottom: 15px; }
 }
 
 @media (max-width: 360px) {
