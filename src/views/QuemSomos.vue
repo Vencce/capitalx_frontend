@@ -99,7 +99,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 
 <style scoped>
 .about-page {
-  background-color: #111111; /* Cinza quase preto */
+  background-color: #f8fafc;
   min-height: 100vh;
 }
 
@@ -109,7 +109,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   padding: 0 20px;
 }
 
-/* Hero Section */
+/* Hero Section - PRETO E DOURADO COM TEXTURA */
 .about-hero {
   background: #000000;
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
@@ -118,7 +118,6 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   overflow: hidden;
   text-align: center;
   color: white;
-  border-bottom: 1px solid rgba(246, 208, 1, 0.2);
 }
 
 .hero-pattern {
@@ -127,9 +126,9 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.1;
-  background-image: radial-gradient(#F6D001 0.5px, transparent 0.5px);
-  background-size: 30px 30px;
+  opacity: 0.15;
+  background-image: radial-gradient(#64748b 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
 }
 
 .gold-tag {
@@ -143,7 +142,6 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   border-radius: 4px;
   display: inline-block;
   margin-bottom: 20px;
-  background: rgba(246, 208, 1, 0.05);
 }
 
 .about-hero h1 {
@@ -160,14 +158,14 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   font-size: 1.15rem;
   max-width: 600px;
   margin: 0 auto;
-  opacity: 0.8;
-  color: #cccccc; /* Cinza claro */
+  opacity: 0.9;
+  color: #e2e8f0;
 }
 
-/* Intro Section */
+/* Main Content - FUNDO CLARO PARA LEITURA */
 .about-main {
   padding: 80px 0;
-  background: #111111;
+  background-color: #f8fafc;
 }
 
 .intro-grid {
@@ -181,7 +179,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .section-title {
   font-size: 2rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 25px;
   position: relative;
 }
@@ -200,7 +198,7 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .intro-text p {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #bbbbbb; /* Cinza médio */
+  color: #334155;
   margin-bottom: 20px;
 }
 
@@ -211,11 +209,11 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .stat-card {
-  background: #1a1a1a;
+  background: white;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-  border-left: 4px solid #333333; /* Cinza escuro */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border-left: 4px solid #0f172a;
 }
 
 .stat-card.gold-border {
@@ -230,13 +228,13 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .stat-card h3 {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 10px;
 }
 
 .stat-card p {
   font-size: 0.95rem;
-  color: #999999;
+  color: #64748b;
   line-height: 1.5;
 }
 
@@ -250,25 +248,25 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 }
 
 .value-card {
-  background: #1a1a1a;
+  background: white;
   padding: 40px 30px;
   border-radius: 12px;
   text-align: center;
-  border: 1px solid #333333;
+  border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
 }
 
 .value-card:hover {
   transform: translateY(-5px);
   border-color: #F6D001;
-  box-shadow: 0 20px 40px -15px rgba(246, 208, 1, 0.15);
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
 }
 
 .value-icon {
   width: 50px;
   height: 50px;
-  background: rgba(246, 208, 1, 0.1);
-  color: #F6D001;
+  background: #fffbeb;
+  color: #0f172a;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -279,17 +277,17 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .value-card h3 {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 15px;
 }
 
 .value-card p {
   font-size: 0.95rem;
-  color: #999999;
+  color: #64748b;
   line-height: 1.6;
 }
 
-/* CTA */
+/* CTA - PRETO E DOURADO */
 .about-cta {
   margin-top: 40px;
 }
@@ -303,7 +301,6 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   justify-content: space-between;
   align-items: center;
   color: white;
-  border: 1px solid rgba(246, 208, 1, 0.3);
   border-bottom: 5px solid #F6D001;
 }
 
@@ -316,7 +313,6 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
 .cta-text p {
   opacity: 0.8;
   font-size: 1.1rem;
-  color: #cccccc;
 }
 
 .btn-cta-gold {
@@ -333,13 +329,11 @@ import { Target, ShieldCheck, TrendingUp, Clock } from 'lucide-vue-next'
   gap: 12px;
   transition: all 0.3s;
   font-size: 1rem;
-  box-shadow: 0 4px 15px rgba(246, 208, 1, 0.3);
 }
 
 .btn-cta-gold:hover {
   background: #ffffff;
   transform: scale(1.05);
-  box-shadow: 0 4px 25px rgba(255, 255, 255, 0.2);
 }
 
 /* --- MEDIA QUERIES --- */
