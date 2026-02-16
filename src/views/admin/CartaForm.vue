@@ -44,11 +44,27 @@ const salvar = async () => {
   loading.value = true
   const formData = new FormData()
   
+  // Lista de campos que o Django espera como números
+  const camposNumericos = ['valor_credito', 'valor_entrada', 'valor_parcela', 'numero_parcelas', 'saldo_devedor', 'seguro_vida']
+
   Object.keys(form.value).forEach(key => {
-    if (key !== 'administradora_detalhes') {
-      const value = (form.value[key] === null || form.value[key] === undefined) ? '' : form.value[key]
-      formData.append(key, value)
+    if (key === 'administradora_detalhes') return
+
+    let value = form.value[key]
+
+    // Se o campo for numérico e estiver vazio, NÃO enviamos ele no formData
+    if (camposNumericos.includes(key)) {
+      if (value === '' || value === null || value === undefined) {
+        return // Pula este campo e não adiciona ao envio
+      }
     }
+
+    // Se for data de vencimento vazia, também não enviamos
+    if (key === 'vencimento' && !value) {
+      return
+    }
+
+    formData.append(key, value)
   })
 
   try {
@@ -59,8 +75,11 @@ const salvar = async () => {
     }
     router.push('/admin/cartas')
   } catch (error) { 
-    console.error('Erro ao salvar:', error.response?.data)
-    alert('Erro ao salvar. Verifique se os campos obrigatórios estão preenchidos.') 
+    console.error('Erro retornado do servidor:', error.response?.data)
+    
+    // Mostra o erro exato que o banco está dando (ajuda muito a debugar)
+    const backendErrors = error.response?.data ? JSON.stringify(error.response.data) : 'Erro desconhecido'
+    alert('Erro ao salvar: ' + backendErrors) 
   } finally { 
     loading.value = false 
   }
