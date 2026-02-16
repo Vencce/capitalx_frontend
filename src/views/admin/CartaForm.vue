@@ -12,9 +12,19 @@ const loading = ref(false)
 const administradoras = ref([]) 
 
 const form = ref({
-  codigo: '', tipo: 'IMOVEL', administradora: '', valor_credito: '', valor_entrada: '', 
-  valor_parcela: '', numero_parcelas: '', status: 'DISPONIVEL', vencimento: '', 
-  taxa_transferencia: '', tipo_contemplacao: 'Sorteio', observacoes: '', saldo_devedor: '', seguro_vida: ''
+  codigo: '', 
+  tipo: 'IMOVEL', 
+  administradora: '', 
+  valor_credito: '', 
+  valor_entrada: '', 
+  valor_parcela: '', 
+  numero_parcelas: '', 
+  status: 'DISPONIVEL', 
+  vencimento: '', 
+  taxa_transferencia: '', 
+  observacoes: '', 
+  saldo_devedor: '', 
+  seguro_vida: ''
 })
 
 onMounted(async () => {
@@ -25,22 +35,36 @@ onMounted(async () => {
       const resCarta = await api.get(`cartas/${route.params.id}/`)
       form.value = { ...form.value, ...resCarta.data }
     }
-  } catch (error) { console.error(error) }
+  } catch (error) { 
+    console.error('Erro ao carregar dados:', error) 
+  }
 })
 
 const salvar = async () => {
   loading.value = true
   const formData = new FormData()
+  
   Object.keys(form.value).forEach(key => {
-    if (key !== 'administradora_detalhes' && form.value[key] !== null && form.value[key] !== undefined) {
-      formData.append(key, form.value[key])
+    // Evita enviar detalhes extras e trata valores nulos/indefinidos como string vazia
+    if (key !== 'administradora_detalhes') {
+      const value = (form.value[key] === null || form.value[key] === undefined) ? '' : form.value[key]
+      formData.append(key, value)
     }
   })
+
   try {
-    if (isEditing.value) await api.put(`cartas/${route.params.id}/`, formData, { headers: {'Content-Type': 'multipart/form-data'} })
-    else await api.post('cartas/', formData, { headers: {'Content-Type': 'multipart/form-data'} })
+    if (isEditing.value) {
+      await api.put(`cartas/${route.params.id}/`, formData)
+    } else {
+      await api.post('cartas/', formData)
+    }
     router.push('/admin/cartas')
-  } catch (error) { alert('Erro ao salvar.') } finally { loading.value = false }
+  } catch (error) { 
+    console.error('Erro ao salvar:', error.response?.data)
+    alert('Erro ao salvar. Verifique se os campos obrigatórios estão preenchidos.') 
+  } finally { 
+    loading.value = false 
+  }
 }
 </script>
 
@@ -82,17 +106,41 @@ const salvar = async () => {
 
           <div class="section-label mt-4">Financeiro</div>
 
-          <div class="field"><label>Crédito (R$)</label><input type="number" step="0.01" v-model="form.valor_credito" required /></div>
-          <div class="field"><label>Entrada (R$)</label><input type="number" step="0.01" v-model="form.valor_entrada" required /></div>
-          <div class="field"><label>Parcela (R$)</label><input type="number" step="0.01" v-model="form.valor_parcela" required /></div>
-          <div class="field"><label>Qtd. Parcelas</label><input type="number" v-model="form.numero_parcelas" required /></div>
-          <div class="field"><label>Saldo Devedor (R$)</label><input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Opcional" /></div>
-          <div class="field"><label>Seguro de Vida (R$)</label><input type="number" step="0.01" v-model="form.seguro_vida" placeholder="Opcional" /></div>
+          <div class="field">
+            <label>Crédito (R$)</label>
+            <input type="number" step="0.01" v-model="form.valor_credito" required />
+          </div>
+          <div class="field">
+            <label>Entrada (R$)</label>
+            <input type="number" step="0.01" v-model="form.valor_entrada" required />
+          </div>
+          <div class="field">
+            <label>Parcela (R$)</label>
+            <input type="number" step="0.01" v-model="form.valor_parcela" required />
+          </div>
+          <div class="field">
+            <label>Qtd. Parcelas</label>
+            <input type="number" v-model="form.numero_parcelas" required />
+          </div>
+          <div class="field">
+            <label>Saldo Devedor (R$)</label>
+            <input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Deixe vazio para 'A consultar'" />
+          </div>
+          <div class="field">
+            <label>Seguro de Vida (R$)</label>
+            <input type="number" step="0.01" v-model="form.seguro_vida" placeholder="Deixe vazio para 'A consultar'" />
+          </div>
 
           <div class="section-label mt-4">Detalhes</div>
 
-          <div class="field"><label>Taxa Transf.</label><input type="text" v-model="form.taxa_transferencia" placeholder="Ex: Grátis" /></div>
-          <div class="field"><label>Vencimento</label><input type="date" v-model="form.vencimento" /></div>
+          <div class="field">
+            <label>Taxa Transf.</label>
+            <input type="text" v-model="form.taxa_transferencia" placeholder="Vazio para 'A consultar'" />
+          </div>
+          <div class="field">
+            <label>Vencimento</label>
+            <input type="date" v-model="form.vencimento" />
+          </div>
           <div class="field full"><label>Observações</label><textarea v-model="form.observacoes" rows="3"></textarea></div>
           
           <div class="field full">
@@ -137,7 +185,6 @@ input:focus, select:focus, textarea:focus { border-color: #F6D001; outline: none
 .form-actions { margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px; border-top: 1px solid #e5e7eb; padding-top: 24px; }
 .btn-cancel { background: transparent; border: none; color: #6b7280; font-weight: 600; cursor: pointer; padding: 12px 24px; }
 
-/* Botão Salvar com a identidade da Capital X */
 .btn-save { 
   background: #000000; 
   color: white; 
