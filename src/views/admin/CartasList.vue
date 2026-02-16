@@ -195,7 +195,7 @@ onMounted(fetchCartas)
               </td>
               <td class="actions-cell">
                 <div class="action-group">
-                  <button class="action-btn edit" @click="router.push(`/admin/cartas/editar/${carta.id}`)">
+                  <button class="action-btn edit" @click="router.push(`/admin/cartas/${carta.id}`)">
                     <Edit2 :size="14" />
                   </button>
                   <button class="action-btn delete" @click="deleteCarta(carta.id)">
