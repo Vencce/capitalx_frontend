@@ -14,8 +14,9 @@ const configStore = useConfigStore()
 
 const API_BASE_URL = 'https://capitalxinvest.onrender.com'
 
+// Função de formatação de moeda com suporte para "A consultar"
 const formatCurrency = (value) => {
-  if (!value && value !== 0) return ''
+  if (!value || value === 0 || value === '0.00') return 'A consultar'
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
@@ -40,7 +41,6 @@ const custoTotal = computed(() => {
 
 const getLogoUrl = (path) => {
   if (!path) return ''
-  // Se o path já for uma URL completa (Cloudinary), retorna ele mesmo
   if (path.startsWith('http')) return path
   const separator = path.startsWith('/') ? '' : '/'
   return `${API_BASE_URL}${separator}${path}`
@@ -58,7 +58,8 @@ Valor do Crédito: ${formatCurrency(props.carta.valor_credito)}
 Valor da Entrada: ${formatCurrency(props.carta.valor_entrada)}
 Parcelas: ${props.carta.numero_parcelas}x de ${formatCurrency(props.carta.valor_parcela)}
 -----------------------------------
-Saldo Devedor: ${props.carta.saldo_devedor ? formatCurrency(props.carta.saldo_devedor) : 'N/A'}
+Saldo Devedor: ${props.carta.saldo_devedor ? formatCurrency(props.carta.saldo_devedor) : 'A consultar'}
+Seguro de Vida: ${formatCurrency(props.carta.seguro_vida)}
 Taxa de Transf.: ${formatTaxa(props.carta.taxa_transferencia)}
 Vencimento: ${formatDate(props.carta.vencimento)}
 Contemplação: ${props.carta.tipo_contemplacao || 'N/A'}
@@ -219,7 +220,8 @@ const handleCardClick = () => {
             </div>
             <div class="modal-item">
               <span>Parcelas</span>
-              <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
+              <strong v-if="props.carta.valor_parcela > 0">{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
+              <strong v-else>A consultar</strong>
             </div>
             <div class="modal-item" v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0">
               <span>Saldo Devedor</span>
@@ -227,7 +229,8 @@ const handleCardClick = () => {
             </div>
             <div class="modal-item" v-else>
                <span>Custo Total (Aprox.)</span>
-               <strong>{{ formatCurrency(custoTotal) }}</strong>
+               <strong v-if="custoTotal > 0">{{ formatCurrency(custoTotal) }}</strong>
+               <strong v-else>A consultar</strong>
             </div>
           </div>
           <div class="modal-section-title">Especificações</div>
@@ -242,9 +245,9 @@ const handleCardClick = () => {
             </div>
             <div class="modal-item">
               <span>Contemplação</span>
-              <strong>{{ props.carta.tipo_contemplacao }}</strong>
+              <strong>{{ props.carta.tipo_contemplacao || 'A consultar' }}</strong>
             </div>
-            <div class="modal-item" v-if="props.carta.seguro_vida && parseFloat(props.carta.seguro_vida) > 0">
+            <div class="modal-item">
               <span>Seguro de Vida</span>
               <strong>{{ formatCurrency(props.carta.seguro_vida) }}</strong>
             </div>
