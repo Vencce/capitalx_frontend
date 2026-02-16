@@ -46,29 +46,57 @@ const salvar = async () => {
   
   const formData = new FormData()
   
+  // Lista de campos que são numéricos no seu models.py
+  const camposNumericos = [
+    'valor_credito', 'valor_entrada', 'valor_parcela', 
+    'numero_parcelas', 'saldo_devedor', 'seguro_vida'
+  ]
+
   Object.keys(form.value).forEach(key => {
-    if (key !== 'administradora_detalhes') {
-      let value = form.value[key]
-      
-      // Se o valor for vazio, enviamos uma string vazia para o Django tratar como NULL
-      if (value === null || value === undefined) {
-        value = ''
+    if (key === 'administradora_detalhes') return
+
+    let value = form.value[key]
+
+    // TRATAMENTO CRUCIAL:
+    // Se o campo for numérico e estiver vazio ou nulo, não enviamos nada 
+    // ou enviamos uma string vazia para que o Django trate como NULL.
+    if (camposNumericos.includes(key)) {
+      if (value === '' || value === null || value === undefined) {
+        // Não adicionamos ao formData ou adicionamos vazio se o backend permitir
+        return 
       }
-      
-      formData.append(key, value)
     }
+
+    // Para campos de data vazios
+    if (key === 'vencimento' && !value) {
+      return
+    }
+
+    formData.append(key, value)
   })
 
   try {
+    const url = isEditing.value 
+      ? `cartas/${route.params.id}/` 
+      : 'cartas/'
+    
+    // Usamos PUT para editar e POST para criar
     if (isEditing.value) {
-      await api.put(`cartas/${route.params.id}/`, formData)
+      await api.put(url, formData)
     } else {
-      await api.post('cartas/', formData)
+      await api.post(url, formData)
     }
+    
     router.push('/admin/cartas')
   } catch (error) { 
-    console.error('Erro ao salvar:', error.response?.data)
-    alert('Erro ao salvar. Verifique se os campos obrigatórios estão preenchidos.') 
+    // Isso aqui vai te mostrar EXATAMENTE qual campo está dando erro no console
+    console.error('Erro detalhado do Django:', error.response?.data)
+    
+    const erroMsg = error.response?.data 
+      ? JSON.stringify(error.response.data) 
+      : 'Erro desconhecido'
+      
+    alert('Erro ao salvar: ' + erroMsg) 
   } finally { 
     loading.value = false 
   }
