@@ -9,25 +9,23 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['toggle-selection'])
-
 const configStore = useConfigStore()
-
 const API_BASE_URL = 'https://capitalxinvest.onrender.com'
 
-// Função de formatação de moeda com suporte para "A consultar"
+// Formatação universal: se vazio, nulo ou zero, vira "A consultar"
 const formatCurrency = (value) => {
-  if (!value || value === 0 || value === '0.00') return 'A consultar'
+  if (!value || value === 0 || value === '0.00' || value === '') return 'A consultar'
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 const formatDate = (dateString) => {
-  if (!dateString) return 'A consultar'
+  if (!dateString || dateString === '') return 'A consultar'
   const [year, month, day] = dateString.split('-')
   return `${day}/${month}/${year}`
 }
 
 const formatTaxa = (valor) => {
-  if (!valor || valor === '0' || valor === 0) return 'Grátis'
+  if (!valor || valor === '' || valor === '0' || valor === 0) return 'A consultar'
   return valor
 }
 
@@ -35,6 +33,7 @@ const adminDetalhes = computed(() => props.carta.administradora_detalhes || {})
 const showModal = ref(false)
 
 const custoTotal = computed(() => {
+  if (!props.carta.valor_parcela || !props.carta.valor_entrada) return 0
   const totalParcelas = props.carta.numero_parcelas * parseFloat(props.carta.valor_parcela)
   return parseFloat(props.carta.valor_entrada) + totalParcelas
 })
@@ -42,8 +41,7 @@ const custoTotal = computed(() => {
 const getLogoUrl = (path) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
-  const separator = path.startsWith('/') ? '' : '/'
-  return `${API_BASE_URL}${separator}${path}`
+  return `${API_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
 const copiarConteudo = async () => {
@@ -58,40 +56,30 @@ Valor do Crédito: ${formatCurrency(props.carta.valor_credito)}
 Valor da Entrada: ${formatCurrency(props.carta.valor_entrada)}
 Parcelas: ${props.carta.numero_parcelas}x de ${formatCurrency(props.carta.valor_parcela)}
 -----------------------------------
-Saldo Devedor: ${props.carta.saldo_devedor ? formatCurrency(props.carta.saldo_devedor) : 'A consultar'}
+Saldo Devedor: ${formatCurrency(props.carta.saldo_devedor)}
 Seguro de Vida: ${formatCurrency(props.carta.seguro_vida)}
 Taxa de Transf.: ${formatTaxa(props.carta.taxa_transferencia)}
 Vencimento: ${formatDate(props.carta.vencimento)}
-Contemplação: ${props.carta.tipo_contemplacao || 'N/A'}
+Contemplação: ${props.carta.tipo_contemplacao || 'A consultar'}
   `.trim()
 
   try {
     await navigator.clipboard.writeText(texto)
-    alert('Informações copiadas com sucesso!')
-  } catch (err) {
-    console.error(err)
-  }
+    alert('Informações copiadas!')
+  } catch (err) { console.error(err) }
 }
 
 const abrirWhatsapp = () => {
-  const nomeBanco = adminDetalhes.value.nome || 'Banco'
-  const texto = `Olá! Tenho interesse na carta Cód: ${props.carta.codigo} (${nomeBanco}) de ${formatCurrency(props.carta.valor_credito)}.`
+  const texto = `Olá! Tenho interesse na carta Cód: ${props.carta.codigo} de ${formatCurrency(props.carta.valor_credito)}.`
   const numeroDestino = configStore.whatsapp || '5547999999999'
   window.open(`https://wa.me/${numeroDestino}?text=${encodeURIComponent(texto)}`, '_blank')
 }
 
 const compartilhar = async () => {
-  const dados = {
-    title: 'Carta Contemplada',
-    text: `Confira esta carta: ${formatCurrency(props.carta.valor_credito)}`,
-    url: window.location.href
-  }
+  const dados = { title: 'Carta Contemplada', text: `Confira: ${formatCurrency(props.carta.valor_credito)}`, url: window.location.href }
   try {
     if (navigator.share) await navigator.share(dados)
-    else {
-      await navigator.clipboard.writeText(`${dados.text} - ${dados.url}`)
-      alert('Link copiado!')
-    }
+    else { await navigator.clipboard.writeText(`${dados.text} - ${dados.url}`); alert('Link copiado!') }
   } catch (err) { console.error(err) }
 }
 
@@ -102,14 +90,8 @@ const handleCardClick = () => {
 </script>
 
 <template>
-  <div 
-    class="card-horizontal" 
-    :class="[
-      carta.status.toLowerCase(), 
-      { 'is-selected': selected, 'is-disabled': disabled || carta.status !== 'DISPONIVEL' }
-    ]"
-    @click="handleCardClick"
-  >
+  <div class="card-horizontal" :class="[carta.status.toLowerCase(), { 'is-selected': selected, 'is-disabled': disabled || carta.status !== 'DISPONIVEL' }]" @click="handleCardClick">
+    
     <div v-if="carta.status === 'DISPONIVEL'" class="selection-indicator">
       <div class="checkbox-custom" :class="{ checked: selected }"></div>
     </div>
@@ -117,14 +99,9 @@ const handleCardClick = () => {
     <div class="card-main">
       <div class="primary-section">
         <div class="icon-box">
-          <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="currentColor">
-             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-          </svg>
+          <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+          <svg v-else viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
         </div>
-        
         <div class="info-principal">
           <span class="bank-name">{{ adminDetalhes.nome || 'Administradora' }}</span>
           <h3 class="credit-value">{{ formatCurrency(props.carta.valor_credito) }}</h3>
@@ -141,19 +118,10 @@ const handleCardClick = () => {
           <span class="label">Parcelas</span>
           <span class="val">{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</span>
         </div>
-        <div class="detail-group desktop-only">
-          <span class="label">Código</span>
-          <span class="val code">#{{ props.carta.codigo }}</span>
-        </div>
       </div>
 
       <div class="logo-section">
-        <img 
-          v-if="adminDetalhes.logo" 
-          :src="getLogoUrl(adminDetalhes.logo)" 
-          class="logo-img" 
-          :alt="adminDetalhes.nome" 
-        />
+        <img v-if="adminDetalhes.logo" :src="getLogoUrl(adminDetalhes.logo)" class="logo-img" />
       </div>
     </div>
 
@@ -163,27 +131,10 @@ const handleCardClick = () => {
             <span class="dot"></span> {{ props.carta.status }}
          </span>
       </div>
-
       <div class="actions">
-        <button class="btn-icon" @click.stop="copiarConteudo" title="Copiar Informações">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-        </button>
-        <button class="btn-icon" @click.stop="compartilhar" title="Compartilhar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-        </button>
+        <button class="btn-icon" @click.stop="copiarConteudo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
         <button class="btn-secondary" @click.stop="showModal = true">Mais Detalhes</button>
-        <button class="btn-primary btn-whatsapp" @click.stop="abrirWhatsapp">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-icon">
-            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-          </svg>
-          Chamar no WhatsApp
-        </button>
+        <button class="btn-primary btn-whatsapp" @click.stop="abrirWhatsapp">WhatsApp</button>
       </div>
     </div>
 
@@ -193,88 +144,30 @@ const handleCardClick = () => {
           <button class="close-btn" @click="showModal = false">✕</button>
           <div class="modal-header">
             <div class="modal-icon-box">
-              <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor">
-                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-              </svg>
+              <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
             </div>
             <div>
-              <span class="modal-subtitle">Detalhes da Oportunidade</span>
               <h2 class="modal-title">{{ adminDetalhes.nome }}</h2>
-              <span class="status-badge modal-badge" :class="carta.status.toLowerCase()">
-                {{ props.carta.status }}
-              </span>
+              <span class="status-badge modal-badge" :class="carta.status.toLowerCase()">{{ props.carta.status }}</span>
             </div>
           </div>
           <div class="modal-section-title">Financeiro</div>
           <div class="modal-grid">
-            <div class="modal-item highlight">
-              <span>Crédito</span>
-              <strong style="color: #1e3a8a">{{ formatCurrency(props.carta.valor_credito) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Entrada</span>
-              <strong style="color: #F6D001; text-shadow: 0px 0px 1px rgba(0,0,0,0.1);">{{ formatCurrency(props.carta.valor_entrada) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Parcelas</span>
-              <strong v-if="props.carta.valor_parcela > 0">{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
-              <strong v-else>A consultar</strong>
-            </div>
-            <div class="modal-item" v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0">
-              <span>Saldo Devedor</span>
-              <strong>{{ formatCurrency(props.carta.saldo_devedor) }}</strong>
-            </div>
-            <div class="modal-item" v-else>
-               <span>Custo Total (Aprox.)</span>
-               <strong v-if="custoTotal > 0">{{ formatCurrency(custoTotal) }}</strong>
-               <strong v-else>A consultar</strong>
-            </div>
+            <div class="modal-item"><span>Crédito</span><strong>{{ formatCurrency(props.carta.valor_credito) }}</strong></div>
+            <div class="modal-item"><span>Entrada</span><strong>{{ formatCurrency(props.carta.valor_entrada) }}</strong></div>
+            <div class="modal-item"><span>Parcelas</span><strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong></div>
+            <div class="modal-item"><span>Seguro de Vida</span><strong>{{ formatCurrency(props.carta.seguro_vida) }}</strong></div>
+            <div class="modal-item"><span>Saldo Devedor</span><strong>{{ formatCurrency(props.carta.saldo_devedor) }}</strong></div>
+            <div class="modal-item"><span>Custo Total</span><strong>{{ custoTotal > 0 ? formatCurrency(custoTotal) : 'A consultar' }}</strong></div>
           </div>
           <div class="modal-section-title">Especificações</div>
           <div class="modal-grid secondary">
-            <div class="modal-item">
-              <span>Taxa Transf.</span>
-              <strong>{{ formatTaxa(props.carta.taxa_transferencia) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Vencimento</span>
-              <strong>{{ formatDate(props.carta.vencimento) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Contemplação</span>
-              <strong>{{ props.carta.tipo_contemplacao || 'A consultar' }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Seguro de Vida</span>
-              <strong>{{ formatCurrency(props.carta.seguro_vida) }}</strong>
-            </div>
-            <div class="modal-item">
-              <span>Código</span>
-              <strong>#{{ props.carta.codigo }}</strong>
-            </div>
-            <div class="modal-item full-width" v-if="props.carta.observacoes">
-              <span>Observações</span>
-              <p>{{ props.carta.observacoes }}</p>
-            </div>
+            <div class="modal-item"><span>Taxa Transf.</span><strong>{{ formatTaxa(props.carta.taxa_transferencia) }}</strong></div>
+            <div class="modal-item"><span>Vencimento</span><strong>{{ formatDate(props.carta.vencimento) }}</strong></div>
+            <div class="modal-item"><span>Código</span><strong>#{{ props.carta.codigo }}</strong></div>
           </div>
-          <div class="modal-actions">
-            <button class="btn-primary block" @click="copiarConteudo" style="background: #4b5563; margin-bottom: 10px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              Copiar Informações
-            </button>
-            <button class="btn-primary btn-whatsapp block" @click="abrirWhatsapp">
-              <svg viewBox="0 0 24 24" fill="currentColor" class="w-icon">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-              </svg>
-              Chamar no WhatsApp
-            </button>
-          </div>
+          <button class="btn-primary block btn-whatsapp" @click="abrirWhatsapp">Falar com Consultor</button>
         </div>
       </div>
     </Teleport>
