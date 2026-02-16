@@ -45,7 +45,6 @@ const salvar = async () => {
   const formData = new FormData()
   
   Object.keys(form.value).forEach(key => {
-    // Evita enviar detalhes extras e trata valores nulos/indefinidos como string vazia
     if (key !== 'administradora_detalhes') {
       const value = (form.value[key] === null || form.value[key] === undefined) ? '' : form.value[key]
       formData.append(key, value)
@@ -124,11 +123,11 @@ const salvar = async () => {
           </div>
           <div class="field">
             <label>Saldo Devedor (R$)</label>
-            <input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Deixe vazio para 'A consultar'" />
+            <input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Opcional" />
           </div>
           <div class="field">
             <label>Seguro de Vida (R$)</label>
-            <input type="number" step="0.01" v-model="form.seguro_vida" placeholder="Deixe vazio para 'A consultar'" />
+            <input type="number" step="0.01" v-model="form.seguro_vida" placeholder="Vazio para 'A consultar'" />
           </div>
 
           <div class="section-label mt-4">Detalhes</div>
