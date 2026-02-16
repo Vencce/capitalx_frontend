@@ -12,7 +12,6 @@ const emit = defineEmits(['toggle-selection'])
 const configStore = useConfigStore()
 const API_BASE_URL = 'https://capitalxinvest.onrender.com'
 
-// Formatação universal: se vazio, nulo ou zero, vira "A consultar"
 const formatCurrency = (value) => {
   if (!value || value === 0 || value === '0.00' || value === '') return 'A consultar'
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -56,10 +55,12 @@ Valor do Crédito: ${formatCurrency(props.carta.valor_credito)}
 Valor da Entrada: ${formatCurrency(props.carta.valor_entrada)}
 Parcelas: ${props.carta.numero_parcelas}x de ${formatCurrency(props.carta.valor_parcela)}
 -----------------------------------
-Saldo Devedor: ${formatCurrency(props.carta.saldo_devedor)}
+Saldo Devedor: ${props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0 ? formatCurrency(props.carta.saldo_devedor) : 'N/A'}
 Seguro de Vida: ${formatCurrency(props.carta.seguro_vida)}
 Taxa de Transf.: ${formatTaxa(props.carta.taxa_transferencia)}
 Vencimento: ${formatDate(props.carta.vencimento)}
+-----------------------------------
+Observações: ${props.carta.observacoes || 'N/A'}
   `.trim()
 
   try {
@@ -205,7 +206,7 @@ const handleCardClick = () => {
               <span>Parcelas</span>
               <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
             </div>
-            <div class="modal-item">
+            <div class="modal-item" v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0">
               <span>Saldo Devedor</span>
               <strong>{{ formatCurrency(props.carta.saldo_devedor) }}</strong>
             </div>
@@ -247,30 +248,18 @@ const handleCardClick = () => {
 </template>
 
 <style scoped>
-/* RESET DE BOX SIZING PARA EVITAR ESTOURO */
-* {
-  box-sizing: border-box;
-}
-
-.card-horizontal {
-  background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-  width: 100%; overflow: hidden; transition: all 0.3s ease; position: relative;
-  border-left: 5px solid #e5e7eb; cursor: pointer;
-}
+* { box-sizing: border-box; }
+.card-horizontal { background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); width: 100%; overflow: hidden; transition: all 0.3s ease; position: relative; border-left: 5px solid #e5e7eb; cursor: pointer; }
 .card-horizontal:hover:not(.is-disabled) { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); border-color: #1e3a8a; }
 .card-horizontal.is-selected { border-color: #1e3a8a; background-color: #f0f7ff; }
 .card-horizontal.is-disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.8); }
-
 .selection-indicator { position: absolute; top: 10px; right: 10px; z-index: 5; }
 .checkbox-custom { width: 22px; height: 22px; border: 2px solid #cbd5e1; border-radius: 6px; background: white; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
 .checkbox-custom.checked { background: #1e3a8a; border-color: #1e3a8a; }
 .checkbox-custom.checked::after { content: '✓'; color: white; font-weight: bold; font-size: 14px; }
-
 .card-horizontal.disponivel { border-left-color: #22c55e; }
 .card-horizontal.reservado { border-left-color: #F6D001; }
 .card-horizontal.vendido { border-left-color: #ef4444; }
-
-/* LAYOUT DESKTOP */
 .card-main { padding: 24px; display: grid; grid-template-columns: 1.8fr 3fr 1fr; gap: 24px; align-items: center; }
 .primary-section { display: flex; align-items: center; gap: 16px; }
 .icon-box { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); color: white; background: #1e3a8a; }
@@ -279,17 +268,14 @@ const handleCardClick = () => {
 .bank-name { font-size: 0.7rem; color: #6b7280; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
 .credit-value { margin: 0; font-size: 1.4rem; font-weight: 800; color: #111827; line-height: 1.1; }
 .subtitle { font-size: 0.8rem; color: #9ca3af; }
-
 .details-section { display: flex; justify-content: flex-start; gap: 40px; border-left: 2px solid #f3f4f6; padding-left: 30px; }
 .detail-group { display: flex; flex-direction: column; gap: 2px; }
 .label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 700; }
 .val { font-size: 1.05rem; font-weight: 600; color: #374151; white-space: nowrap; }
 .val.destaque { color: #F6D001; font-weight: 800; text-shadow: 0px 0px 1px rgba(0,0,0,0.1); }
 .code { font-family: ui-monospace, monospace; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
-
 .logo-section { display: flex; justify-content: center; align-items: center; height: 100%; }
 .logo-img { max-height: 60px; max-width: 180px; object-fit: contain; transition: all 0.3s; }
-
 .card-footer { background: #f8fafc; padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
 .footer-left { display: flex; align-items: center; gap: 10px; }
 .status-badge { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 6px 12px; border-radius: 6px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
@@ -297,7 +283,6 @@ const handleCardClick = () => {
 .status-badge.disponivel { background: #dcfce7; color: #166534; }
 .status-badge.reservado { background: #F6D001; color: #1e293b; }
 .status-badge.vendido { background: #fee2e2; color: #991b1b; }
-
 .actions { display: flex; gap: 10px; }
 button { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; transition: all 0.2s; }
 .btn-icon { background: white; border: 1px solid #e5e7eb; color: #6b7280; padding: 8px; width: 40px; height: 40px; }
@@ -310,8 +295,6 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 .btn-whatsapp { background-color: #25D366; box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.25); }
 .btn-whatsapp:hover { background-color: #1da851; }
 .w-icon { width: 20px; height: 20px; fill: white; }
-
-/* MODAL STYLES (MANTIDOS) */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-content { background: white; width: 100%; max-width: 550px; border-radius: 24px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 90vh; overflow-y: auto; border-top: 8px solid #1e3a8a; }
 .modal-content.disponivel { border-top-color: #16a34a; }
@@ -336,70 +319,31 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 
 @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* RESPONSIVIDADE HORIZONTAL COMPACTA (RESOLUÇÃO 490px) */
 @media (max-width: 600px) {
-  .card-main { 
-    grid-template-columns: 1fr auto; 
-    padding: 10px 10px 10px 32px; /* Reduzido padding */
-    gap: 8px;
-  }
-  
+  .card-main { grid-template-columns: 1fr auto; padding: 10px 10px 10px 32px; gap: 8px; }
   .primary-section { gap: 8px; }
   .icon-box { width: 36px; height: 36px; border-radius: 6px; }
   .icon-box svg { width: 18px; height: 18px; }
-
   .credit-value { font-size: 1.05rem; }
   .bank-name { font-size: 0.55rem; }
   .subtitle { font-size: 0.65rem; }
-
-  .details-section { 
-    grid-column: 1 / -1; 
-    border-left: none; 
-    padding-left: 0;
-    gap: 12px;
-    margin-top: 6px;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 8px;
-    justify-content: flex-start;
-  }
-  
+  .details-section { grid-column: 1 / -1; border-left: none; padding-left: 0; gap: 12px; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 8px; justify-content: flex-start; }
   .val { font-size: 0.8rem; letter-spacing: -0.2px; }
   .label { font-size: 0.55rem; }
-
-  .logo-section { 
-    grid-row: 1; 
-    grid-column: 2; 
-    align-self: center; /* Centralizado para caber melhor na linha */
-  }
+  .logo-section { grid-row: 1; grid-column: 2; align-self: center; }
   .logo-img { max-height: 22px; max-width: 65px; }
-
-  .card-footer { 
-    padding: 8px 12px; 
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
+  .card-footer { padding: 8px 12px; flex-wrap: wrap; gap: 8px; }
   .status-badge { font-size: 0.6rem; padding: 2px 6px; }
-  
-  .actions { 
-    gap: 5px; 
-    width: 100%; 
-    justify-content: space-between; 
-    border-top: 1px solid #f1f5f9;
-    padding-top: 8px;
-  }
-  
+  .actions { gap: 5px; width: 100%; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 8px; }
   button { padding: 6px 8px; font-size: 0.75rem; flex: 1; height: 32px; }
   .btn-icon { width: 32px; height: 32px; flex: 0 0 auto; }
   .btn-secondary { font-size: 0.7rem; }
   .btn-whatsapp { font-size: 0.75rem; }
   .w-icon { width: 12px; height: 12px; }
-  
   .selection-indicator { top: 8px; left: 8px; }
   .checkbox-custom { width: 18px; height: 18px; }
 }
 
-/* AJUSTE PARA TELAS EXTREMAMENTE PEQUENAS (ABAIXO DE 380px) */
 @media (max-width: 380px) {
   .details-section { gap: 8px; }
   .val { font-size: 0.75rem; }
