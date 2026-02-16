@@ -39,13 +39,11 @@ const toggleSelection = (carta) => {
     if (selectedCartas.value.length > 0) {
       const firstCarta = selectedCartas.value[0]
       
-      // Validação de Administradora
       if (carta.administradora !== firstCarta.administradora) {
         alert('Atenção: Você só pode somar cartas da mesma administradora!')
         return
       }
 
-      // Validação de Categoria (Tipo de Bem)
       if (carta.tipo !== firstCarta.tipo) {
         alert(`Atenção: Não é possível misturar categorias. Você já selecionou um(a) ${firstCarta.tipo}, e esta cota é de ${carta.tipo}.`)
         return
@@ -72,7 +70,6 @@ const isSelectionDisabled = (carta) => {
   if (selectedCartas.value.length === 0) return false
   
   const firstCarta = selectedCartas.value[0]
-  // Desabilita se for admin diferente OU tipo diferente
   return firstCarta.administradora !== carta.administradora || firstCarta.tipo !== carta.tipo
 }
 
@@ -81,7 +78,7 @@ const formatCurrency = (value) => {
 }
 
 const cartasFiltradas = computed(() => {
-  return cartas.value.filter((c) => {
+  let filtradas = cartas.value.filter((c) => {
     if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
     if (
       filtroAdmin.value &&
@@ -99,12 +96,14 @@ const cartasFiltradas = computed(() => {
 
     return true
   })
+
+  return filtradas.sort((a, b) => parseFloat(a.valor_credito) - parseFloat(b.valor_credito))
 })
 
 const getApiUrl = (endpoint) => {
   const params = new URLSearchParams()
   if (filtroTipo.value) params.append('tipo', filtroTipo.value)
-  const baseUrl = 'http://localhost:8000/api'
+  const baseUrl = 'https://capitalxinvest.onrender.com/api'
   return `${baseUrl}/${endpoint}/?${params.toString()}`
 }
 
@@ -708,8 +707,6 @@ onMounted(buscarCartas)
   transform: translate(-50%, 100%);
   opacity: 0;
 }
-
-/* --- REGRAS DE RESPONSIVIDADE ADICIONAIS --- */
 
 @media (max-width: 1024px) {
   .hero-content h1 {
