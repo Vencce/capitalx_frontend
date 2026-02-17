@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '../../services/api'
 import AdminLayout from '../../components/AdminLayout.vue'
@@ -27,6 +27,16 @@ const form = ref({
   seguro_vida: ''
 })
 
+watch(
+  [() => form.value.valor_parcela, () => form.value.numero_parcelas],
+  ([newValor, newQtd]) => {
+    if (newValor && newQtd) {
+      const calculo = parseFloat(newValor) * parseInt(newQtd)
+      form.value.saldo_devedor = calculo.toFixed(2)
+    }
+  }
+)
+
 onMounted(async () => {
   try {
     const resAdmin = await api.get('administradoras/')
@@ -44,7 +54,6 @@ const salvar = async () => {
   loading.value = true
   const formData = new FormData()
   
-  // Lista de campos que o Django espera como números
   const camposNumericos = ['valor_credito', 'valor_entrada', 'valor_parcela', 'numero_parcelas', 'saldo_devedor', 'seguro_vida']
 
   Object.keys(form.value).forEach(key => {
@@ -52,14 +61,12 @@ const salvar = async () => {
 
     let value = form.value[key]
 
-    // Se o campo for numérico e estiver vazio, NÃO enviamos ele no formData
     if (camposNumericos.includes(key)) {
       if (value === '' || value === null || value === undefined) {
-        return // Pula este campo e não adiciona ao envio
+        return 
       }
     }
 
-    // Se for data de vencimento vazia, também não enviamos
     if (key === 'vencimento' && !value) {
       return
     }
@@ -76,8 +83,6 @@ const salvar = async () => {
     router.push('/admin/cartas')
   } catch (error) { 
     console.error('Erro retornado do servidor:', error.response?.data)
-    
-    // Mostra o erro exato que o banco está dando (ajuda muito a debugar)
     const backendErrors = error.response?.data ? JSON.stringify(error.response.data) : 'Erro desconhecido'
     alert('Erro ao salvar: ' + backendErrors) 
   } finally { 
@@ -142,7 +147,7 @@ const salvar = async () => {
           </div>
           <div class="field">
             <label>Saldo Devedor (R$)</label>
-            <input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Opcional" />
+            <input type="number" step="0.01" v-model="form.saldo_devedor" placeholder="Calculado automaticamente" />
           </div>
           <div class="field">
             <label>Seguro de Vida (R$)</label>
