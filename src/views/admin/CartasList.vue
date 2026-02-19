@@ -5,15 +5,16 @@ import api from '../../services/api'
 import AdminLayout from '../../components/AdminLayout.vue'
 import { 
   Search, Plus, Edit2, Trash2, Filter, 
-  Car, Home, ArrowUpDown, X 
+  Car, Home, ArrowUpDown, X, RefreshCw
 } from 'lucide-vue-next'
 
 const cartas = ref([])
 const loading = ref(true)
+const syncLoading = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('TODOS')
 const tipoFilter = ref('TODOS')
-const orderFilter = ref('crescente') // 'crescente' ou 'decrescente'
+const orderFilter = ref('crescente') 
 const router = useRouter()
 
 const fetchCartas = async () => {
@@ -25,6 +26,22 @@ const fetchCartas = async () => {
     console.error(error)
   } finally {
     loading.value = false
+  }
+}
+
+const handleSync = async () => {
+  if (!confirm('Deseja atualizar o estoque com a API parceira agora?')) return
+  
+  syncLoading.value = true
+  try {
+    const res = await api.post('cartas/sincronizar/')
+    alert(`Sucesso! ${res.data.novas} novas cartas importadas e ${res.data.atualizadas} atualizadas.`)
+    fetchCartas()
+  } catch (error) {
+    console.error(error)
+    alert('Erro na sincronização: ' + (error.response?.data?.error || 'Erro desconhecido'))
+  } finally {
+    syncLoading.value = false
   }
 }
 
@@ -40,7 +57,6 @@ const deleteCarta = async (id) => {
 }
 
 const filteredCartas = computed(() => {
-  // 1. Filtragem por busca, status e tipo
   let result = cartas.value.filter(carta => {
     const query = searchQuery.value.toLowerCase()
     const matchesSearch = 
@@ -53,7 +69,6 @@ const filteredCartas = computed(() => {
     return matchesSearch && matchesStatus && matchesTipo
   })
 
-  // 2. Ordenação por Valor de Crédito (Feedback Robson)
   result.sort((a, b) => {
     const valA = parseFloat(a.valor_credito) || 0
     const valB = parseFloat(b.valor_credito) || 0
@@ -73,9 +88,8 @@ const formatCurrency = (value) => {
 
 const getLogoUrl = (logoPath) => {
   if (!logoPath) return ''
-  // Se for Cloudinary (começa com http), retorna direto, senão concatena com base local
   if (logoPath.startsWith('http')) return logoPath
-  const API_BASE = 'http://localhost:8000'
+  const API_BASE = 'https://capitalxinvest.onrender.com'
   return `${API_BASE}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`
 }
 
@@ -97,9 +111,15 @@ onMounted(fetchCartas)
           <h1>Estoque de <span>Cartas</span></h1>
           <p>Gerencie e organize suas cotas de crédito.</p>
         </div>
-        <button class="btn-add" @click="router.push('/admin/cartas/nova')">
-          <Plus :size="18" /> Nova Carta
-        </button>
+        <div class="header-actions">
+          <button class="btn-sync" @click="handleSync" :disabled="syncLoading">
+            <RefreshCw :class="{ 'spin': syncLoading }" :size="18" />
+            {{ syncLoading ? 'Sincronizando...' : 'Sincronizar API' }}
+          </button>
+          <button class="btn-add" @click="router.push('/admin/cartas/nova')">
+            <Plus :size="18" /> Nova Carta
+          </button>
+        </div>
       </header>
 
       <div class="toolbar-v2">
@@ -178,8 +198,8 @@ onMounted(fetchCartas)
               <td>
                 <div class="admin-cell">
                   <img 
-                    v-if="carta.administradora_detalhes?.logo" 
-                    :src="getLogoUrl(carta.administradora_detalhes.logo)" 
+                    v-if="carta.administradora_detalhes?.logo || carta.administradora_detalhes?.logo_url_externa" 
+                    :src="getLogoUrl(carta.administradora_detalhes.logo_url_externa || carta.administradora_detalhes.logo)" 
                     class="table-logo"
                   />
                   <span>{{ carta.administradora_detalhes?.nome || '---' }}</span>
@@ -217,11 +237,11 @@ onMounted(fetchCartas)
 
 <style scoped>
 .admin-page { animation: slideUp 0.3s ease-out; }
-
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .header-info h1 { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin: 0; }
 .header-info h1 span { color: #f6d001; }
 .header-info p { color: #64748b; margin-top: 4px; }
+.header-actions { display: flex; gap: 12px; }
 
 .btn-add {
   background: #000; color: white; border: none; padding: 12px 24px; border-radius: 8px;
@@ -229,53 +249,47 @@ onMounted(fetchCartas)
   border-bottom: 3px solid #f6d001;
 }
 
-.toolbar-v2 {
-  background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;
-  margin-bottom: 2rem; display: flex; flex-direction: column; gap: 15px;
+.btn-sync {
+  background: #fff; color: #1e3a8a; border: 1px solid #e2e8f0; padding: 12px 20px; border-radius: 8px;
+  font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s;
 }
+.btn-sync:hover:not(:disabled) { background: #f8fafc; border-color: #1e3a8a; }
+.btn-sync:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.spin { animation: spin-anim 1s linear infinite; }
+@keyframes spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.toolbar-v2 { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 15px; }
 .search-box { position: relative; width: 100%; }
 .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-.search-box input {
-  width: 100%; padding: 12px 12px 12px 45px; border-radius: 8px; border: 1px solid #e2e8f0;
-  outline: none; font-size: 1rem;
-}
-
+.search-box input { width: 100%; padding: 12px 12px 12px 45px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; font-size: 1rem; }
 .filters-grid { display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; }
 .filter-item { display: flex; flex-direction: column; gap: 5px; min-width: 150px; }
 .filter-item label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
 .filter-item select { padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-weight: 600; outline: none; }
-
 .btn-clear { background: #f1f5f9; border: none; padding: 10px; border-radius: 6px; color: #64748b; cursor: pointer; }
 .btn-clear:hover { background: #fee2e2; color: #ef4444; }
-
 .table-wrapper { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
 .admin-table { width: 100%; border-collapse: collapse; }
 .admin-table th { background: #f8fafc; padding: 14px; text-align: left; font-size: 0.75rem; color: #64748b; font-weight: 800; border-bottom: 1px solid #e2e8f0; }
 .admin-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
-
 .item-type { display: flex; align-items: center; gap: 10px; }
 .type-details { display: flex; flex-direction: column; }
 .code-val { font-weight: 800; color: #0f172a; }
 .type-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; }
-
 .admin-cell { display: flex; align-items: center; gap: 10px; }
 .table-logo { height: 20px; max-width: 70px; object-fit: contain; }
-
 .bold { font-weight: 700; color: #0f172a; }
 .entrada-val { font-weight: 800; color: #b45309; }
 .muted-val { color: #64748b; font-size: 0.85rem; }
-
 .status-tag { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
 .status-tag.disponivel { background: #dcfce7; color: #166534; }
 .status-tag.reservado { background: #fef3c7; color: #92400e; }
 .status-tag.vendido { background: #fee2e2; color: #991b1b; }
-
 .action-group { display: flex; gap: 8px; justify-content: flex-end; }
 .action-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; }
 .action-btn.edit:hover { border-color: #000; color: #000; }
 .action-btn.delete:hover { border-color: #ef4444; color: #ef4444; }
-
 .loading-overlay, .no-data { padding: 4rem; text-align: center; color: #94a3b8; }
 .spinner { width: 30px; height: 30px; border: 3px solid #f1f5f9; border-top-color: #f6d001; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
 
@@ -283,6 +297,9 @@ onMounted(fetchCartas)
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .header-actions { width: 100%; }
+  .btn-add, .btn-sync { flex: 1; justify-content: center; }
   .filters-grid { flex-direction: column; align-items: stretch; }
 }
 </style>
