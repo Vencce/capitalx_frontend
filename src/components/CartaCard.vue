@@ -137,8 +137,8 @@ const handleCardClick = () => {
 
       <div class="logo-section">
         <img 
-          v-if="adminDetalhes.logo_url_externa || adminDetalhes.logo" 
-          :src="getLogoUrl(adminDetalhes.logo_url_externa || adminDetalhes.logo)" 
+          v-if="adminDetalhes.logo" 
+          :src="getLogoUrl(adminDetalhes.logo)" 
           class="logo-img" 
           :alt="adminDetalhes.nome" 
         />
@@ -167,7 +167,7 @@ const handleCardClick = () => {
         </button>
         <button class="btn-secondary" @click.stop="showModal = true">Mais Detalhes</button>
         <button class="btn-primary btn-whatsapp" @click.stop="abrirWhatsapp">
-          WhatsApp
+          Chamar no WhatsApp
         </button>
       </div>
     </div>
@@ -238,22 +238,9 @@ const handleCardClick = () => {
               <p>{{ props.carta.observacoes }}</p>
             </div>
           </div>
-
-          <div class="modal-footer-actions">
-            <div class="secondary-actions">
-              <button class="btn-modal-sub" @click="copiarConteudo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                Copiar
-              </button>
-              <button class="btn-modal-sub" @click="compartilhar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                Compartilhar
-              </button>
-            </div>
-            <button class="btn-primary block btn-whatsapp" @click="abrirWhatsapp">
-              Chamar no WhatsApp
-            </button>
-          </div>
+          <button class="btn-primary block btn-whatsapp" @click="abrirWhatsapp">
+            Chamar no WhatsApp
+          </button>
         </div>
       </div>
     </Teleport>
@@ -307,12 +294,7 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 .btn-primary:hover { background: #1e40af; transform: translateY(-2px); }
 .btn-whatsapp { background-color: #25D366; box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.25); }
 .btn-whatsapp:hover { background-color: #1da851; }
-
-.modal-footer-actions { margin-top: 25px; display: flex; flex-direction: column; gap: 12px; }
-.secondary-actions { display: flex; gap: 10px; }
-.btn-modal-sub { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: 700; color: #4b5563; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
-.btn-modal-sub:hover { background: #f3f4f6; border-color: #d1d5db; color: #111827; }
-
+.w-icon { width: 20px; height: 20px; fill: white; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .modal-content { background: white; width: 100%; max-width: 550px; border-radius: 24px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 90vh; overflow-y: auto; border-top: 8px solid #1e3a8a; }
 .modal-content.disponivel { border-top-color: #16a34a; }
@@ -321,6 +303,7 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
 .close-btn { position: absolute; top: 20px; right: 20px; background: #f3f4f6; color: #9ca3af; width: 32px; height: 32px; border-radius: 50%; padding: 0; border: none; font-size: 1rem; }
 .modal-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; }
 .modal-icon-box { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: #1e3a8a; color: white; }
+.modal-subtitle { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
 .modal-title { margin: 4px 0 10px 0; color: #111827; font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
 .modal-badge { display: inline-flex; font-size: 0.7rem; padding: 4px 10px; }
 .modal-section-title { font-size: 0.85rem; color: #1e3a8a; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
@@ -356,6 +339,7 @@ button { display: flex; align-items: center; justify-content: center; gap: 8px; 
   .btn-icon { width: 32px; height: 32px; flex: 0 0 auto; }
   .btn-secondary { font-size: 0.7rem; }
   .btn-whatsapp { font-size: 0.75rem; }
+  .w-icon { width: 12px; height: 12px; }
   .selection-indicator { top: 8px; left: 8px; }
   .checkbox-custom { width: 18px; height: 18px; }
 }
