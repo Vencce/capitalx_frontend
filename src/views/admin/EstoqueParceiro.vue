@@ -28,7 +28,7 @@ const handleSync = async () => {
   if (!confirm('Deseja atualizar o estoque com a API parceira agora?')) return
   syncLoading.value = true
   try {
-    const res = await api.post('cartas/sincronizar/')
+    const res = await api.post('api/cartas/sincronizar/')
     alert(`Sucesso! ${res.data.novas} novas cartas e ${res.data.atualizadas} atualizadas.`)
     fetchCartasParceiro()
   } catch (error) {
