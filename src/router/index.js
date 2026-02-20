@@ -18,51 +18,61 @@ const routes = [
   { path: '/como-funciona', name: 'ComoFunciona', component: ComoFunciona },
   { path: '/duvidas', name: 'Duvidas', component: Duvidas },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/onde-encontrar', name: 'OndeEncontrar', component: () => import('../views/OndeEncontrar.vue') },
+  {
+    path: '/onde-encontrar',
+    name: 'OndeEncontrar',
+    component: () => import('../views/OndeEncontrar.vue'),
+  },
 
   // Área Administrativa (Protegida)
-  { 
-    path: '/painel', 
-    name: 'Dashboard', 
-    component: Dashboard, 
-    meta: { requiresAuth: true } 
+  {
+    path: '/painel',
+    name: 'Dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true },
   },
-  { 
-    path: '/admin/cartas', 
-    name: 'CartasList', 
-    component: CartasList, 
-    meta: { requiresAuth: true } 
+  {
+    path: '/admin/cartas',
+    name: 'CartasList',
+    component: CartasList,
+    meta: { requiresAuth: true },
   },
-  { 
-    path: '/admin/cartas/nova', 
-    name: 'CartaCreate', 
-    component: CartaForm, 
-    meta: { requiresAuth: true } 
+  {
+    path: '/admin/cartas/nova',
+    name: 'CartaCreate',
+    component: CartaForm,
+    meta: { requiresAuth: true },
   },
-  { 
-    path: '/admin/cartas/:id', 
-    name: 'CartaEdit', 
-    component: CartaForm, 
-    meta: { requiresAuth: true } 
+  {
+    path: '/admin/cartas/:id',
+    name: 'CartaEdit',
+    component: CartaForm,
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin/empresas',
     name: 'AdminEmpresas', // Corrigido 'nome' para 'name'
     component: () => import('../views/admin/AdminEmpresas.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin/empresas/nova',
     name: 'AdminEmpresaForm', // Corrigido 'nome' para 'name'
     component: () => import('../views/admin/AdminEmpresaForm.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin/configuracoes',
     name: 'AdminConfig',
     component: () => import('../views/admin/AdminConfig.vue'),
-    meta: { requiresAuth: true }
-  }
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/estoque-parceiro',
+    name: 'EstoqueParceiro',
+    component: () => import('../views/admin/EstoqueParceiro.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({
@@ -71,13 +81,13 @@ const router = createRouter({
   // Rola para o topo ao mudar de página
   scrollBehavior(to, from, savedPosition) {
     return { top: 0 }
-  }
+  },
 })
 
 // Guarda de Rota
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  
+
   if (to.meta.requiresAuth && !token) {
     next('/login')
   } else if (to.path === '/login' && token) {
