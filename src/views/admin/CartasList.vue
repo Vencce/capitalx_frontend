@@ -19,7 +19,8 @@ const router = useRouter()
 const fetchCartas = async () => {
   try {
     loading.value = true
-    const response = await api.get('cartas/')
+    // Adicionamos o parâmetro para trazer apenas o estoque da Capital X
+    const response = await api.get('cartas/?origem=LOCAL')
     cartas.value = response.data
   } catch (error) {
     console.error(error)
