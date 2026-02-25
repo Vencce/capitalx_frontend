@@ -37,17 +37,21 @@ const custoTotal = computed(() => {
   return parseFloat(props.carta.valor_entrada) + totalParcelas
 })
 
-const getLogoUrl = (admin) => {
+const getLogoUrl = (carta) => {
+  const admin = carta.administradora_detalhes
   if (!admin) return ''
 
-  if (admin.logo_url_externa) return admin.logo_url_externa
-
-  if (admin.logo) {
-    if (admin.logo.startsWith('http')) return admin.logo
-    return `${API_BASE_URL}${admin.logo.startsWith('/') ? '' : '/'}${admin.logo}`
+  // Se a carta for da Capital X (LOCAL), prioriza a logo que a Rosângela subiu
+  if (carta.origem === 'LOCAL') {
+    if (admin.logo) {
+      if (admin.logo.startsWith('http')) return admin.logo
+      return `${API_BASE_URL}${admin.logo.startsWith('/') ? '' : '/'}${admin.logo}`
+    }
+    return admin.logo_url_externa || ''
   }
 
-  return ''
+  // Se a carta for da API (PARCEIRO), prioriza a logo externa
+  return admin.logo_url_externa || (admin.logo ? `${API_BASE_URL}${admin.logo}` : '')
 }
 
 const copiarConteudo = async () => {
@@ -161,11 +165,13 @@ const handleCardClick = () => {
       <div class="logo-section">
         <img
           v-if="adminDetalhes.logo || adminDetalhes.logo_url_externa"
-          :src="getLogoUrl(adminDetalhes)"
+          :src="getLogoUrl(carta)"
           class="logo-img"
           :alt="adminDetalhes.nome"
         />
-        <div v-else class="icon-placeholder"></div>
+        <div v-else class="icon-placeholder">
+          <component :is="carta.tipo === 'AUTOMOVEL' ? Car : Home" :size="24" />
+        </div>
       </div>
     </div>
 
