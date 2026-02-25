@@ -1,6 +1,9 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
-import { LayoutDashboard, FileText, Building2, Settings, LogOut, Globe } from 'lucide-vue-next'
+import { 
+  LayoutDashboard, FileText, Building2, Settings, 
+  LogOut, Globe, Cloudy 
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
@@ -37,15 +40,19 @@ const isActive = (path) => route.path === path
           </router-link>
 
           <router-link
+            to="/admin/estoque-parceiro"
+            class="menu-item"
+            :class="{ active: isActive('/admin/estoque-parceiro') }"
+          >
+            <Cloudy :size="20" /> Estoque API FB
+          </router-link>
+
+          <router-link
             to="/admin/empresas"
             class="menu-item"
             :class="{ active: isActive('/admin/empresas') }"
           >
             <Building2 :size="20" /> Parceiros
-          </router-link>
-          <router-link to="/admin/estoque-parceiro" class="nav-item">
-            <CloudSync :size="20" />
-            <span>Estoque API</span>
           </router-link>
         </nav>
 
@@ -92,7 +99,6 @@ const isActive = (path) => route.path === path
   background-color: var(--bg-app);
 }
 
-/* SIDEBAR REFINADA */
 .sidebar {
   width: 260px;
   background: white;
@@ -110,7 +116,6 @@ const isActive = (path) => route.path === path
   display: flex;
   align-items: center;
   padding: 0 24px;
-  border-bottom: 1px solid transparent;
 }
 .brand h1 {
   font-size: 1.5rem;
@@ -183,10 +188,9 @@ const isActive = (path) => route.path === path
   color: var(--primary-blue);
 }
 
-/* ACTIVE STATE - O PULO DO GATO */
 .menu-item.active {
-  background-color: var(--brand-yellow-soft); /* Fundo muito suave */
-  color: #854d0e; /* Texto escuro amarelado para contraste */
+  background-color: var(--brand-yellow-soft);
+  color: #854d0e;
   font-weight: 600;
 }
 .menu-item.active::before {
@@ -236,7 +240,6 @@ const isActive = (path) => route.path === path
   box-shadow: var(--shadow-sm);
 }
 
-/* MAIN CONTENT */
 .main-content {
   flex: 1;
   margin-left: 260px;
@@ -299,7 +302,7 @@ const isActive = (path) => route.path === path
   }
   .brand h1 span,
   .menu-label,
-  .menu-item span:not(:first-child),
+  .menu-item span,
   .btn-site span {
     display: none;
   }
