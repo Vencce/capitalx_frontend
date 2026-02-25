@@ -18,55 +18,48 @@ const formatCurrency = (value) => {
   return parseFloat(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
-const totalCredito = computed(() => {
-  return props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_credito || 0), 0)
-})
+const totalCredito = computed(() => props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_credito || 0), 0))
+const totalEntrada = computed(() => props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_entrada || 0), 0))
+const totalSaldoDevedor = computed(() => props.cartas.reduce((acc, c) => acc + parseFloat(c.saldo_devedor || 0), 0))
 
-const totalEntrada = computed(() => {
-  return props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_entrada || 0), 0)
-})
+// Lógica para o escalonamento de parcelas
+const fluxoPagamento = computed(() => {
+  if (props.cartas.length < 2) return null
 
-const totalSaldoDevedor = computed(() => {
-  return props.cartas.reduce((acc, c) => acc + parseFloat(c.saldo_devedor || 0), 0)
-})
+  // Ordenamos as cotas por prazo (menor para o maior)
+  const cotasOrdenadas = [...props.cartas].sort((a, b) => parseInt(a.numero_parcelas) - parseInt(b.numero_parcelas))
+  
+  const prazoMenor = parseInt(cotasOrdenadas[0].numero_parcelas)
+  const prazoMaior = parseInt(cotasOrdenadas[cotasOrdenadas.length - 1].numero_parcelas)
+  
+  const valorCotaCurta = parseFloat(cotasOrdenadas[0].valor_parcela)
+  const valorCotaLonga = parseFloat(cotasOrdenadas[cotasOrdenadas.length - 1].valor_parcela)
 
-const totalParcelaMensal = computed(() => {
-  return props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_parcela || 0), 0)
-})
-
-// NOVO: Pega o maior prazo entre as cotas para saber a duração real da junção
-const prazoMaximo = computed(() => {
-  return Math.max(...props.cartas.map(c => parseInt(c.numero_parcelas || 0)), 0)
-})
-
-const parcelasAgrupadas = computed(() => {
-  const grupos = {}
-  props.cartas.forEach(c => {
-    const prazo = c.numero_parcelas || 0
-    const valor = parseFloat(c.valor_parcela || 0)
-    const chave = `${prazo}-${valor}`
-    
-    if (!grupos[chave]) {
-      grupos[chave] = { prazo, valor, qtdCotas: 1 }
-    } else {
-      grupos[chave].qtdCotas++
-    }
-  })
-  // Ordena do maior prazo para o menor
-  return Object.values(grupos).sort((a, b) => b.prazo - a.prazo)
+  return {
+    periodo1: {
+      meses: prazoMenor,
+      valor: valorCotaCurta + valorCotaLonga
+    },
+    periodo2: {
+      meses: prazoMaior - prazoMenor,
+      valor: valorCotaLonga
+    },
+    prazoTotal: prazoMaior
+  }
 })
 
 const copiarTudo = async () => {
   let texto = `📊 RESULTADO DA JUNÇÃO\n`
   texto += `Crédito Total: ${formatCurrency(totalCredito.value)}\n`
-  texto += `Entrada Total: ${formatCurrency(totalEntrada.value)}\n`
-  texto += `Saldo Devedor: ${formatCurrency(totalSaldoDevedor.value)}\n\n`
+  texto += `Entrada Total: ${formatCurrency(totalEntrada.value)}\n\n`
   
-  texto += `COMPOSIÇÃO DAS PARCELAS:\n`
-  const linhas = parcelasAgrupadas.value.map(p => `${p.prazo} meses de ${formatCurrency(p.valor)}`)
-  texto += linhas.join(' + ')
-  texto += `\nPrazo máximo da operação: ${prazoMaximo.value} meses`
-  texto += `\nSoma das parcelas iniciais: ${formatCurrency(totalParcelaMensal.value)}\n\n`
+  if (fluxoPagamento.value) {
+    const f = fluxoPagamento.value
+    texto += `PLANO DE PAGAMENTO:\n`
+    texto += `- Primeiras ${f.periodo1.meses} parcelas: ${formatCurrency(f.periodo1.valor)}\n`
+    texto += `- Próximas ${f.periodo2.meses} parcelas: ${formatCurrency(f.periodo2.valor)}\n`
+    texto += `Prazo total: ${f.prazoTotal} meses\n\n`
+  }
 
   texto += `COTAS SELECIONADAS:\n`
   props.cartas.forEach(c => {
@@ -76,32 +69,19 @@ const copiarTudo = async () => {
   try {
     await navigator.clipboard.writeText(texto)
     alert('Resumo copiado!')
-  } catch (err) {
-    console.error(err)
-  }
+  } catch (err) { console.error(err) }
 }
 
 const abrirWhatsapp = () => {
-  const codigos = props.cartas.map(c => c.codigo).join(', ')
-  const parcelasTexto = parcelasAgrupadas.value
-    .map(p => `${p.prazo}m de ${formatCurrency(p.valor)}`)
-    .join(' + ')
+  const f = fluxoPagamento.value
+  let parcelamento = ""
+  if (f) {
+    parcelamento = `${f.periodo1.meses}x de ${formatCurrency(f.periodo1.valor)} + ${f.periodo2.meses}x de ${formatCurrency(f.periodo2.valor)}`
+  }
 
-  const texto = `Olá! Tenho interesse na junção das cartas (${codigos}) que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nParcelamento: ${parcelasTexto}.\nPrazo total: ${prazoMaximo.value} meses.`
+  const texto = `Olá! Tenho interesse na junção das cartas que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nPlano: ${parcelamento}.\nPrazo total: ${f?.prazoTotal} meses.`
   const numero = configStore.whatsapp || '5547999999999'
   window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, '_blank')
-}
-
-const compartilhar = async () => {
-  const texto = `Confira essa oportunidade de junção: ${formatCurrency(totalCredito.value)} de crédito com entrada de ${formatCurrency(totalEntrada.value)}.`
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: 'Resultado da Junção', text: texto, url: window.location.href })
-    } else {
-      await navigator.clipboard.writeText(texto)
-      alert('Link copiado!')
-    }
-  } catch (err) { console.error(err) }
 }
 </script>
 
@@ -120,7 +100,7 @@ const compartilhar = async () => {
               <p>Crédito: <strong>{{ formatCurrency(totalCredito) }}</strong></p>
               <p>Entrada: <strong>{{ formatCurrency(totalEntrada) }}</strong></p>
               <button class="btn-copy-small" @click="copiarTudo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
@@ -129,24 +109,27 @@ const compartilhar = async () => {
 
             <div class="section-divider"></div>
 
-            <div class="parcelamento-box">
-              <p class="section-label">Parcelas que correm juntas:</p>
+            <div v-if="fluxoPagamento" class="parcelamento-box">
+              <p class="section-label">Plano de Pagamento Escalonado:</p>
               
-              <div class="parcelas-row">
-                <template v-for="(p, index) in parcelasAgrupadas" :key="index">
-                  <div class="parcela-item-modern">
-                    <strong>{{ p.prazo }}m</strong> de {{ formatCurrency(p.valor) }}
-                    <span v-if="p.qtdCotas > 1" class="cota-badge-mini">{{ p.qtdCotas }} cotas</span>
-                  </div>
-                  <div v-if="index < parcelasAgrupadas.length - 1" class="soma-inline">+</div>
-                </template>
+              <div class="step-container">
+                <div class="step-item">
+                  <span class="step-time">{{ fluxoPagamento.periodo1.meses }} meses de</span>
+                  <strong class="step-price">{{ formatCurrency(fluxoPagamento.periodo1.valor) }}</strong>
+                  <small>(Cotas juntas)</small>
+                </div>
+                
+                <div class="step-divider">+</div>
+
+                <div class="step-item highlight">
+                  <span class="step-time">{{ fluxoPagamento.periodo2.meses }} meses de</span>
+                  <strong class="step-price">{{ formatCurrency(fluxoPagamento.periodo2.valor) }}</strong>
+                  <small>(Cota restante)</small>
+                </div>
               </div>
 
               <div class="total-parcelas-footer">
-                <div class="info-adicional">
-                  <span>Duração total da operação: <strong>{{ prazoMaximo }} meses</strong></span>
-                </div>
-                <p class="parcela-val-final">Soma mensal inicial: <strong>{{ formatCurrency(totalParcelaMensal) }}</strong></p>
+                <span>Duração total: <strong>{{ fluxoPagamento.prazoTotal }} meses</strong></span>
               </div>
             </div>
 
@@ -154,8 +137,7 @@ const compartilhar = async () => {
 
             <div class="secondary-info">
               <p>Saldo devedor total: <strong>{{ formatCurrency(totalSaldoDevedor) }}</strong></p>
-              <p>Transferência: <strong>Consultar</strong></p>
-              <p>Seguro de vida: <strong>Consultar</strong></p>
+              <p>Transferência e Seguro: <strong>Consultar</strong></p>
             </div>
 
             <div class="cotas-selecionadas">
@@ -168,20 +150,7 @@ const compartilhar = async () => {
         </div>
 
         <div class="modal-footer">
-          <button class="btn-share" @click="compartilhar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-              <polyline points="16 6 12 2 8 6"></polyline>
-              <line x1="12" y1="2" x2="12" y2="15"></line>
-            </svg>
-            Compartilhar
-          </button>
-          <button class="btn-negotiate" @click="abrirWhatsapp">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-            </svg>
-            Negociar Junção
-          </button>
+          <button class="btn-negotiate" @click="abrirWhatsapp">Negociar Junção</button>
         </div>
       </div>
     </div>
@@ -189,173 +158,32 @@ const compartilhar = async () => {
 </template>
 
 <style scoped>
-/* (MANTIVE O RESTANTE DO SEU CSS, SÓ AJUSTEI CORES E TEXTOS) */
-.modal-juncao {
-  background: white; width: 100%; max-width: 480px;
-  border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-  overflow: hidden; display: flex; flex-direction: column;
-}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
+.modal-juncao { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; border-top: 8px solid #1e3a8a; }
+.modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
+.modal-header h2 { color: #1e3a8a; font-size: 1.3rem; font-weight: 800; margin: 0; }
+.btn-close { background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer; }
+.modal-body { padding: 25px; max-height: 75vh; overflow-y: auto; }
+.copy-wrapper { position: relative; }
+.btn-copy-small { position: absolute; top: 0; right: 0; background: #f1f5f9; border: none; padding: 8px; border-radius: 8px; cursor: pointer; }
+.main-info p { margin: 10px 0; font-size: 1.1rem; color: #1e293b; }
+.section-divider { height: 1px; background: #f1f5f9; margin: 20px 0; }
 
-.parcelamento-box {
-  background: #f0f7ff; padding: 20px; border-radius: 16px;
-  border: 1px solid #dbeafe; text-align: center;
-}
+/* Estilo do Escalonamento */
+.parcelamento-box { background: #f0f7ff; padding: 25px; border-radius: 18px; border: 1px solid #dbeafe; text-align: center; }
+.section-label { color: #1e3a8a; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px; }
+.step-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; }
+.step-item { display: flex; flex-direction: column; gap: 4px; }
+.step-time { font-size: 0.85rem; color: #64748b; font-weight: 600; }
+.step-price { font-size: 1.2rem; color: #1e3a8a; font-weight: 800; }
+.step-item small { font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+.step-divider { font-size: 1.5rem; font-weight: 900; color: #cbd5e1; }
+.step-item.highlight .step-price { color: #059669; }
 
-.section-label {
-  color: #1e3a8a; font-size: 0.75rem; font-weight: 800;
-  text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;
-}
-
-.parcela-item-modern {
-  font-size: 1rem; color: #1e293b; font-weight: 500;
-}
-
-.parcela-item-modern strong {
-  color: #1e3a8a; font-weight: 800; font-size: 1.1rem;
-}
-
-.total-parcelas-footer {
-  border-top: 1px dashed #dbeafe; padding-top: 15px; margin-top: 5px;
-}
-
-.parcela-val-final strong {
-  color: #1e3a8a; font-size: 1.2rem;
-}
-
-.cota-badge-mini {
-  background: #1e3a8a; color: white;
-  font-size: 0.6rem; padding: 2px 6px;
-  border-radius: 4px; margin-left: 5px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.4);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 10000; padding: 20px;
-}
-
-.modal-header {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.modal-header h2 {
-  color: #1e3a8a;
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.btn-close {
-  background: none; border: none; font-size: 1.2rem; color: #9ca3af; cursor: pointer;
-}
-
-.modal-body {
-  padding: 20px;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.copy-wrapper {
-  position: relative;
-  padding-right: 40px;
-}
-
-.btn-copy-small {
-  position: absolute;
-  top: 0; right: 0;
-  background: none; border: none; color: #111827; cursor: pointer;
-  padding: 5px;
-}
-
-.main-info p, .secondary-info p {
-  margin: 8px 0;
-  font-size: 0.95rem;
-  color: #374151;
-}
-
-.main-info strong, .secondary-info strong {
-  color: #111827;
-}
-
-.section-divider {
-  height: 1px; background: #f3f4f6; margin: 16px 0;
-}
-
-.parcelas-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.soma-inline {
-  font-size: 1.2rem;
-  font-weight: 900;
-  color: #cbd5e1;
-}
-
-.cota-badge-mini {
-  background: #e2e8f0;
-  color: #475569;
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 4px;
-}
-
-.info-adicional {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-bottom: 4px;
-}
-
-.parcela-val-final {
-  font-size: 0.95rem;
-  color: #1e293b;
-}
-
-.cotas-selecionadas {
-  margin-top: 24px;
-}
-
-.cotas-selecionadas h3 {
-  font-size: 1rem; color: #111827; font-weight: 700; margin-bottom: 12px;
-}
-
-.cota-item {
-  font-size: 0.9rem; color: #4b5563; margin-bottom: 6px;
-  padding-left: 8px; border-left: 3px solid #e5e7eb;
-}
-
-.modal-footer {
-  padding: 16px 20px;
-  display: flex; gap: 12px;
-  background: #f9fafb;
-}
-
-.modal-footer button {
-  flex: 1;
-  padding: 12px; border-radius: 8px;
-  font-weight: 700; font-size: 0.95rem;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  cursor: pointer; border: none; transition: 0.2s;
-}
-
-.btn-share { background: #f3f4f6; color: #374151; }
-.btn-share:hover { background: #e5e7eb; }
-
-.btn-negotiate { background: #00b37e; color: white; }
-.btn-negotiate:hover { background: #009d6e; }
-
-@media (max-width: 480px) {
-  .modal-footer { flex-direction: column; }
-}
+.total-parcelas-footer { border-top: 1px dashed #dbeafe; padding-top: 15px; font-size: 0.95rem; color: #1e293b; }
+.cotas-selecionadas h3 { font-size: 1rem; margin-bottom: 12px; color: #1e293b; }
+.cota-item { font-size: 0.85rem; color: #64748b; padding: 8px; border-left: 3px solid #e2e8f0; margin-bottom: 5px; background: #f8fafc; }
+.modal-footer { padding: 20px; background: #f8fafc; }
+.btn-negotiate { width: 100%; background: #059669; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+.btn-negotiate:hover { background: #047857; transform: translateY(-2px); }
 </style>
