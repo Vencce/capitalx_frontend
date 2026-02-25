@@ -41,17 +41,22 @@ const getLogoUrl = (carta) => {
   const admin = carta.administradora_detalhes
   if (!admin) return ''
 
-  // Se a carta for da Capital X (LOCAL), prioriza a logo que a Rosângela subiu
-  if (carta.origem === 'LOCAL') {
-    if (admin.logo) {
-      if (admin.logo.startsWith('http')) return admin.logo
-      return `${API_BASE_URL}${admin.logo.startsWith('/') ? '' : '/'}${admin.logo}`
-    }
-    return admin.logo_url_externa || ''
+  // SE A CARTA É DA API (PARCEIRO)
+  if (carta.origem === 'PARCEIRO') {
+    // Prioridade total para o link direto que veio da integração
+    if (admin.logo_url_externa) return admin.logo_url_externa
   }
 
-  // Se a carta for da API (PARCEIRO), prioriza a logo externa
-  return admin.logo_url_externa || (admin.logo ? `${API_BASE_URL}${admin.logo}` : '')
+  // SE A CARTA É LOCAL (CAPITAL X) OU SE A PARCEIRA NÃO TEM LINK EXTERNO
+  if (admin.logo) {
+    // Se for um link completo (Cloudinary/S3), retorna direto
+    if (admin.logo.startsWith('http')) return admin.logo
+    // Se for arquivo local, coloca o domínio do seu backend
+    return `${API_BASE_URL}${admin.logo.startsWith('/') ? '' : '/'}${admin.logo}`
+  }
+
+  // Fallback final caso nada funcione
+  return admin.logo_url_externa || ''
 }
 
 const copiarConteudo = async () => {
