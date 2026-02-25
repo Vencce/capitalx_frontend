@@ -3,14 +3,13 @@ import { ref, onMounted, computed } from 'vue'
 import api from '../../services/api'
 import AdminLayout from '../../components/AdminLayout.vue'
 import { 
-  Wallet, CheckCircle2, CloudDownload, TrendingUp, 
-  PieChart, Bell, BellRing, RefreshCw, AlertCircle
+  Wallet, CheckCircle2, CloudDownload, PieChart, 
+  Bell, BellRing, RefreshCw, BarChart3
 } from 'lucide-vue-next'
 
 const cartas = ref([])
 const loading = ref(true)
 const syncLoading = ref(false)
-const ultimaSincronizacao = ref(null)
 const mostrarPainelNotif = ref(false)
 const temNovidades = ref(false)
 
@@ -19,8 +18,6 @@ const carregarDados = async () => {
     loading.value = true
     const response = await api.get('cartas/')
     cartas.value = response.data
-    // Simula a verificação de data de atualização
-    ultimaSincronizacao.value = new Date().toLocaleTimeString('pt-BR')
     temNovidades.value = true
   } catch (error) { 
     console.error(error) 
@@ -32,41 +29,39 @@ const carregarDados = async () => {
 const handleSyncRapida = async () => {
   syncLoading.value = true
   try {
-    const res = await api.post('cartas/sincronizar/')
-    alert(`Sincronização concluída: ${res.data.novas} novas cartas.`)
+    await api.post('cartas/sincronizar/')
     await carregarDados()
     temNovidades.value = false
     mostrarPainelNotif.value = false
   } catch (error) {
-    alert('Erro ao sincronizar via Dashboard')
+    alert('Erro na sincronização')
   } finally {
     syncLoading.value = false
   }
 }
 
-// Correção dos bugs de contagem (Computeds garantidos)
+// CORREÇÃO: Filtro robusto para garantir que os números apareçam
 const cartasLocais = computed(() => cartas.value.filter(c => c.origem === 'LOCAL' || !c.origem))
 const cartasParceiras = computed(() => cartas.value.filter(c => c.origem === 'PARCEIRO'))
 const totalCredito = computed(() => cartas.value.reduce((acc, c) => acc + parseFloat(c.valor_credito || 0), 0))
-const totalDisponiveis = computed(() => cartas.value.filter(c => c.status === 'DISPONIVEL').length)
 
+// Cálculo para o Donut (Disponibilidade)
 const chartStatus = computed(() => {
   const total = cartas.value.length || 1
-  const disponivel = totalDisponiveis.value
-  const reservado = cartas.value.filter(c => c.status === 'RESERVADO').length
-  const vendido = cartas.value.filter(c => c.status === 'VENDIDO').length
+  const disp = cartas.value.filter(c => c.status === 'DISPONIVEL').length
+  const res = cartas.value.filter(c => c.status === 'RESERVADO').length
+  const vend = cartas.value.filter(c => c.status === 'VENDIDO').length
   
-  const pDisp = (disponivel / total) * 360
-  const pRes = (reservado / total) * 360
+  const pDisp = (disp / total) * 360
+  const pRes = (res / total) * 360
   
   return {
     gradient: `#1e3a8a 0deg ${pDisp}deg, #F6D001 ${pDisp}deg ${pDisp + pRes}deg, #cbd5e1 ${pDisp + pRes}deg 360deg`,
-    stats: { disponivel, reservado, vendido }
+    stats: { disp, res, vend }
   }
 })
 
 const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
-
 onMounted(carregarDados)
 </script>
 
@@ -75,175 +70,170 @@ onMounted(carregarDados)
     <div class="dashboard-wrapper">
       
       <header class="dash-header">
-        <div>
+        <div class="brand-title">
           <h2>Visão Geral</h2>
-          <p class="text-muted">Centro de controle Capital X</p>
+          <span class="subtitle">Centro de controle Capital X</span>
         </div>
 
-        <div class="notifications-area">
-          <div class="sync-info">
+        <div class="actions-nav">
+          <div class="sync-tag">
             <RefreshCw :size="14" :class="{ 'spin': syncLoading }" />
-            Última Sync: <strong>{{ ultimaSincronizacao }}</strong>
+            <span>Sincronizado</span>
           </div>
-
-          <div class="bell-container">
-            <button class="bell-btn" @click="mostrarPainelNotif = !mostrarPainelNotif" :class="{ 'active': temNovidades }">
-              <component :is="temNovidades ? BellRing : Bell" :size="22" />
-              <span v-if="temNovidades" class="badge-dot"></span>
-            </button>
-
-            <div v-if="mostrarPainelNotif" class="notif-dropdown">
-              <div class="notif-header">Notificações</div>
-              <div class="notif-body">
-                <div class="notif-item">
-                  <AlertCircle :size="18" class="text-warning" />
-                  <div class="notif-text">
-                    <p>O estoque da API FB pode estar desatualizado.</p>
-                    <button class="btn-sync-now" @click="handleSyncRapida" :disabled="syncLoading">
-                      <RefreshCw :size="14" :class="{ 'spin': syncLoading }" />
-                      {{ syncLoading ? 'Sincronizando...' : 'Atualizar Cartas Agora' }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <button class="bell-btn" @click="mostrarPainelNotif = !mostrarPainelNotif">
+            <component :is="temNovidades ? BellRing : Bell" :size="20" />
+            <span v-if="temNovidades" class="dot"></span>
+          </button>
+          
+          <div v-if="mostrarPainelNotif" class="dropdown-notif">
+            <p>O estoque FB pode estar desatualizado.</p>
+            <button @click="handleSyncRapida" class="btn-quick-sync">Sincronizar Agora</button>
           </div>
         </div>
       </header>
 
-      <div class="grid-kpis">
-        <div class="kpi-card yellow-border">
-          <div class="kpi-icon yellow"><Wallet :size="24" /></div>
-          <div class="kpi-content">
-            <span>Volume de Crédito</span>
+      <div class="kpi-grid">
+        <div class="kpi-card local">
+          <div class="icon-box"><Wallet /></div>
+          <div class="kpi-info">
+            <label>Volume de Crédito</label>
             <h3>{{ formatCurrency(totalCredito) }}</h3>
           </div>
         </div>
-
-        <div class="kpi-card blue-border">
-          <div class="kpi-icon blue-bg"><CloudDownload :size="24" /></div>
-          <div class="kpi-content">
-            <span>Estoque API FB</span>
-            <h3>{{ cartasParceiras.length }} <small>cartas</small></h3>
+        <div class="kpi-card api">
+          <div class="icon-box"><CloudDownload /></div>
+          <div class="kpi-info">
+            <label>Estoque API FB</label>
+            <h3>{{ cartasParceiras.length }} <span>cartas</span></h3>
           </div>
         </div>
-
-        <div class="kpi-card green-border">
-          <div class="kpi-icon green"><CheckCircle2 :size="24" /></div>
-          <div class="kpi-content">
-            <span>Próprias (Local)</span>
-            <h3>{{ cartasLocais.length }} <small>unidades</small></h3>
+        <div class="kpi-card success">
+          <div class="icon-box"><CheckCircle2 /></div>
+          <div class="kpi-info">
+            <label>Próprias (Local)</label>
+            <h3>{{ cartasLocais.length }} <span>unidades</span></h3>
           </div>
         </div>
       </div>
 
-      <div class="grid-charts">
-        <div class="chart-card">
-          <div class="card-header"><h4>Disponibilidade</h4> <PieChart :size="18" /></div>
-          <div class="chart-body">
-            <div class="donut-wrapper">
+      <div class="charts-section">
+        <div class="chart-box main-chart">
+          <div class="box-header">
+            <PieChart :size="18" /> <h4>Disponibilidade Geral</h4>
+          </div>
+          <div class="box-content horizontal">
+            <div class="donut-container">
               <div class="donut" :style="{ background: `conic-gradient(${chartStatus.gradient})` }">
-                <div class="hole"><span>{{ cartas.length }}</span><small>TOTAL</small></div>
+                <div class="hole">
+                  <strong>{{ cartas.length }}</strong>
+                  <small>TOTAL</small>
+                </div>
               </div>
             </div>
-            <div class="legend">
-              <div class="legend-item"><span class="dot blue"></span> Disponível <span class="val">{{ chartStatus.stats.disponivel }}</span></div>
-              <div class="legend-item"><span class="dot yellow"></span> Reservado <span class="val">{{ chartStatus.stats.reservado }}</span></div>
-              <div class="legend-item"><span class="dot gray"></span> Vendido <span class="val">{{ chartStatus.stats.vendido }}</span></div>
+            <div class="custom-legend">
+              <div class="leg-item"><i class="blue"></i> Disponível <b>{{ chartStatus.stats.disp }}</b></div>
+              <div class="leg-item"><i class="yellow"></i> Reservado <b>{{ chartStatus.stats.res }}</b></div>
+              <div class="leg-item"><i class="gray"></i> Vendido <b>{{ chartStatus.stats.vend }}</b></div>
             </div>
           </div>
         </div>
 
-        <div class="chart-card">
-          <div class="card-header"><h4>Origem do Estoque</h4> <TrendingUp :size="18" /></div>
-          <div class="bars-body">
-            <div class="bar-item">
-              <div class="bar-info"><span>Estoque Parceiro</span> <strong>{{ cartasParceiras.length }}</strong></div>
-              <div class="bar-track"><div class="bar-fill blue" :style="{ width: (cartasParceiras.length / (cartas.length || 1) * 100) + '%' }"></div></div>
+        <div class="chart-box">
+          <div class="box-header">
+            <BarChart3 :size="18" /> <h4>Composição do Estoque</h4>
+          </div>
+          <div class="box-content vertical">
+            <div class="bar-group">
+              <div class="bar-label"><span>Parceiro (FB)</span> <b>{{ cartasParceiras.length }}</b></div>
+              <div class="progress-track">
+                <div class="progress-fill blue" :style="{ width: (cartasParceiras.length / (cartas.length || 1) * 100) + '%' }"></div>
+              </div>
             </div>
-            <div class="bar-item">
-              <div class="bar-info"><span>Estoque Local</span> <strong>{{ cartasLocais.length }}</strong></div>
-              <div class="bar-track"><div class="bar-fill yellow" :style="{ width: (cartasLocais.length / (cartas.length || 1) * 100) + '%' }"></div></div>
+            <div class="bar-group">
+              <div class="bar-label"><span>Próprio (Local)</span> <b>{{ cartasLocais.length }}</b></div>
+              <div class="progress-track">
+                <div class="progress-fill yellow" :style="{ width: (cartasLocais.length / (cartas.length || 1) * 100) + '%' }"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </AdminLayout>
 </template>
 
 <style scoped>
-/* Estilos Essenciais para o Sino Interativo */
-.bell-container { position: relative; }
-.notif-dropdown {
-  position: absolute; top: 100%; right: 0; width: 300px; background: white; 
-  border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 10px;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 100; overflow: hidden;
-  animation: slideIn 0.2s ease-out;
+.dashboard-wrapper { display: flex; flex-direction: column; gap: 30px; }
+
+/* Header e Notificações */
+.dash-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.brand-title h2 { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 0; }
+.subtitle { color: #64748b; font-size: 0.9rem; }
+
+.actions-nav { display: flex; gap: 12px; position: relative; }
+.sync-tag { 
+  display: flex; align-items: center; gap: 6px; background: #f1f5f9; 
+  padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #475569;
 }
-.notif-header { padding: 12px 16px; background: #f8fafc; font-weight: 700; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
-.notif-body { padding: 16px; }
-.notif-item { display: flex; gap: 12px; }
-.notif-text p { font-size: 0.85rem; color: #475569; margin-bottom: 10px; line-height: 1.4; }
-.btn-sync-now { 
-  display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center;
-  background: #1e3a8a; color: white; border: none; padding: 8px; border-radius: 6px;
-  font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+.bell-btn { 
+  background: white; border: 1px solid #e2e8f0; padding: 8px; border-radius: 10px; 
+  cursor: pointer; position: relative; color: #64748b; 
 }
-.btn-sync-now:hover { background: #1e40af; }
-.btn-sync-now:disabled { opacity: 0.6; }
+.bell-btn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid white; }
+
+/* KPIs */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.kpi-card { 
+  background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;
+  display: flex; align-items: center; gap: 20px; transition: 0.2s;
+}
+.kpi-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+.kpi-card.local { border-left: 5px solid #F6D001; }
+.kpi-card.api { border-left: 5px solid #1e3a8a; }
+.kpi-card.success { border-left: 5px solid #10b981; }
+
+.icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #f8fafc; color: #1e3a8a; }
+.kpi-info label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+.kpi-info h3 { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 4px 0 0; }
+.kpi-info h3 span { font-size: 0.9rem; color: #94a3b8; font-weight: 500; }
+
+/* Seção de Gráficos Revisitada */
+.charts-section { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+.chart-box { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; }
+.box-header { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; color: #1e293b; }
+.box-header h4 { margin: 0; font-weight: 700; }
+
+.box-content.horizontal { display: flex; align-items: center; gap: 40px; justify-content: center; }
+.donut-container { position: relative; width: 150px; height: 150px; flex-shrink: 0; }
+.donut { width: 100%; height: 100%; border-radius: 50%; }
+.hole { 
+  position: absolute; top: 12%; left: 12%; width: 76%; height: 76%; 
+  background: white; border-radius: 50%; display: flex; flex-direction: column; 
+  align-items: center; justify-content: center;
+}
+.hole strong { font-size: 1.8rem; color: #1e3a8a; }
+.hole small { font-size: 0.65rem; color: #94a3b8; font-weight: 700; }
+
+.custom-legend { display: flex; flex-direction: column; gap: 12px; }
+.leg-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #475569; }
+.leg-item i { width: 12px; height: 12px; border-radius: 3px; }
+.leg-item i.blue { background: #1e3a8a; }
+.leg-item i.yellow { background: #F6D001; }
+.leg-item i.gray { background: #cbd5e1; }
+.leg-item b { margin-left: 20px; color: #1e293b; }
+
+/* Composição de Estoque (Barras) */
+.box-content.vertical { display: flex; flex-direction: column; gap: 30px; justify-content: center; height: 100%; }
+.bar-group { width: 100%; }
+.bar-label { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+.progress-track { height: 12px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 6px; transition: 1s ease-in-out; }
+.progress-fill.blue { background: #1e3a8a; }
+.progress-fill.yellow { background: #F6D001; }
 
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Ajustes de Bordas Coloridas */
-.kpi-card.yellow-border { border-bottom: 4px solid #F6D001; }
-.kpi-card.blue-border { border-bottom: 4px solid #1e3a8a; }
-.kpi-card.green-border { border-bottom: 4px solid #10b981; }
-
-/* Reutilizar os outros estilos que você já tem... */
-.dashboard-wrapper { display: flex; flex-direction: column; gap: 24px; animation: fadeIn 0.4s ease-out; }
-
-.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.dash-header h2 { font-size: 1.8rem; font-weight: 800; color: #1e293b; margin: 0; }
-
-.notifications-area { display: flex; align-items: center; gap: 20px; }
-.sync-info { font-size: 0.75rem; color: #64748b; background: white; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 6px; }
-
-.bell-btn { position: relative; background: white; border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; cursor: pointer; color: #64748b; transition: all 0.2s; }
-.bell-btn:hover { background: #f8fafc; color: var(--brand-yellow); border-color: var(--brand-yellow); }
-.bell-btn.has-news { color: #f59e0b; border-color: #fef3c7; background: #fffbeb; animation: pulse 2s infinite; }
-
-.badge-dot { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; background: #ef4444; border: 2px solid white; border-radius: 50%; }
-
-.grid-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.kpi-card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 20px; transition: transform 0.2s; }
-.kpi-card:hover { transform: translateY(-3px); }
-.kpi-card.highlight-yellow { border-bottom: 4px solid var(--brand-yellow); }
-.kpi-card.highlight-blue { border-bottom: 4px solid #1e3a8a; }
-
-.kpi-icon.blue-bg { background: #e0f2fe; color: #1e3a8a; }
-.kpi-icon.yellow { background: #FFFBEB; color: #F6D001; }
-.kpi-icon.green { background: #ecfdf5; color: #10b981; }
-
-.kpi-content span { font-size: 0.85rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-.kpi-content h3 { font-size: 1.6rem; font-weight: 800; color: #1e293b; margin: 4px 0 0 0; }
-
-.grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.chart-card { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 24px; }
-
-.donut-wrapper { position: relative; width: 160px; height: 160px; }
-.donut { width: 100%; height: 100%; border-radius: 50%; }
-.hole { position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hole span { font-size: 2rem; font-weight: 800; color: #1e3a8a; }
-
-.bar-track { height: 10px; background: #f1f5f9; border-radius: 5px; overflow: hidden; }
-.bar-fill.blue { background: #1e3a8a; }
-.bar-fill.yellow { background: #F6D001; }
-
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-@media (max-width: 1100px) { .grid-charts { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .charts-section { grid-template-columns: 1fr; } .box-content.horizontal { flex-direction: column; gap: 20px; } }
 </style>
