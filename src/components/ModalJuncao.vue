@@ -11,7 +11,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
-
 const configStore = useConfigStore()
 
 const formatCurrency = (value) => {
@@ -35,8 +34,9 @@ const totalParcelaMensal = computed(() => {
   return props.cartas.reduce((acc, c) => acc + parseFloat(c.valor_parcela || 0), 0)
 })
 
-const totalMeses = computed(() => {
-  return props.cartas.reduce((acc, c) => acc + parseInt(c.numero_parcelas || 0), 0)
+// NOVO: Pega o maior prazo entre as cotas para saber a duração real da junção
+const prazoMaximo = computed(() => {
+  return Math.max(...props.cartas.map(c => parseInt(c.numero_parcelas || 0)), 0)
 })
 
 const parcelasAgrupadas = computed(() => {
@@ -52,7 +52,8 @@ const parcelasAgrupadas = computed(() => {
       grupos[chave].qtdCotas++
     }
   })
-  return Object.values(grupos)
+  // Ordena do maior prazo para o menor
+  return Object.values(grupos).sort((a, b) => b.prazo - a.prazo)
 })
 
 const copiarTudo = async () => {
@@ -61,15 +62,15 @@ const copiarTudo = async () => {
   texto += `Entrada Total: ${formatCurrency(totalEntrada.value)}\n`
   texto += `Saldo Devedor: ${formatCurrency(totalSaldoDevedor.value)}\n\n`
   
-  texto += `PARCELAMENTO:\n`
-  const linhas = parcelasAgrupadas.value.map(p => `${p.prazo}x de ${formatCurrency(p.valor)}`)
+  texto += `COMPOSIÇÃO DAS PARCELAS:\n`
+  const linhas = parcelasAgrupadas.value.map(p => `${p.prazo} meses de ${formatCurrency(p.valor)}`)
   texto += linhas.join(' + ')
-  texto += `\nTotal de meses somados: ${totalMeses.value}m`
-  texto += `\nSoma mensal: ${formatCurrency(totalParcelaMensal.value)}\n\n`
+  texto += `\nPrazo máximo da operação: ${prazoMaximo.value} meses`
+  texto += `\nSoma das parcelas iniciais: ${formatCurrency(totalParcelaMensal.value)}\n\n`
 
   texto += `COTAS SELECIONADAS:\n`
   props.cartas.forEach(c => {
-    texto += `- Cód: ${c.codigo} | ${c.tipo} | ${c.administradora_detalhes?.nome}: ${formatCurrency(c.valor_credito)}\n`
+    texto += `- Cód: ${c.codigo} | ${c.administradora_detalhes?.nome}: ${formatCurrency(c.valor_credito)}\n`
   })
 
   try {
@@ -83,10 +84,10 @@ const copiarTudo = async () => {
 const abrirWhatsapp = () => {
   const codigos = props.cartas.map(c => c.codigo).join(', ')
   const parcelasTexto = parcelasAgrupadas.value
-    .map(p => `${p.prazo}x de ${formatCurrency(p.valor)}`)
+    .map(p => `${p.prazo}m de ${formatCurrency(p.valor)}`)
     .join(' + ')
 
-  const texto = `Olá! Tenho interesse na junção das cartas (${codigos}) que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nParcelamento: ${parcelasTexto}.\nTotal de meses: ${totalMeses.value}.`
+  const texto = `Olá! Tenho interesse na junção das cartas (${codigos}) que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nParcelamento: ${parcelasTexto}.\nPrazo total: ${prazoMaximo.value} meses.`
   const numero = configStore.whatsapp || '5547999999999'
   window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, '_blank')
 }
@@ -129,13 +130,13 @@ const compartilhar = async () => {
             <div class="section-divider"></div>
 
             <div class="parcelamento-box">
-              <p class="section-label">Parcelamento Detalhado:</p>
+              <p class="section-label">Parcelas que correm juntas:</p>
               
               <div class="parcelas-row">
                 <template v-for="(p, index) in parcelasAgrupadas" :key="index">
                   <div class="parcela-item-modern">
-                    <strong>{{ p.prazo }}x</strong> de {{ formatCurrency(p.valor) }}
-                    <span v-if="p.qtdCotas > 1" class="cota-badge-mini">{{ p.qtdCotas }}x</span>
+                    <strong>{{ p.prazo }}m</strong> de {{ formatCurrency(p.valor) }}
+                    <span v-if="p.qtdCotas > 1" class="cota-badge-mini">{{ p.qtdCotas }} cotas</span>
                   </div>
                   <div v-if="index < parcelasAgrupadas.length - 1" class="soma-inline">+</div>
                 </template>
@@ -143,24 +144,24 @@ const compartilhar = async () => {
 
               <div class="total-parcelas-footer">
                 <div class="info-adicional">
-                  <span>Total de meses: <strong>{{ totalMeses }}m</strong></span>
+                  <span>Duração total da operação: <strong>{{ prazoMaximo }} meses</strong></span>
                 </div>
-                <p class="parcela-val-final">Soma das parcelas: <strong>{{ formatCurrency(totalParcelaMensal) }}</strong></p>
+                <p class="parcela-val-final">Soma mensal inicial: <strong>{{ formatCurrency(totalParcelaMensal) }}</strong></p>
               </div>
             </div>
 
             <div class="section-divider"></div>
 
             <div class="secondary-info">
-              <p>Saldo devedor: <strong>{{ formatCurrency(totalSaldoDevedor) }}</strong></p>
+              <p>Saldo devedor total: <strong>{{ formatCurrency(totalSaldoDevedor) }}</strong></p>
               <p>Transferência: <strong>Consultar</strong></p>
               <p>Seguro de vida: <strong>Consultar</strong></p>
             </div>
 
             <div class="cotas-selecionadas">
-              <h3>Cotas selecionadas:</h3>
+              <h3>Cotas na junção:</h3>
               <div v-for="c in cartas" :key="c.codigo" class="cota-item">
-                Cód: {{ c.codigo }} - {{ c.tipo }} - {{ c.administradora_detalhes?.nome }}: {{ formatCurrency(c.valor_credito) }}
+                Cód: {{ c.codigo }} - {{ c.administradora_detalhes?.nome }}: {{ formatCurrency(c.valor_credito) }}
               </div>
             </div>
           </div>
@@ -179,7 +180,7 @@ const compartilhar = async () => {
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
               <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
             </svg>
-            Negociar
+            Negociar Junção
           </button>
         </div>
       </div>
@@ -188,23 +189,51 @@ const compartilhar = async () => {
 </template>
 
 <style scoped>
+/* (MANTIVE O RESTANTE DO SEU CSS, SÓ AJUSTEI CORES E TEXTOS) */
+.modal-juncao {
+  background: white; width: 100%; max-width: 480px;
+  border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+
+.parcelamento-box {
+  background: #f0f7ff; padding: 20px; border-radius: 16px;
+  border: 1px solid #dbeafe; text-align: center;
+}
+
+.section-label {
+  color: #1e3a8a; font-size: 0.75rem; font-weight: 800;
+  text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;
+}
+
+.parcela-item-modern {
+  font-size: 1rem; color: #1e293b; font-weight: 500;
+}
+
+.parcela-item-modern strong {
+  color: #1e3a8a; font-weight: 800; font-size: 1.1rem;
+}
+
+.total-parcelas-footer {
+  border-top: 1px dashed #dbeafe; padding-top: 15px; margin-top: 5px;
+}
+
+.parcela-val-final strong {
+  color: #1e3a8a; font-size: 1.2rem;
+}
+
+.cota-badge-mini {
+  background: #1e3a8a; color: white;
+  font-size: 0.6rem; padding: 2px 6px;
+  border-radius: 4px; margin-left: 5px;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.4);
   display: flex; justify-content: center; align-items: center;
   z-index: 10000; padding: 20px;
-}
-
-.modal-juncao {
-  background: white;
-  width: 100%;
-  max-width: 450px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .modal-header {
@@ -258,18 +287,6 @@ const compartilhar = async () => {
   height: 1px; background: #f3f4f6; margin: 16px 0;
 }
 
-.parcelamento-box {
-  background: #f8fafc;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-  text-align: center;
-}
-
-.section-label {
-  color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;
-}
-
 .parcelas-row {
   display: flex;
   flex-wrap: wrap;
@@ -277,19 +294,6 @@ const compartilhar = async () => {
   justify-content: center;
   gap: 12px;
   margin-bottom: 15px;
-}
-
-.parcela-item-modern {
-  font-size: 1rem;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.parcela-item-modern strong {
-  color: #1e3a8a;
-  font-weight: 800;
 }
 
 .soma-inline {
@@ -307,11 +311,6 @@ const compartilhar = async () => {
   margin-left: 4px;
 }
 
-.total-parcelas-footer {
-  border-top: 1px dashed #e2e8f0;
-  padding-top: 12px;
-}
-
 .info-adicional {
   font-size: 0.85rem;
   color: #64748b;
@@ -321,11 +320,6 @@ const compartilhar = async () => {
 .parcela-val-final {
   font-size: 0.95rem;
   color: #1e293b;
-}
-
-.parcela-val-final strong {
-  color: #00b37e;
-  font-size: 1.1rem;
 }
 
 .cotas-selecionadas {

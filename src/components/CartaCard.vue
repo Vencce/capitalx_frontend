@@ -31,27 +31,7 @@ const formatTaxa = (valor) => {
 const adminDetalhes = computed(() => props.carta.administradora_detalhes || {})
 const showModal = ref(false)
 
-// LÓGICA DE PARCELAMENTO COMPOSTO
-const parcelamentoComposto = computed(() => {
-  const obs = props.carta.observacoes || ''
-  // Regex para capturar padrões como "41x 1129,15 + 36x 411,42"
-  const regex = /(\d+)x\s*([\d.,]+)/g
-  const matches = [...obs.matchAll(regex)]
-
-  if (matches.length >= 2) {
-    return matches.map(m => ({
-      meses: m[1],
-      valor: m[2].replace(',', '.')
-    }))
-  }
-  return null
-})
-
 const custoTotal = computed(() => {
-  if (parcelamentoComposto.value) {
-    const totalParcelas = parcelamentoComposto.value.reduce((acc, p) => acc + (parseInt(p.meses) * parseFloat(p.valor)), 0)
-    return parseFloat(props.carta.valor_entrada || 0) + totalParcelas
-  }
   if (!props.carta.valor_parcela || !props.carta.valor_entrada) return 0
   const totalParcelas = props.carta.numero_parcelas * parseFloat(props.carta.valor_parcela)
   return parseFloat(props.carta.valor_entrada) + totalParcelas
@@ -60,22 +40,26 @@ const custoTotal = computed(() => {
 const getLogoUrl = (carta) => {
   const admin = carta.administradora_detalhes
   if (!admin) return ''
+
+  // SE A CARTA É DA API (PARCEIRO)
   if (carta.origem === 'PARCEIRO') {
+    // Prioridade total para o link direto que veio da integração
     if (admin.logo_url_externa) return admin.logo_url_externa
   }
+
+  // SE A CARTA É LOCAL (CAPITAL X) OU SE A PARCEIRA NÃO TEM LINK EXTERNO
   if (admin.logo) {
+    // Se for um link completo (Cloudinary/S3), retorna direto
     if (admin.logo.startsWith('http')) return admin.logo
+    // Se for arquivo local, coloca o domínio do seu backend
     return `${API_BASE_URL}${admin.logo.startsWith('/') ? '' : '/'}${admin.logo}`
   }
+
+  // Fallback final caso nada funcione
   return admin.logo_url_externa || ''
 }
 
 const copiarConteudo = async () => {
-  let parcelasTexto = `${props.carta.numero_parcelas}x de ${formatCurrency(props.carta.valor_parcela)}`
-  if (parcelamentoComposto.value) {
-    parcelasTexto = parcelamentoComposto.value.map(p => `${p.meses}x de ${formatCurrency(p.valor)}`).join(' + ')
-  }
-
   const texto = `
 📌 DETALHES DA CARTA DE CRÉDITO
 -----------------------------------
@@ -85,7 +69,7 @@ Tipo: ${props.carta.tipo}
 -----------------------------------
 Valor do Crédito: ${formatCurrency(props.carta.valor_credito)}
 Valor da Entrada: ${formatCurrency(props.carta.valor_entrada)}
-Parcelas: ${parcelasTexto}
+Parcelas: ${props.carta.numero_parcelas}x de ${formatCurrency(props.carta.valor_parcela)}
 -----------------------------------
 Saldo Devedor: ${props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0 ? formatCurrency(props.carta.saldo_devedor) : 'N/A'}
 Seguro de Vida: ${formatCurrency(props.carta.seguro_vida)}
@@ -172,12 +156,10 @@ const handleCardClick = () => {
         </div>
         <div class="detail-group">
           <span class="label">Parcelas</span>
-          <span class="val" v-if="!parcelamentoComposto">
-            {{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}
-          </span>
-          <span class="val composto" v-else>
-             {{ parcelamentoComposto[0].meses }}x de {{ formatCurrency(parcelamentoComposto[0].valor) }} + ...
-          </span>
+          <span class="val"
+            >{{ props.carta.numero_parcelas }}x
+            {{ formatCurrency(props.carta.valor_parcela) }}</span
+          >
         </div>
         <div class="detail-group desktop-only">
           <span class="label">Código</span>
@@ -207,13 +189,27 @@ const handleCardClick = () => {
 
       <div class="actions">
         <button class="btn-icon" @click.stop="copiarConteudo" title="Copiar Informações">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
         <button class="btn-icon" @click.stop="compartilhar" title="Compartilhar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="18" cy="5" r="3"></circle>
             <circle cx="6" cy="12" r="3"></circle>
             <circle cx="18" cy="19" r="3"></circle>
@@ -235,7 +231,9 @@ const handleCardClick = () => {
           <div class="modal-header">
             <div class="modal-icon-box">
               <svg v-if="carta.tipo === 'AUTOMOVEL'" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+                <path
+                  d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"
+                />
               </svg>
               <svg v-else viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
@@ -248,34 +246,31 @@ const handleCardClick = () => {
               </span>
             </div>
           </div>
-
           <div class="modal-section-title">Financeiro</div>
           <div class="modal-grid">
             <div class="modal-item highlight">
               <span>Crédito</span>
-              <strong style="color: #1e3a8a">{{ formatCurrency(props.carta.valor_credito) }}</strong>
+              <strong style="color: #1e3a8a">{{
+                formatCurrency(props.carta.valor_credito)
+              }}</strong>
             </div>
             <div class="modal-item">
               <span>Entrada</span>
-              <strong style="color: #f6d001">{{ formatCurrency(props.carta.valor_entrada) }}</strong>
+              <strong style="color: #f6d001">{{
+                formatCurrency(props.carta.valor_entrada)
+              }}</strong>
             </div>
-
-            <div class="modal-item full-width" v-if="parcelamentoComposto">
-              <span>Parcelamento Detalhado</span>
-              <div class="parcelas-compostas-box">
-                <div v-for="(p, index) in parcelamentoComposto" :key="index" class="p-item">
-                  <strong>{{ p.meses }}x</strong> de <strong>{{ formatCurrency(p.valor) }}</strong>
-                  <span v-if="index < parcelamentoComposto.length - 1" class="plus-sign">+</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-item" v-else>
+            <div class="modal-item">
               <span>Parcelas</span>
-              <strong>{{ props.carta.numero_parcelas }}x {{ formatCurrency(props.carta.valor_parcela) }}</strong>
+              <strong
+                >{{ props.carta.numero_parcelas }}x
+                {{ formatCurrency(props.carta.valor_parcela) }}</strong
+              >
             </div>
-
-            <div class="modal-item" v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0">
+            <div
+              class="modal-item"
+              v-if="props.carta.saldo_devedor && parseFloat(props.carta.saldo_devedor) > 0"
+            >
               <span>Saldo Devedor</span>
               <strong>{{ formatCurrency(props.carta.saldo_devedor) }}</strong>
             </div>
@@ -288,7 +283,6 @@ const handleCardClick = () => {
               <strong>{{ formatCurrency(props.carta.seguro_vida) }}</strong>
             </div>
           </div>
-
           <div class="modal-section-title">Especificações</div>
           <div class="modal-grid secondary">
             <div class="modal-item">
@@ -318,36 +312,6 @@ const handleCardClick = () => {
 </template>
 
 <style scoped>
-/* ESTILOS ADICIONAIS PARA PARCELAMENTO COMPOSTO */
-.parcelas-compostas-box {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  background: #f0f7ff;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px dashed #1e3a8a;
-  margin-top: 5px;
-}
-.p-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 1rem;
-  color: #1e3a8a;
-}
-.plus-sign {
-  font-weight: 900;
-  color: #cbd5e1;
-  margin-left: 5px;
-}
-.val.composto {
-  font-size: 0.9rem;
-  color: #1e3a8a;
-  font-weight: 700;
-}
-
 * {
   box-sizing: border-box;
 }
