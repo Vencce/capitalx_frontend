@@ -33,7 +33,6 @@ const totalEntrada = computed(() => props.cartas.reduce((acc, c) => acc + parseF
 const totalSaldoDevedor = computed(() => props.cartas.reduce((acc, c) => acc + parseFloat(c.saldo_devedor || 0), 0))
 const totalSeguro = computed(() => props.cartas.reduce((acc, c) => acc + parseFloat(c.seguro_vida || 0), 0))
 
-// Lógica de escalonamento para N cartas
 const fluxoPagamentoDinamico = computed(() => {
   if (props.cartas.length < 1) return []
   const cotas = props.cartas.map(c => ({
@@ -66,41 +65,46 @@ const prazoMaximo = computed(() => {
   return Math.max(...props.cartas.map(c => parseInt(c.numero_parcelas || 0)))
 })
 
+// FUNÇÃO DE CÓPIA AJUSTADA PARA O NOVO PADRÃO
 const copiarTudo = async () => {
-  let texto = `📊 RESULTADO DA JUNÇÃO - CAPITAL X\n`
-  texto += `-----------------------------------\n`
+  let texto = `📊 RESULTADO DA JUNÇÃO\n`
   texto += `Crédito Total: ${formatCurrency(totalCredito.value)}\n`
   texto += `Entrada Total: ${formatCurrency(totalEntrada.value)}\n`
-  texto += `Saldo Devedor: ${formatCurrency(totalSaldoDevedor.value)}\n`
-  texto += `-----------------------------------\n`
-  texto += `PLANO DE PAGAMENTO:\n`
-  fluxoPagamentoDinamico.value.forEach((d) => {
-    texto += `- ${d.meses} meses de ${formatCurrency(d.valor)}\n`
+  texto += `Saldo Devedor: ${formatCurrency(totalSaldoDevedor.value)}\n\n`
+  
+  texto += `PARCELAMENTO:\n`
+  const parcelasTexto = props.cartas.map(c => `${c.numero_parcelas}x de ${formatCurrency(c.valor_parcela)}`).join(' + ')
+  texto += `${parcelasTexto}\n`
+  texto += `Total de meses: ${prazoMaximo.value}\n`
+  
+  const resumoOperacao = fluxoPagamentoDinamico.value.map(d => `${d.meses} meses ${formatCurrency(d.valor)}`).join(' + ')
+  texto += `Resumo da Operação: ${resumoOperacao}\n\n`
+
+  texto += `COTAS SELECIONADAS:\n`
+  props.cartas.forEach(c => {
+    texto += ` • Cód: ${c.codigo} | ${c.tipo} | ${c.administradora_detalhes?.nome || 'Adm'}: ${formatCurrency(c.valor_credito)}\n`
   })
-  texto += `Prazo Máximo: ${prazoMaximo.value} meses\n`
-  texto += `-----------------------------------\n`
-  texto += `COTAS: ${props.cartas.map(c => '#' + c.codigo).join(', ')}`
 
   try {
     await navigator.clipboard.writeText(texto)
-    alert('Resumo da junção copiado!')
+    alert('Resumo copiado no novo padrão!')
   } catch (err) { console.error(err) }
 }
 
 const abrirWhatsapp = () => {
   const f = fluxoPagamentoDinamico.value
-  const parcelasTexto = f.map(d => `${d.meses}x de ${formatCurrency(d.valor)}`).join(' + ')
-  const texto = `Olá! Tenho interesse na junção das cartas que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nPlano: ${parcelasTexto}.\nPrazo total: ${prazoMaximo.value} meses.`
+  const resumoOperacao = f.map(d => `${d.meses} meses ${formatCurrency(d.valor)}`).join(' + ')
+  const texto = `Olá! Tenho interesse na junção das cartas que totalizam ${formatCurrency(totalCredito.value)} de crédito.\n\nResumo da Operação: ${resumoOperacao}.\nPrazo total: ${prazoMaximo.value} meses.`
   const numero = configStore.whatsapp || '5547999999999'
   window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, '_blank')
 }
 
 const compartilhar = async () => {
   const f = fluxoPagamentoDinamico.value
-  const parcelasTexto = f.map(d => `${d.meses}x de ${formatCurrency(d.valor)}`).join(' + ')
+  const resumoOperacao = f.map(d => `${d.meses} meses ${formatCurrency(d.valor)}`).join(' + ')
   const dados = {
     title: 'Junção de Cartas - Capital X',
-    text: `Crédito de ${formatCurrency(totalCredito.value)} com plano escalonado: ${parcelasTexto}.`,
+    text: `Crédito de ${formatCurrency(totalCredito.value)} | Resumo: ${resumoOperacao}.`,
     url: window.location.href
   }
   try {
@@ -171,10 +175,6 @@ const compartilhar = async () => {
               <div class="detail-label"><Calendar :size="14" /> Vencimento Médio</div>
               <div class="detail-val">{{ formatDate(props.cartas[0]?.vencimento) }}</div>
             </div>
-            <div class="detail-row">
-              <div class="detail-label"><ShieldCheck :size="14" /> Seguro de Vida Total</div>
-              <div class="detail-val">{{ formatCurrency(totalSeguro) }}</div>
-            </div>
           </div>
 
           <div class="selected-tags">
@@ -187,10 +187,7 @@ const compartilhar = async () => {
             <Share2 :size="18" /> Compartilhar
           </button>
           <button class="btn-footer whatsapp" @click="abrirWhatsapp">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-            </svg>
-            Negociar Junção
+            <MessageCircle :size="18" /> Negociar Junção
           </button>
         </footer>
       </div>
@@ -219,7 +216,6 @@ const compartilhar = async () => {
 
 .modal-body { padding: 0 28px 28px; max-height: 75vh; overflow-y: auto; }
 
-/* RESUMO LIMPO */
 .clean-summary { margin-bottom: 30px; }
 .summary-item { margin-bottom: 15px; }
 .label-box { display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
@@ -229,7 +225,6 @@ const compartilhar = async () => {
 
 .btn-copy-inline { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 10px; color: #1e3a8a; cursor: pointer; }
 
-/* PLANO BOX */
 .plan-box { background: #f0f7ff; border-radius: 24px; padding: 24px; margin-bottom: 24px; }
 .section-title { text-align: center; font-size: 0.8rem; font-weight: 800; color: #1e3a8a; margin: 0 0 20px 0; letter-spacing: 0.5px; }
 .steps-list { display: flex; flex-direction: column; align-items: center; }
@@ -240,7 +235,6 @@ const compartilhar = async () => {
 .connector { color: #cbd5e1; margin: 4px 0; }
 .plan-info { text-align: center; margin-top: 15px; font-size: 0.85rem; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 12px; }
 
-/* EXTRAS */
 .extra-details { border-top: 1px solid #f1f5f9; padding-top: 20px; display: flex; flex-direction: column; gap: 12px; }
 .detail-row { display: flex; justify-content: space-between; align-items: center; }
 .detail-label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; font-weight: 600; }
@@ -249,7 +243,6 @@ const compartilhar = async () => {
 .selected-tags { margin-top: 20px; font-size: 0.75rem; color: #94a3b8; }
 .selected-tags span { margin-left: 5px; font-weight: 700; color: #64748b; }
 
-/* FOOTER */
 .modal-footer { padding: 20px 28px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; }
 .btn-footer { height: 52px; border: none; border-radius: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
 .btn-footer.share { background: white; border: 1px solid #e2e8f0; color: #475569; }
