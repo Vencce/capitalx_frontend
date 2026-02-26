@@ -5,15 +5,21 @@ import CartaCard from '../components/CartaCard.vue'
 import AppHeader from '../components/AppHeader.vue'
 import AppFooter from '../components/AppFooter.vue'
 import ModalJuncao from '../components/ModalJuncao.vue'
-import { FileText, Table, PlusCircle } from 'lucide-vue-next'
+import { 
+  FileText, Table, PlusCircle, Search, 
+  Settings2, ChevronDown, ChevronUp, X 
+} from 'lucide-vue-next'
 
 const cartas = ref([])
 const carregando = ref(true)
 const selectedCartas = ref([])
 const showModalJuncao = ref(false)
+const mostrarFiltrosAvancados = ref(false)
 
+// ESTADOS DOS FILTROS
+const buscaGlobal = ref('') // Busca por Código ou Administradora
 const filtroTipo = ref('')
-const filtroAdmin = ref('')
+const filtroStatus = ref('')
 const creditoMin = ref('')
 const creditoMax = ref('')
 const entradaMin = ref('')
@@ -32,20 +38,17 @@ const buscarCartas = async () => {
 
 const toggleSelection = (carta) => {
   const index = selectedCartas.value.findIndex((c) => c.id === carta.id)
-
   if (index > -1) {
     selectedCartas.value.splice(index, 1)
   } else {
     if (selectedCartas.value.length > 0) {
       const firstCarta = selectedCartas.value[0]
-      
       if (carta.administradora !== firstCarta.administradora) {
         alert('Atenção: Você só pode somar cartas da mesma administradora!')
         return
       }
-
       if (carta.tipo !== firstCarta.tipo) {
-        alert(`Atenção: Não é possível misturar categorias. Você já selecionou um(a) ${firstCarta.tipo}, e esta cota é de ${carta.tipo}.`)
+        alert(`Atenção: Não é possível misturar categorias.`)
         return
       }
     }
@@ -58,38 +61,37 @@ const totals = computed(() => {
     (acc, curr) => {
       acc.credito += parseFloat(curr.valor_credito)
       acc.entrada += parseFloat(curr.valor_entrada)
-      acc.parcelas += parseFloat(curr.valor_parcela)
       return acc
     },
-    { credito: 0, entrada: 0, parcelas: 0 },
+    { credito: 0, entrada: 0 },
   )
 })
-
-const isSelectionDisabled = (carta) => {
-  if (carta.status !== 'DISPONIVEL') return true
-  if (selectedCartas.value.length === 0) return false
-  
-  const firstCarta = selectedCartas.value[0]
-  return firstCarta.administradora !== carta.administradora || firstCarta.tipo !== carta.tipo
-}
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
+// LÓGICA DE FILTRAGEM REFINADA
 const cartasFiltradas = computed(() => {
   let filtradas = cartas.value.filter((c) => {
-    if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
-    if (
-      filtroAdmin.value &&
-      !c.administradora_detalhes.nome.toLowerCase().includes(filtroAdmin.value.toLowerCase())
-    )
-      return false
+    // 1. Busca Global (Código ou Nome da Administradora)
+    if (buscaGlobal.value) {
+      const termo = buscaGlobal.value.toLowerCase()
+      const matchesCodigo = c.codigo.toLowerCase().includes(termo)
+      const matchesAdmin = c.administradora_detalhes.nome.toLowerCase().includes(termo)
+      if (!matchesCodigo && !matchesAdmin) return false
+    }
 
+    // 2. Filtros Básicos
+    if (filtroTipo.value && c.tipo !== filtroTipo.value) return false
+    if (filtroStatus.value && c.status !== filtroStatus.value) return false
+
+    // 3. Filtros Avançados (Crédito)
     const valorCredito = parseFloat(c.valor_credito)
     if (creditoMin.value && valorCredito < parseFloat(creditoMin.value)) return false
     if (creditoMax.value && valorCredito > parseFloat(creditoMax.value)) return false
 
+    // 4. Filtros Avançados (Entrada)
     const valorEntrada = parseFloat(c.valor_entrada)
     if (entradaMin.value && valorEntrada < parseFloat(entradaMin.value)) return false
     if (entradaMax.value && valorEntrada > parseFloat(entradaMax.value)) return false
@@ -100,30 +102,18 @@ const cartasFiltradas = computed(() => {
   return filtradas.sort((a, b) => parseFloat(a.valor_credito) - parseFloat(b.valor_credito))
 })
 
-const getApiUrl = (endpoint) => {
-  const params = new URLSearchParams()
-  if (filtroTipo.value) params.append('tipo', filtroTipo.value)
-  const baseUrl = 'https://capitalxinvest.onrender.com/api'
-  return `${baseUrl}/${endpoint}/?${params.toString()}`
-}
-
-const downloadPDF = () => window.open(getApiUrl('exportar/pdf'), '_blank')
-const downloadExcel = () => window.open(getApiUrl('exportar/excel'), '_blank')
-
-const selecionarCategoriaRapida = (tipo) => {
-  filtroTipo.value = tipo
-  const el = document.getElementById('resultados')
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
-}
-
 const limparFiltros = () => {
+  buscaGlobal.value = ''
   filtroTipo.value = ''
-  filtroAdmin.value = ''
+  filtroStatus.value = ''
   creditoMin.value = ''
   creditoMax.value = ''
   entradaMin.value = ''
   entradaMax.value = ''
 }
+
+const downloadPDF = () => window.open(`https://capitalxinvest.onrender.com/api/exportar/pdf/`, '_blank')
+const downloadExcel = () => window.open(`https://capitalxinvest.onrender.com/api/exportar/excel/`, '_blank')
 
 onMounted(buscarCartas)
 </script>
@@ -133,106 +123,99 @@ onMounted(buscarCartas)
     <AppHeader />
 
     <section class="hero-section">
-      <div class="hero-overlay"></div>
       <div class="hero-content">
-        <h1>Cartas Contempladas</h1>
-        <p>Encontre a carta contemplada ideal para realizar seu sonho com economia e agilidade.</p>
+        <h1>Oportunidades em Cartas</h1>
+        <p>Utilize nossa busca inteligente para encontrar o crédito ideal.</p>
       </div>
     </section>
 
-    <div class="filter-section-wrapper">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <label>Tipo de Bem</label>
-          <div class="input-wrapper">
+    <div class="filter-wrapper">
+      <div class="filter-card">
+        <div class="filter-main-bar">
+          <div class="search-input-group">
+            <Search class="search-icon" :size="20" />
+            <input 
+              type="text" 
+              v-model="buscaGlobal" 
+              placeholder="Pesquisar por Código ou Administradora..." 
+            />
+          </div>
+
+          <div class="basic-selects">
             <select v-model="filtroTipo">
-              <option value="">Todos os tipos</option>
+              <option value="">Tipo de Bem</option>
               <option value="IMOVEL">Imóvel</option>
               <option value="AUTOMOVEL">Automóvel</option>
             </select>
+
+            <select v-model="filtroStatus">
+              <option value="">Status</option>
+              <option value="DISPONIVEL">Disponível</option>
+              <option value="RESERVADO">Reservado</option>
+              <option value="VENDIDO">Vendido</option>
+            </select>
           </div>
+
+          <button class="btn-toggle-advanced" @click="mostrarFiltrosAvancados = !mostrarFiltrosAvancados">
+            <Settings2 :size="18" />
+            {{ mostrarFiltrosAvancados ? 'Ocultar Filtros' : 'Filtro Avançado' }}
+            <component :is="mostrarFiltrosAvancados ? ChevronUp : ChevronDown" :size="16" />
+          </button>
         </div>
-        <div class="filter-group">
-          <label>Crédito (R$)</label>
-          <div class="range-inputs">
-            <input type="number" v-model="creditoMin" placeholder="Mín" />
-            <span class="separator">-</span>
-            <input type="number" v-model="creditoMax" placeholder="Máx" />
+
+        <Transition name="expand">
+          <div v-if="mostrarFiltrosAvancados" class="advanced-panel">
+            <div class="advanced-grid">
+              <div class="adv-group">
+                <label>Faixa de Crédito (R$)</label>
+                <div class="range-inputs">
+                  <input type="number" v-model="creditoMin" placeholder="Mínimo" />
+                  <span>até</span>
+                  <input type="number" v-model="creditoMax" placeholder="Máximo" />
+                </div>
+              </div>
+
+              <div class="adv-group">
+                <label>Valor de Entrada (R$)</label>
+                <div class="range-inputs">
+                  <input type="number" v-model="entradaMin" placeholder="Mínimo" />
+                  <span>até</span>
+                  <input type="number" v-model="entradaMax" placeholder="Máximo" />
+                </div>
+              </div>
+            </div>
+
+            <div class="advanced-actions">
+              <button class="btn-clear" @click="limparFiltros">
+                <X :size="16" /> Limpar tudo
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="filter-group">
-          <label>Entrada (R$)</label>
-          <div class="range-inputs">
-            <input type="number" v-model="entradaMin" placeholder="Mín" />
-            <span class="separator">-</span>
-            <input type="number" v-model="entradaMax" placeholder="Máx" />
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Administradora</label>
-          <input type="text" v-model="filtroAdmin" placeholder="Ex: Caixa, Bradesco..." />
-        </div>
-        <div class="filter-actions">
-          <button class="btn-clean" @click="limparFiltros" title="Limpar Filtros">Limpar</button>
-        </div>
+        </Transition>
       </div>
     </div>
-
-    <section class="quick-categories">
-      <h3>Navegue por categoria</h3>
-      <div class="categories-grid">
-        <div
-          class="cat-card"
-          @click="selecionarCategoriaRapida('IMOVEL')"
-          :class="{ active: filtroTipo === 'IMOVEL' }"
-        >
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-          </div>
-          <span>Imóveis</span>
-        </div>
-        <div
-          class="cat-card"
-          @click="selecionarCategoriaRapida('AUTOMOVEL')"
-          :class="{ active: filtroTipo === 'AUTOMOVEL' }"
-        >
-          <div class="icon-box">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"
-              />
-            </svg>
-          </div>
-          <span>Veículos</span>
-        </div>
-      </div>
-    </section>
 
     <main class="main-content" id="resultados">
       <div v-if="carregando" class="loading">
         <div class="spinner"></div>
-        <p>Carregando oportunidades...</p>
+        <p>Localizando as melhores cotas...</p>
       </div>
 
       <div v-else-if="cartasFiltradas.length === 0" class="empty-state">
         <div class="empty-icon">🔍</div>
-        <h3>Nenhuma carta encontrada</h3>
-        <p>Tente ajustar os filtros.</p>
-        <button @click="limparFiltros" class="btn-link">Limpar filtros</button>
+        <h3>Nada encontrado por aqui</h3>
+        <p>Ajuste sua busca ou filtros para ver outros resultados.</p>
+        <button @click="limparFiltros" class="btn-link">Ver todas as cartas</button>
       </div>
 
       <div v-else class="results-container">
         <div class="results-header">
-          <h2>Resultados disponíveis</h2>
+          <h2>Estoque Disponível</h2>
           <div class="results-meta">
-            <span class="badge">{{ cartasFiltradas.length }} cartas</span>
-            <div class="download-btns">
-              <button class="btn-download" @click="downloadPDF"><FileText size="18" /> PDF</button>
-              <button class="btn-download excel" @click="downloadExcel">
-                <Table size="18" /> Excel
-              </button>
+            <span class="count-badge">{{ cartasFiltradas.length }} cartas encontradas</span>
+            <div class="export-actions">
+              <button class="btn-export" @click="downloadPDF"><FileText size="18" /> PDF</button>
+              <button class="btn-export excel" @click="downloadExcel"><Table size="18" /> Excel</button>
             </div>
           </div>
         </div>
@@ -243,7 +226,6 @@ onMounted(buscarCartas)
             :key="carta.id"
             :carta="carta"
             :selected="selectedCartas.some((c) => c.id === carta.id)"
-            :disabled="isSelectionDisabled(carta)"
             @toggle-selection="toggleSelection"
           />
         </div>
@@ -252,42 +234,34 @@ onMounted(buscarCartas)
       <Transition name="slide-up">
         <div v-if="selectedCartas.length > 0" class="summary-bar">
           <div class="summary-content">
-            <div class="summary-left">
-              <div class="count-circle">{{ selectedCartas.length }}</div>
-              <div class="summary-label">
+            <div class="sum-left">
+              <div class="circle">{{ selectedCartas.length }}</div>
+              <div class="label">
                 <strong>Cartas Selecionadas</strong>
-                <span>Mesma Administradora e Categoria</span>
+                <span>Mesma categoria/administradora</span>
               </div>
             </div>
-            <div class="summary-values">
-              <div class="val-group">
-                <span class="v-label">Total Crédito</span>
-                <span class="v-val">{{ formatCurrency(totals.credito) }}</span>
+            <div class="sum-values">
+              <div class="val-col">
+                <small>Crédito Total</small>
+                <strong>{{ formatCurrency(totals.credito) }}</strong>
               </div>
-              <div class="val-group">
-                <span class="v-label">Total Entrada</span>
-                <span class="v-val highlight-yellow">{{ formatCurrency(totals.entrada) }}</span>
+              <div class="val-col">
+                <small>Entrada Total</small>
+                <strong class="yellow">{{ formatCurrency(totals.entrada) }}</strong>
               </div>
             </div>
-            <div class="summary-actions">
-              <button class="btn-clear-selection" @click="selectedCartas = []">Limpar</button>
-              <button
-                v-if="selectedCartas.length > 1"
-                class="btn-view-juncao"
-                @click="showModalJuncao = true"
-              >
-                <PlusCircle size="20" /> Ver Junção
+            <div class="sum-actions">
+              <button class="btn-reset" @click="selectedCartas = []">Limpar</button>
+              <button v-if="selectedCartas.length > 1" class="btn-juncao" @click="showModalJuncao = true">
+                <PlusCircle size="18" /> Ver Junção
               </button>
             </div>
           </div>
         </div>
       </Transition>
 
-      <ModalJuncao
-        :show="showModalJuncao"
-        :cartas="selectedCartas"
-        @close="showModalJuncao = false"
-      />
+      <ModalJuncao :show="showModalJuncao" :cartas="selectedCartas" @close="showModalJuncao = false" />
     </main>
 
     <AppFooter />
@@ -295,459 +269,156 @@ onMounted(buscarCartas)
 </template>
 
 <style scoped>
-.home-container {
-  background-color: #f3f4f6;
-  min-height: 100vh;
-}
+.home-container { background-color: #f8fafc; min-height: 100vh; }
+
 .hero-section {
-  height: 350px;
-  background-image: url('/src/assets/imagens/hero.png');
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-  opacity: 0.85;
+  height: 300px; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  display: flex; align-items: center; justify-content: center; text-align: center; color: white;
 }
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-.hero-content {
-  position: relative;
-  z-index: 1;
-  padding: 0 20px;
-}
-.hero-content h1 {
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin-bottom: 16px;
-  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-.hero-content p {
-  font-size: 1.25rem;
-  max-width: 600px;
-  margin: 0 auto;
-  opacity: 0.9;
-  color: white;
+.hero-content h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 12px; }
+
+/* DESIGN DOS FILTROS REINVENTADO */
+.filter-wrapper { margin-top: -60px; padding: 0 20px; position: relative; z-index: 100; }
+.filter-card { 
+  background: white; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  max-width: 1200px; margin: 0 auto; overflow: hidden; border: 1px solid #e2e8f0;
 }
 
-.filter-section-wrapper {
-  margin-top: -50px;
-  position: relative;
-  z-index: 10;
-  padding: 0 20px;
+.filter-main-bar {
+  padding: 20px 30px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
 }
-.filter-bar {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  align-items: end;
+
+.search-input-group { 
+  flex: 1; min-width: 300px; position: relative; display: flex; align-items: center;
 }
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.search-icon { position: absolute; left: 16px; color: #94a3b8; }
+.search-input-group input {
+  width: 100%; padding: 14px 14px 14px 48px; border: 1px solid #e2e8f0; border-radius: 16px;
+  font-size: 1rem; transition: 0.2s; background: #f8fafc;
 }
-.filter-group label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #374151;
-  text-transform: uppercase;
+
+.basic-selects { display: flex; gap: 12px; }
+.basic-selects select {
+  padding: 14px 20px; border: 1px solid #e2e8f0; border-radius: 16px; 
+  background: #f8fafc; font-weight: 600; color: #475569; cursor: pointer;
 }
-.filter-group input,
-.filter-group select {
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  transition: all 0.2s;
+
+.btn-toggle-advanced {
+  display: flex; align-items: center; gap: 8px; padding: 14px 20px;
+  background: #eff6ff; color: #1e3a8a; border: none; border-radius: 16px;
+  font-weight: 700; cursor: pointer; transition: 0.2s;
 }
-.filter-group input:focus,
-.filter-group select:focus {
-  border-color: #1e3a8a;
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
-}
-.range-inputs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+
+/* PAINEL AVANÇADO */
+.advanced-panel { padding: 30px; background: #fdfdfd; border-top: 1px solid #f1f5f9; }
+.advanced-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; }
+.adv-group label { display: block; font-size: 0.8rem; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin-bottom: 12px; }
+
+.range-inputs { display: flex; align-items: center; gap: 12px; }
 .range-inputs input {
-  width: 100%;
+  flex: 1; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem;
 }
-.separator {
-  color: #9ca3af;
+.range-inputs span { color: #94a3b8; font-weight: 600; font-size: 0.85rem; }
+
+.advanced-actions { display: flex; justify-content: flex-end; }
+.btn-clear { background: none; border: none; color: #ef4444; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+/* CONTEÚDO E RESULTADOS */
+.main-content { max-width: 1200px; margin: 0 auto; padding: 50px 20px 140px; }
+.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.count-badge { background: #1e3a8a; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
+
+.export-actions { display: flex; gap: 10px; }
+.btn-export { 
+  display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: white;
+  border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #475569; cursor: pointer;
 }
 
-.btn-clean {
-  background: #f3f4f6;
-  color: #4b5563;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-}
-.btn-clean:hover {
-  background: #e5e7eb;
-  color: #111827;
-}
+.cards-list { display: flex; flex-direction: column; gap: 20px; }
 
-.quick-categories {
-  max-width: 1200px;
-  margin: 60px auto 40px;
-  padding: 0 20px;
-  text-align: center;
-}
-.quick-categories h3 {
-  font-size: 1.5rem;
-  color: #111827;
-  font-weight: 800;
-  margin-bottom: 24px;
-}
-.categories-grid {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.cat-card {
-  background: white;
-  padding: 20px 40px;
-  border-radius: 20px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.3s;
-  border: 2px solid transparent;
-  min-width: 160px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-.cat-card .icon-box {
-  width: 48px;
-  height: 48px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1e3a8a;
-  transition: all 0.3s;
-}
-.cat-card .icon-box svg {
-  width: 24px;
-  height: 24px;
-}
-.cat-card span {
-  font-weight: 700;
-  color: #4b5563;
-}
-.cat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: #1e3a8a;
-}
-.cat-card.active {
-  background: #1e3a8a;
-  border-color: #1e3a8a;
-}
-.cat-card.active .icon-box {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-.cat-card.active span {
-  color: white;
-}
-
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px 150px;
-}
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-.results-header h2 {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #111827;
-}
-.results-meta {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.badge {
-  background: #1e3a8a;
-  color: white;
-  padding: 6px 16px;
-  border-radius: 99px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-.download-btns {
-  display: flex;
-  gap: 10px;
-}
-.btn-download {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #4b5563;
-  cursor: pointer;
-}
-.btn-download:hover {
-  border-color: #1e3a8a;
-  color: #1e3a8a;
-}
-.btn-download.excel:hover {
-  border-color: #16a34a;
-  color: #16a34a;
-}
-
-.cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.loading {
-  text-align: center;
-  padding: 80px 0;
-  color: #6b7280;
-}
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #1e3a8a;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-state {
-  text-align: center;
-  background: white;
-  padding: 60px;
-  border-radius: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-.empty-state h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-.empty-state p {
-  color: #6b7280;
-  margin-bottom: 24px;
-}
-.btn-link {
-  color: #1e3a8a;
-  font-weight: 700;
-  text-decoration: underline;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
+/* SUMMARY BAR */
 .summary-bar {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 95%;
-  max-width: 1000px;
-  background: #1e3a8a;
-  border-radius: 20px;
-  padding: 20px 30px;
-  color: white;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  width: 90%; max-width: 1100px; background: #1e3a8a; border-radius: 24px;
+  padding: 20px 40px; color: white; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); z-index: 1000;
 }
-.summary-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 30px;
-}
-.summary-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  padding-right: 25px;
-}
-.count-circle {
-  width: 45px;
-  height: 45px;
-  background: white;
-  color: #1e3a8a;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  font-weight: 900;
-}
-.summary-label {
-  display: flex;
-  flex-direction: column;
-}
-.summary-label strong {
-  font-size: 1.1rem;
-}
-.summary-label span {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.summary-values {
-  flex: 1;
-  display: flex;
-  justify-content: space-around;
-  gap: 20px;
-}
-.val-group {
-  display: flex;
-  flex-direction: column;
-}
-.v-label {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.v-val {
-  font-size: 1.2rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-.highlight-yellow {
-  color: #f6d001;
-}
+.summary-content { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.sum-left { display: flex; align-items: center; gap: 20px; border-right: 1px solid rgba(255,255,255,0.2); padding-right: 20px; }
+.circle { width: 40px; height: 40px; background: white; color: #1e3a8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+.sum-values { flex: 1; display: flex; justify-content: space-around; }
+.val-col strong { display: block; font-size: 1.2rem; font-weight: 800; }
+.val-col strong.yellow { color: #f6d001; }
+.btn-juncao { background: #f6d001; color: #1e3a8a; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-.summary-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.btn-clear-selection {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 700;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-.btn-clear-selection:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.btn-view-juncao {
-  background: #f6d001;
-  color: #1e3a8a;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: all 0.2s;
-}
-.btn-view-juncao:hover {
-  transform: scale(1.05);
-  background: #ffe033;
-}
+/* ANIMAÇÕES */
+.expand-enter-active, .expand-leave-active { transition: all 0.3s ease; max-height: 400px; }
+.expand-enter-from, .expand-leave-to { max-height: 0; opacity: 0; transform: translateY(-10px); }
 
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translate(-50%, 100%);
-  opacity: 0;
-}
+/* --- REGRAS DE RESPONSIVIDADE (MOBILE & TABLET) --- */
 
 @media (max-width: 1024px) {
+  .hero-section {
+    height: 250px;
+  }
   .hero-content h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
   }
-  .summary-content {
-    gap: 15px;
+  .filter-main-bar {
+    padding: 15px;
+    gap: 12px;
   }
-  .summary-left {
-    padding-right: 15px;
+  .search-input-group {
+    min-width: 100%;
   }
-  .v-val {
-    font-size: 1rem;
+  .advanced-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .summary-bar {
+    width: 95%;
+    padding: 15px 20px;
   }
 }
 
 @media (max-width: 768px) {
   .hero-section {
-    height: 280px;
+    height: 200px;
   }
   .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   .hero-content p {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    padding: 0 10px;
   }
-  .filter-bar {
-    grid-template-columns: 1fr;
-    padding: 20px;
-    gap: 15px;
+
+  /* Ajuste da Barra de Filtros no Mobile */
+  .filter-wrapper {
+    margin-top: -40px;
   }
-  .quick-categories {
-    margin: 40px auto 20px;
+  .filter-card {
+    border-radius: 16px;
   }
-  .categories-grid {
-    gap: 10px;
+  .filter-main-bar {
+    flex-direction: column;
+    align-items: stretch;
   }
-  .cat-card {
-    padding: 15px 20px;
-    min-width: 140px;
+  .basic-selects {
+    flex-direction: row;
+    gap: 8px;
   }
+  .basic-selects select {
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 12px;
+  }
+  .btn-toggle-advanced {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  /* Painel de Resultados */
   .results-header {
     flex-direction: column;
     align-items: flex-start;
@@ -755,60 +426,69 @@ onMounted(buscarCartas)
   }
   .results-meta {
     width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .export-actions {
+    width: 100%;
     justify-content: space-between;
   }
+  .btn-export {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Barra de Junção Flutuante no Mobile */
   .summary-bar {
+    bottom: 15px;
     padding: 15px;
-    border-radius: 15px;
-    bottom: 10px;
+    border-radius: 16px;
   }
   .summary-content {
     flex-direction: column;
     gap: 15px;
-    text-align: center;
   }
-  .summary-left {
+  .sum-left {
     border-right: none;
     padding-right: 0;
-    justify-content: center;
-  }
-  .summary-label {
-    display: none;
-  }
-  .summary-values {
     width: 100%;
     justify-content: center;
-    gap: 30px;
   }
-  .summary-actions {
+  .sum-values {
     width: 100%;
-    flex-direction: row;
-    justify-content: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 10px;
+  }
+  .sum-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
-  .btn-view-juncao,
-  .btn-clear-selection {
-    flex: 1;
-    padding: 12px;
-    font-size: 0.85rem;
-    justify-content: center;
+  .btn-reset, .btn-juncao {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 12px 5px;
   }
 }
 
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
   }
-  .cat-card {
-    flex: 1 1 100%;
+  .range-inputs {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
-  .download-btns {
-    width: 100%;
+  .range-inputs span {
+    text-align: center;
   }
-  .btn-download {
-    flex: 1;
-    justify-content: center;
-    padding: 8px;
+  .sum-left .label {
+    display: none; /* Esconde texto longo no mobile muito pequeno */
+  }
+  .val-col strong {
+    font-size: 1rem;
   }
 }
 </style>
